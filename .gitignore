@@ -1,3 +1,4 @@
+# Python
 *.pyc
 __pycache__/
 *.py[cod]
@@ -8,9 +9,10 @@ build/
 develop-eggs/
 dist/
 downloads/
-egg/
+eggs/
 .eggs/
-lib/lib64/
+lib/
+lib64/
 parts/
 sdist/
 var/
@@ -22,13 +24,24 @@ wheels/
 venv/
 ENV/
 env/
+
+# Logs
 *.log
+
+#OS
 .DS_Store
 *.swp
 *.swo
 *~
+
+# IDE
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+
+
+# Frappe/Bench Specific
 node_modules/
 .sass-cache/
 *.map
@@ -49,3 +62,18 @@ public/templates/email/
 public/templates/emails/
 public/templates/pages/
 public/templates/includes/
+
+
+# Environment
+.env
+.env.local
+
+
+# Database
+*.db
+*.sqlite
+
+
+# Temporary Files
+*.tmp
+*.temp
