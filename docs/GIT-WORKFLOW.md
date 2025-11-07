@@ -18,6 +18,7 @@
 
 ### Starting Work on a Domain
 
+```bash
 # 1. Switch to the domain branch
 ./switch-domain.sh departments
 
@@ -35,14 +36,23 @@ git add .
 git commit -m "feat(departments): Add department permissions functionality"
 
 # 6. Push to remote
-git push origin feature/departments-permissions### Committing Changes
+git push origin feature/departments-permissions
+```
+
+### Committing Changes
 
 **Commit Message Format:**
+```
 <type>(<scope>): <subject>
 
 <body>
 
-<footer>ug fix
+<footer>
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
 - `docs`: Documentation changes
 - `style`: Code style changes (formatting, etc.)
 - `refactor`: Code refactoring
@@ -50,13 +60,22 @@ git push origin feature/departments-permissions### Committing Changes
 - `chore`: Maintenance tasks
 
 **Examples:**
+```bash
 git commit -m "feat(departments): Add department allocation functionality"
 git commit -m "fix(inventory): Fix theoretical inventory calculation"
-git commit -m "docs(products): Update unit conversion documentation"### Merging to Main
+git commit -m "docs(products): Update unit conversion documentation"
+```
+
+### Merging to Main
 
 **Option 1: Using Helper Script**
+```bash
 # On your feature branch
-./merge-to-main.sh**Option 2: Manual Merge**ash
+./merge-to-main.sh
+```
+
+**Option 2: Manual Merge**
+```bash
 # 1. Ensure your feature branch is up to date
 git checkout feature/departments
 git pull origin feature/departments
@@ -72,8 +91,12 @@ git merge feature/departments --no-ff -m "Merge feature/departments into main"
 git push origin main
 
 # 5. Switch back to feature branch
-git checkout feature/departments### Working with Multiple Domains
-sh
+git checkout feature/departments
+```
+
+### Working with Multiple Domains
+
+```bash
 # Work on departments
 ./switch-domain.sh departments
 # ... make changes ...
@@ -84,7 +107,10 @@ git push origin feature/departments
 ./switch-domain.sh products
 # ... make changes ...
 git commit -m "feat(products): ..."
-git push origin feature/products## Best Practices
+git push origin feature/products
+```
+
+## Best Practices
 
 ### 1. Always Work on Feature Branches
 - Never commit directly to `main` (except documentation)
@@ -114,6 +140,7 @@ git push origin feature/products## Best Practices
 ## Common Tasks
 
 ### View Branch Status
+```bash
 # See current branch
 git branch --show-current
 
@@ -121,7 +148,11 @@ git branch --show-current
 git branch -a
 
 # See remote branches
-git branch -r### Update Feature Branch from Main
+git branch -r
+```
+
+### Update Feature Branch from Main
+```bash
 # On your feature branch
 git checkout feature/departments
 
@@ -129,7 +160,11 @@ git checkout feature/departments
 git merge main
 
 # Or rebase (cleaner history)
-git rebase main### Stash Changesash
+git rebase main
+```
+
+### Stash Changes
+```bash
 # Save current changes without committing
 git stash
 
@@ -138,7 +173,11 @@ git checkout main
 
 # Return to feature branch and restore changes
 git checkout feature/departments
-git stash pop### View Changes
+git stash pop
+```
+
+### View Changes
+```bash
 # See what files changed
 git status
 
@@ -149,9 +188,13 @@ git diff
 git diff --cached
 
 # See commit history
-git log --oneline --graph --all -20## Troubleshooting
+git log --oneline --graph --all -20
+```
+
+## Troubleshooting
 
 ### Accidentally Committed to Main
+```bash
 # Create a feature branch from current state
 git branch feature/my-feature
 
@@ -160,12 +203,20 @@ git checkout main
 git reset --hard HEAD~1
 
 # Switch to feature branch
-git checkout feature/my-feature### Need to Undo Last Commit
+git checkout feature/my-feature
+```
+
+### Need to Undo Last Commit
+```bash
 # Undo commit but keep changes
 git reset --soft HEAD~1
 
 # Undo commit and discard changes (careful!)
-git reset --hard HEAD~1### Merge Conflicts
+git reset --hard HEAD~1
+```
+
+### Merge Conflicts
+```bash
 # When merge conflict occurs:
 # 1. Open conflicted files
 # 2. Resolve conflicts (look for <<<<<< markers)
@@ -173,7 +224,10 @@ git reset --hard HEAD~1### Merge Conflicts
 git add <resolved-file>
 
 # 4. Complete the merge
-git commit## Helper Scripts
+git commit
+```
+
+## Helper Scripts
 
 - `./switch-domain.sh <domain>` - Switch to domain feature branch
 - `./new-feature.sh <feature-name>` - Create new feature branch
@@ -185,3 +239,4 @@ git commit## Helper Scripts
 2. Follow the development guide in `docs/START-HERE.md`
 3. Use feature branches for all development work
 4. Commit and push regularly
+
