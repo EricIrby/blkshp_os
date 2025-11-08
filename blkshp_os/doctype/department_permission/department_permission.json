@@ -1,0 +1,144 @@
+{
+ "actions": [],
+ "creation": "2025-11-07 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "department",
+  "column_break_1",
+  "is_active",
+  "section_permissions",
+  "can_read",
+  "can_write",
+  "can_create",
+  "can_delete",
+  "column_break_2",
+  "can_submit",
+  "can_cancel",
+  "can_approve",
+  "section_effective_dates",
+  "valid_from",
+  "column_break_3",
+  "valid_upto",
+  "section_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "section_permissions",
+   "fieldtype": "Section Break",
+   "label": "Permissions"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_read",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Can Read"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_write",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Can Write"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_create",
+   "fieldtype": "Check",
+   "label": "Can Create"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_delete",
+   "fieldtype": "Check",
+   "label": "Can Delete"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_submit",
+   "fieldtype": "Check",
+   "label": "Can Submit"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_cancel",
+   "fieldtype": "Check",
+   "label": "Can Cancel"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_approve",
+   "fieldtype": "Check",
+   "label": "Can Approve"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_effective_dates",
+   "fieldtype": "Section Break",
+   "label": "Effective Dates"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid Upto"
+  },
+  {
+   "fieldname": "section_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Permissions",
+ "name": "Department Permission",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
+

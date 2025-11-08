@@ -1,0 +1,31 @@
+[
+  {
+    "doctype": "Custom Field",
+    "dt": "User",
+    "name": "User-department_permissions",
+    "fieldname": "department_permissions",
+    "fieldtype": "Table",
+    "label": "Department Permissions",
+    "insert_after": "roles",
+    "options": "Department Permission",
+    "reqd": 0,
+    "no_copy": 1,
+    "allow_on_submit": 0,
+    "translatable": 0,
+    "in_list_view": 0
+  },
+  {
+    "doctype": "Custom Field",
+    "dt": "User",
+    "name": "User-is_team_account",
+    "fieldname": "is_team_account",
+    "fieldtype": "Check",
+    "label": "Is Team Account",
+    "insert_after": "user_type",
+    "description": "Mark when this account represents a shared team login.",
+    "default": "0",
+    "reqd": 0,
+    "translatable": 0,
+    "no_copy": 0
+  }
+]

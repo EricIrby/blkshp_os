@@ -1,0 +1,2 @@
+# Department Permission child DocType
+
