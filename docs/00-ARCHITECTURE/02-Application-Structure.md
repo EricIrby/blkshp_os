@@ -1,31 +1,39 @@
 # Application Structure
 
-## Frappe App Structure
+## Frappe App Layout
 
-Create a custom Frappe app: `blkshp_product_platform`
+The `blkshp_os` repository follows the standard Frappe pattern. The Desk workspace ships inside the `blkshp_os` module (`blkshp_os/blkshp_os/workspace`) so Frappe can auto-discover it during `bench migrate`.
 
 ```
-blkshp_product_platform/
-├── blkshp_product_platform/
+blkshp_os/
+├── blkshp_os/
 │   ├── __init__.py
+│   ├── accounting/
+│   ├── analytics/
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── departments.py
+│   │   └── roles.py
 │   ├── config/
-│   │   ├── desktop.py          # Desktop icons/menu
-│   │   └── docs.py             # Documentation links
-│   ├── modules.txt             # Module definitions
-│   ├── modules/
-│   │   ├── products/           # Unified product/item management
-│   │   ├── departments/        # Department management & segmentation
-│   │   ├── inventory/          # Inventory tracking & audits
-│   │   ├── procurement/        # Ordering & invoicing
-│   │   ├── recipes/            # Recipe management
-│   │   ├── pos_integration/    # POS connectivity
-│   │   ├── accounting/         # Accounting integration
-│   │   ├── analytics/          # Analytics & reporting
-│   │   └── director/           # Multi-location management
-│   └── public/                 # Static files
-├── blkshp_product_platform/patches/
-│   └── patches.txt             # Database migration patches
-└── setup.py
+│   │   ├── __init__.py
+│   │   └── desktop.py          # Desk tile configuration
+│   ├── departments/
+│   ├── permissions/
+│   ├── public/
+│   │   └── js/
+│   ├── scripts/
+│   ├── modules.txt             # Registered Frappe modules
+│   └── hooks.py                # Application hooks
+├── blkshp_os/
+│   └── workspace/
+│       ├── __init__.py
+│       └── blkshp_os/
+│           └── blkshp_os.json  # Custom workspace definition
+├── docs/
+├── fixtures/
+├── pyproject.toml
+├── README.md
+└── scripts/
 ```
 
 ## Core DocTypes Required

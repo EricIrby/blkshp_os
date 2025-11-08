@@ -42,7 +42,7 @@ frappe.ui.form.on('Department', {
 		// Clear parent department if company changes
 		if (frm.doc.parent_department) {
 			frappe.db.get_value('Department', frm.doc.parent_department, 'company', function(r) {
-				if (r && r.company !== frm.doc.company) {
+				if (r && r.message && r.message.company !== frm.doc.company) {
 					frappe.msgprint(__('Parent department belongs to a different company. Clearing parent department.'));
 					frm.set_value('parent_department', '');
 				}
@@ -54,7 +54,7 @@ frappe.ui.form.on('Department', {
 		// Validate parent department belongs to same company
 		if (frm.doc.parent_department && frm.doc.company) {
 			frappe.db.get_value('Department', frm.doc.parent_department, 'company', function(r) {
-				if (r && r.company !== frm.doc.company) {
+				if (r && r.message && r.message.company !== frm.doc.company) {
 					frappe.msgprint(__('Parent department must belong to the same company.'));
 					frm.set_value('parent_department', '');
 				}

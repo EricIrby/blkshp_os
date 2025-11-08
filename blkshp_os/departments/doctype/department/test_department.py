@@ -6,7 +6,7 @@ import json
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from blkshp_os.doctype.department.department import (
+from blkshp_os.departments.doctype.department.department import (
 	SETTINGS_PERMISSION_FLAGS,
 	get_accessible_departments,
 	get_department_setting,

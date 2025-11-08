@@ -31,13 +31,13 @@ def get_department_details(department: str) -> dict[str, Any]:
 	
 	# Get products assigned to this department
 	products = frappe.call(
-		"blkshp_os.doctype.department.department.get_products",
+		"blkshp_os.departments.doctype.department.department.get_products",
 		department=department
 	)
 	
 	# Get users with access to this department
 	users = frappe.call(
-		"blkshp_os.doctype.department.department.get_users",
+		"blkshp_os.departments.doctype.department.department.get_users",
 		department=department
 	)
 	
@@ -225,7 +225,7 @@ def get_department_settings(department: str, setting_key: str | None = None) -> 
 	Returns:
 		Setting value or all settings dictionary
 	"""
-	from blkshp_os.doctype.department.department import get_department_setting
+	from blkshp_os.departments.doctype.department.department import get_department_setting
 	from blkshp_os.permissions.service import has_department_permission
 	
 	if not has_department_permission(frappe.session.user, department, "can_read"):

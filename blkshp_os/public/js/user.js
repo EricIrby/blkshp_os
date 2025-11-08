@@ -5,18 +5,27 @@ frappe.ui.form.on('User', {
 		if (!frm.is_new()) {
 			frm.add_custom_button(__('View Accessible Departments'), function() {
 				frappe.call({
-					method: 'blkshp_os.permissions.service.get_accessible_departments',
+					method: 'blkshp_os.api.departments.get_accessible_departments',
 					args: {
-						user: frm.doc.name,
 						permission_flag: 'can_read'
 					},
 					callback: function(r) {
-						if (r.message) {
+						if (r.message && r.message.length > 0) {
+							let dept_list = r.message.map(d => 
+								`<li><strong>${d.department_code}</strong> - ${d.department_name} (${d.company})</li>`
+							).join('');
 							frappe.msgprint({
 								title: __('Accessible Departments'),
-								message: __('User has access to {0} department(s):', [r.message.length]) + '<br><br>' +
-									r.message.map(d => `<li>${d}</li>`).join(''),
-								indicator: 'blue'
+								message: __('User has access to {0} department(s):', [r.message.length]) + '<br><br><ul>' +
+									dept_list + '</ul>',
+								indicator: 'blue',
+								wide: true
+							});
+						} else {
+							frappe.msgprint({
+								title: __('Accessible Departments'),
+								message: __('User has no accessible departments.'),
+								indicator: 'orange'
 							});
 						}
 					}
@@ -34,9 +43,9 @@ frappe.ui.form.on('Department Permission', {
 		// Validate department is active
 		if (row.department) {
 			frappe.db.get_value('Department', row.department, ['is_active', 'department_name'], function(r) {
-				if (r) {
-					if (!r.is_active) {
-						frappe.msgprint(__('Warning: Department {0} is inactive.', [r.department_name]));
+				if (r && r.message) {
+					if (!r.message.is_active) {
+						frappe.msgprint(__('Warning: Department {0} is inactive.', [r.message.department_name]));
 					}
 				}
 			});

@@ -41,7 +41,7 @@ The Permissions domain has been fully implemented, providing a comprehensive rol
 ### 2. Role Permission System
 
 #### Role Permission Child Table (`Role Permission`)
-- **Location:** `blkshp_os/doctype/role_permission/`
+- **Location:** `blkshp_os/permissions/doctype/role_permission/`
 - **Files:**
   - `role_permission.json` - Child table definition
   - `role_permission.py` - Python controller with validation
@@ -153,7 +153,7 @@ The Permissions domain has been fully implemented, providing a comprehensive rol
 ### 7. Test Coverage
 
 #### Test Files Created:
-1. `blkshp_os/doctype/role_permission/test_role_permission.py`
+1. `blkshp_os/permissions/doctype/role_permission/test_role_permission.py`
    - Permission code validation
    - Invalid permission rejection
    - Auto-population of permission details
@@ -196,25 +196,34 @@ The Permissions domain has been fully implemented, providing a comprehensive rol
 blkshp_os/
 ├── api/
 │   └── roles.py (13 endpoints)
-├── doctype/
-│   └── role_permission/
-│       ├── __init__.py
-│       ├── role_permission.json
-│       ├── role_permission.py
-│       └── test_role_permission.py
 ├── permissions/
 │   ├── __init__.py
 │   ├── constants.py (70+ permissions)
+│   ├── query.py (permission queries)
 │   ├── roles.py (role management service)
-│   ├── service.py (department permissions - from Departments domain)
-│   ├── user.py (user mixin - from Departments domain)
-│   ├── query.py (permission queries - from Departments domain)
+│   ├── service.py (shared with Departments domain)
+│   ├── test_permissions_service.py
 │   ├── test_roles.py
-│   └── test_permissions_service.py
+│   ├── user.py (user mixin)
+│   └── doctype/
+│       ├── __init__.py
+│       └── role_permission/
+│           ├── __init__.py
+│           ├── role_permission.json
+│           ├── role_permission.py
+│           └── test_role_permission.py
 ├── public/
 │   └── js/
 │       ├── role.js
-│       └── user.js (from Departments domain)
+│       └── user.js (shared with Departments domain)
+├── scripts/
+│   ├── __init__.py
+│   └── sync_doctypes.py
+├── blkshp_os/
+│   └── workspace/
+│       ├── __init__.py
+│       └── blkshp_os/
+│           └── blkshp_os.json
 └── hooks.py (updated)
 
 fixtures/

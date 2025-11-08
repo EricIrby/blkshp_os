@@ -15,7 +15,7 @@ The Departments domain has been fully implemented as the foundational domain for
 ### 1. Core DocTypes
 
 #### Department Master (`Department`)
-- **Location:** `blkshp_os/doctype/department/`
+- **Location:** `blkshp_os/departments/doctype/department/`
 - **Files:**
   - `department.json` - DocType definition
   - `department.py` - Python controller with validation logic
@@ -31,7 +31,7 @@ The Departments domain has been fully implemented as the foundational domain for
 - Whitelisted methods: `get_products()`, `get_users()`
 
 #### Department Permission (`Department Permission`)
-- **Location:** `blkshp_os/doctype/department_permission/`
+- **Location:** `blkshp_os/permissions/doctype/department_permission/`
 - **Files:**
   - `department_permission.json` - Child table definition
   - `department_permission.py` - Python controller
@@ -47,7 +47,7 @@ The Departments domain has been fully implemented as the foundational domain for
 - Notes field for permission documentation
 
 #### Product Department (`Product Department`)
-- **Location:** `blkshp_os/doctype/product_department/`
+- **Location:** `blkshp_os/departments/doctype/product_department/`
 - **Files:**
   - `product_department.json` - Child table definition
   - `product_department.py` - Python controller
@@ -132,7 +132,7 @@ permission_query_conditions = {
 
 ### 4. Client-Side Scripts
 
-#### Department Form Script (`blkshp_os/doctype/department/department.js`)
+#### Department Form Script (`blkshp_os/departments/doctype/department/department.js`)
 **Enhances Department form with interactive features.**
 
 **Features:**
@@ -209,13 +209,13 @@ fixtures = [
 ### 7. Test Coverage
 
 #### Test Files Created:
-1. `blkshp_os/doctype/department/test_department.py`
+1. `blkshp_os/departments/doctype/department/test_department.py`
    - Department code uniqueness validation
    - JSON settings validation
    - Helper function tests (`get_department_setting`, `get_accessible_departments`)
    - Settings permission flags export
 
-2. `blkshp_os/doctype/department_permission/test_department_permission.py`
+2. `blkshp_os/permissions/doctype/department_permission/test_department_permission.py`
    - Required field validation
    - Permission flag validation (at least one required)
    - Inactive department validation
@@ -223,7 +223,7 @@ fixtures = [
    - Date range validation
    - Successful assignment tests
 
-3. `blkshp_os/doctype/product_department/test_product_department.py`
+3. `blkshp_os/departments/doctype/product_department/test_product_department.py`
    - Placeholder tests (awaiting Products domain)
    - Test structure prepared for future implementation
 
@@ -270,33 +270,53 @@ blkshp_os/
 │   ├── __init__.py
 │   ├── departments.py
 │   └── test_departments_api.py
-├── doctype/
+├── departments/
 │   ├── __init__.py
-│   ├── department/
-│   │   ├── __init__.py
-│   │   ├── department.json
-│   │   ├── department.py
-│   │   ├── department.js
-│   │   └── test_department.py
-│   ├── department_permission/
-│   │   ├── __init__.py
-│   │   ├── department_permission.json
-│   │   ├── department_permission.py
-│   │   └── test_department_permission.py
-│   └── product_department/
+│   └── doctype/
 │       ├── __init__.py
-│       ├── product_department.json
-│       ├── product_department.py
-│       └── test_product_department.py
+│       ├── department/
+│       │   ├── __init__.py
+│       │   ├── department.json
+│       │   ├── department.py
+│       │   ├── department.js
+│       │   └── test_department.py
+│       └── product_department/
+│           ├── __init__.py
+│           ├── product_department.json
+│           ├── product_department.py
+│           └── test_product_department.py
 ├── permissions/
 │   ├── __init__.py
-│   ├── service.py
-│   ├── user.py
+│   ├── constants.py
 │   ├── query.py
-│   └── test_permissions_service.py
+│   ├── roles.py
+│   ├── service.py
+│   ├── test_permissions_service.py
+│   ├── test_roles.py
+│   ├── user.py
+│   └── doctype/
+│       ├── __init__.py
+│       ├── department_permission/
+│       │   ├── __init__.py
+│       │   ├── department_permission.json
+│       │   ├── department_permission.py
+│       │   └── test_department_permission.py
+│       └── role_permission/
+│           ├── __init__.py
+│           ├── role_permission.json
+│           ├── role_permission.py
+│           └── test_role_permission.py
 ├── public/
 │   └── js/
 │       └── user.js
+├── scripts/
+│   ├── __init__.py
+│   └── sync_doctypes.py
+├── blkshp_os/
+│   └── workspace/
+│       ├── __init__.py
+│       └── blkshp_os/
+│           └── blkshp_os.json
 ├── hooks.py (modified)
 └── modules.txt (modified)
 

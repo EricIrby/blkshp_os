@@ -10,13 +10,13 @@ frappe.ui.form.on('Role', {
 				});
 			}, __('View'));
 
-			// Add button to view role summary
-			frm.add_custom_button(__('Role Summary'), function() {
-				frappe.call({
-					method: 'blkshp_os.permissions.roles.get_role_summary',
-					args: {
-						role: frm.doc.name
-					},
+		// Add button to view role summary
+		frm.add_custom_button(__('Role Summary'), function() {
+			frappe.call({
+				method: 'blkshp_os.api.roles.get_role_summary',
+				args: {
+					role: frm.doc.name
+				},
 					callback: function(r) {
 						if (r.message) {
 							let summary = r.message;
@@ -164,29 +164,6 @@ frappe.ui.form.on('Role', {
 
 // Role Permission child table handlers
 frappe.ui.form.on('Role Permission', {
-	permission_code: function(frm, cdt, cdn) {
-		let row = locals[cdt][cdn];
-		
-		// Auto-populate permission details
-		if (row.permission_code) {
-			frappe.call({
-				method: 'blkshp_os.permissions.constants.get_permission',
-				args: {
-					code: row.permission_code
-				},
-				callback: function(r) {
-					if (r.message) {
-						let perm = r.message;
-						frappe.model.set_value(cdt, cdn, 'permission_name', perm.name);
-						frappe.model.set_value(cdt, cdn, 'permission_category', perm.category);
-						frappe.model.set_value(cdt, cdn, 'description', perm.description);
-						frappe.model.set_value(cdt, cdn, 'department_restricted', perm.department_restricted);
-					}
-				}
-			});
-		}
-	},
-
 	custom_permissions_add: function(frm, cdt, cdn) {
 		let row = locals[cdt][cdn];
 		// Set default to granted
