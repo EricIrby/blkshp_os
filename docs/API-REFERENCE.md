@@ -415,7 +415,489 @@ API requests are subject to Frappe's standard rate limiting policies. Consult yo
 
 ---
 
+---
+
+## Roles & Permissions API
+
+### Get Available Permissions
+
+Get list of all available permissions in the system.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.get_available_permissions`
+
+**Method:** `GET` or `POST`
+
+**Parameters:** None
+
+**Response:**
+```json
+[
+  {
+    "code": "orders.view",
+    "name": "View Orders",
+    "description": "View purchase orders",
+    "category": "Orders",
+    "department_restricted": true
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X GET https://your-site.com/api/method/blkshp_os.api.roles.get_available_permissions \
+  -H "Authorization: token api_key:api_secret"
+```
+
+---
+
+### Get Permissions by Category
+
+Get permissions grouped by category or for a specific category.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.get_permissions_by_category`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `category` (string, optional): Category name. If not provided, returns all categories.
+
+**Response (all categories):**
+```json
+{
+  "Orders": [
+    {
+      "code": "orders.view",
+      "name": "View Orders",
+      "description": "View purchase orders",
+      "department_restricted": true
+    }
+  ],
+  "Invoices": [...]
+}
+```
+
+**Response (specific category):**
+```json
+[
+  {
+    "code": "orders.view",
+    "name": "View Orders",
+    "description": "View purchase orders",
+    "department_restricted": true
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.get_permissions_by_category \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{"category": "Orders"}'
+```
+
+---
+
+### Get User Permissions
+
+Get all permissions for a user from all their roles.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.get_user_permissions`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `user` (string, optional): User email. Defaults to current user.
+
+**Response:**
+```json
+{
+  "user": "user@example.com",
+  "roles": ["Store Manager", "Buyer"],
+  "permissions": {
+    "orders.view": [
+      {
+        "role": "Store Manager",
+        "permission_code": "orders.view",
+        "permission_name": "View Orders",
+        "permission_category": "Orders",
+        "department_restricted": true
+      }
+    ]
+  },
+  "permissions_by_category": {
+    "Orders": [
+      {
+        "code": "orders.view",
+        "name": "View Orders",
+        "description": "View purchase orders",
+        "department_restricted": true,
+        "granted_by_roles": ["Store Manager", "Buyer"]
+      }
+    ]
+  },
+  "total_permissions": 15
+}
+```
+
+**Permissions Required:** System Manager (to view other users' permissions)
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.get_user_permissions \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{"user": "user@example.com"}'
+```
+
+---
+
+### Check Permission
+
+Check if user has a specific permission.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.check_permission`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `permission_code` (string, required): Permission code to check
+- `user` (string, optional): User email. Defaults to current user.
+
+**Response:**
+```json
+{
+  "user": "user@example.com",
+  "permission_code": "orders.view",
+  "has_permission": true,
+  "permission_name": "View Orders",
+  "permission_category": "Orders",
+  "department_restricted": true,
+  "granted_by_roles": ["Store Manager", "Buyer"]
+}
+```
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.check_permission \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{"permission_code": "orders.view"}'
+```
+
+---
+
+### Get Role Permissions
+
+Get all permissions for a specific role.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.get_role_permissions`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `role` (string, required): Role name
+
+**Response:**
+```json
+{
+  "role": "Store Manager",
+  "permissions": [
+    {
+      "permission_code": "orders.view",
+      "permission_name": "View Orders",
+      "permission_category": "Orders",
+      "description": "View purchase orders",
+      "department_restricted": true
+    }
+  ],
+  "summary": {
+    "role": "Store Manager",
+    "description": "For general managers with broad access",
+    "is_custom": true,
+    "user_count": 5,
+    "permission_count": 20,
+    "permissions_by_category": {
+      "Orders": 5,
+      "Invoices": 3,
+      "Audits": 4
+    }
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.get_role_permissions \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{"role": "Store Manager"}'
+```
+
+---
+
+### Create Custom Role
+
+Create a new custom role with specified permissions.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.create_custom_role`
+
+**Method:** `POST`
+
+**Parameters:**
+- `role_name` (string, required): Name of the role
+- `permissions` (array, optional): List of permission codes
+- `description` (string, optional): Role description
+
+**Request Body:**
+```json
+{
+  "role_name": "Custom Buyer",
+  "permissions": ["orders.view", "orders.create", "orders.place"],
+  "description": "Custom role for buyers with limited permissions"
+}
+```
+
+**Response:**
+```json
+{
+  "role": "Custom Buyer",
+  "message": "Role Custom Buyer created successfully",
+  "permissions_count": 3
+}
+```
+
+**Permissions Required:** System Manager
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.create_custom_role \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role_name": "Custom Buyer",
+    "permissions": ["orders.view", "orders.create"],
+    "description": "Custom buyer role"
+  }'
+```
+
+---
+
+### Update Role Permissions
+
+Update permissions for an existing role.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.update_role_permissions`
+
+**Method:** `POST`
+
+**Parameters:**
+- `role` (string, required): Role name
+- `permissions` (array, required): List of permission codes
+- `replace` (boolean, optional): If true, replace all permissions. Default: false
+
+**Request Body:**
+```json
+{
+  "role": "Custom Buyer",
+  "permissions": ["orders.edit", "orders.delete"],
+  "replace": false
+}
+```
+
+**Response:**
+```json
+{
+  "role": "Custom Buyer",
+  "message": "Role permissions updated successfully",
+  "permissions_count": 5
+}
+```
+
+**Permissions Required:** System Manager
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.update_role_permissions \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "Custom Buyer",
+    "permissions": ["orders.edit"],
+    "replace": false
+  }'
+```
+
+---
+
+### Revoke Permission
+
+Revoke a specific permission from a role.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.revoke_permission`
+
+**Method:** `POST`
+
+**Parameters:**
+- `role` (string, required): Role name
+- `permission_code` (string, required): Permission code to revoke
+
+**Request Body:**
+```json
+{
+  "role": "Custom Buyer",
+  "permission_code": "orders.delete"
+}
+```
+
+**Response:**
+```json
+{
+  "role": "Custom Buyer",
+  "permission_code": "orders.delete",
+  "message": "Permission revoked successfully",
+  "permissions_count": 4
+}
+```
+
+**Permissions Required:** System Manager
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.revoke_permission \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "Custom Buyer",
+    "permission_code": "orders.delete"
+  }'
+```
+
+---
+
+### Clone Role
+
+Clone an existing role with all its permissions.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.clone_role`
+
+**Method:** `POST`
+
+**Parameters:**
+- `source_role` (string, required): Role to clone from
+- `new_role_name` (string, required): Name for the new role
+- `description` (string, optional): Description for the new role
+
+**Request Body:**
+```json
+{
+  "source_role": "Store Manager",
+  "new_role_name": "Assistant Manager",
+  "description": "Assistant manager with similar permissions"
+}
+```
+
+**Response:**
+```json
+{
+  "role": "Assistant Manager",
+  "source_role": "Store Manager",
+  "message": "Role Assistant Manager cloned from Store Manager",
+  "permissions_count": 20
+}
+```
+
+**Permissions Required:** System Manager
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.clone_role \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_role": "Store Manager",
+    "new_role_name": "Assistant Manager"
+  }'
+```
+
+---
+
+### Search Permissions
+
+Search permissions by name, description, or code.
+
+**Endpoint:** `/api/method/blkshp_os.api.roles.search_permissions`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `query` (string, required): Search query
+
+**Response:**
+```json
+[
+  {
+    "code": "orders.view",
+    "name": "View Orders",
+    "description": "View purchase orders",
+    "category": "Orders",
+    "department_restricted": true
+  }
+]
+```
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.roles.search_permissions \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "order"}'
+```
+
+---
+
+## Permission Categories
+
+The following permission categories are available:
+
+- **Orders** - Purchase order management
+- **Invoices** - Invoice processing and approval
+- **Audits** - Inventory audits and counting
+- **Items** - Product/item management
+- **Vendors** - Vendor management
+- **Recipes** - Recipe creation and management
+- **Transfers** - Inventory transfers between departments
+- **Depletions** - Manual depletion tracking
+- **Reports** - Reporting and analytics
+- **System** - System settings and administration
+- **Director** - Director-level multi-location operations
+
+---
+
+## Standard Roles
+
+The following standard roles are provided as templates:
+
+- **Inventory Taker** - Basic inventory counting
+- **Inventory Administrator** - Full inventory management
+- **Recipe Builder** - Recipe creation and management
+- **Buyer** - Purchase order placement
+- **Receiver** - Order receiving and invoice processing
+- **Bartender** - Bar operations (beverage department)
+- **Store Manager** - General store management
+- **Director** - Multi-location corporate management
+
+---
+
 ## Changelog
+
+### Version 1.1.0 (2025-11-08)
+- Added Roles & Permissions API
+- 70+ granular permissions across 11 categories
+- Custom role creation and management
+- Role cloning and bulk operations
+- Permission search functionality
+- Standard role templates
 
 ### Version 1.0.0 (2025-11-08)
 - Initial release

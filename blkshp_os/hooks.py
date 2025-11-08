@@ -9,7 +9,13 @@ fixtures = [
 	{
 		"dt": "Custom Field",
 		"filters": [
-			["name", "in", ["User-department_permissions", "User-is_team_account"]],
+			["name", "in", [
+				"User-department_permissions",
+				"User-is_team_account",
+				"Role-custom_permissions",
+				"Role-is_custom_role",
+				"Role-role_description"
+			]],
 		],
 	}
 ]
@@ -65,7 +71,8 @@ extend_doctype_class = {
 
 # include js in doctype views
 doctype_js = {
-	"User": "public/js/user.js"
+	"User": "public/js/user.js",
+	"Role": "public/js/role.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
