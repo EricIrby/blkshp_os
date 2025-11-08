@@ -9,11 +9,13 @@ if [[ ! $CURRENT_BRANCH == feature/* ]]; then
     exit 1
 fi
 
-echo "🔄 Merging $CURRENT_BRANCH to main..."
+echo "🔄 Merging $CURRENT_BRANCH into main..."
 
 # Switch to main and update
 git checkout main
-git pull origin main
+if ! git pull origin main; then
+    echo "⚠️  Could not pull latest changes from origin/main"
+fi
 
 # Merge feature branch
 git merge $CURRENT_BRANCH --no-ff -m "Merge $CURRENT_BRANCH into main"
@@ -21,5 +23,5 @@ git merge $CURRENT_BRANCH --no-ff -m "Merge $CURRENT_BRANCH into main"
 # Push to remote
 git push origin main
 
-echo "✅ Merged $CURRENT_BRANCH to main"
+echo "✅ Merged $CURRENT_BRANCH into main"
 echo "💡 You can now switch back to your feature branch: git checkout $CURRENT_BRANCH"

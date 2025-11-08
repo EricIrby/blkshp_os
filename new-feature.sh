@@ -13,7 +13,9 @@ BRANCH="feature/$FEATURE"
 
 # Ensure we're on main and up to date
 git checkout main
-git pull origin main
+if ! git pull origin main; then
+    echo "⚠️  Could not pull latest changes from origin/main"
+fi
 
 # Create new feature branch
 git checkout -b $BRANCH
