@@ -1,0 +1,455 @@
+[
+  {
+    "doctype": "Role",
+    "role_name": "Inventory Taker",
+    "is_custom_role": 1,
+    "role_description": "For users who only count inventory. Limited to audit operations.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.open",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.do",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Inventory Administrator",
+    "is_custom_role": 1,
+    "role_description": "For users who manage inventory counting and audits. Can open, close, and manage audits.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.open",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.do",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.close",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.delete",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view_historic",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.update_price",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Recipe Builder",
+    "is_custom_role": 1,
+    "role_description": "For chefs and kitchen managers who build and modify recipes.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.create",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.edit",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.delete",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Buyer",
+    "is_custom_role": 1,
+    "role_description": "For users responsible for placing purchase orders.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.create",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.edit",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.place",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.view_cost",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "vendors.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Receiver",
+    "is_custom_role": 1,
+    "role_description": "For users who receive orders and process invoices.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.receive",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.mark_received",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.create",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.process",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.ocr_upload",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.ocr_review",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "vendors.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Bartender",
+    "is_custom_role": 1,
+    "role_description": "For bar staff who manage beverages and pours. Limited to beverage department.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.do",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "depletions.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "depletions.create",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Store Manager",
+    "is_custom_role": 1,
+    "role_description": "For general managers with broad access to store operations and reporting.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.create",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.edit",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.place",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.receive",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.view_cost",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.approve",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.view_cost",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.open",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.close",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view_historic",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.edit",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "vendors.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "reports.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "reports.dashboard",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "transfers.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "transfers.approve",
+        "is_granted": 1
+      }
+    ]
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Director",
+    "is_custom_role": 1,
+    "role_description": "For director-level users managing multiple locations with corporate-level access.",
+    "desk_access": 1,
+    "custom_permissions": [
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.view_all_stores",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.manage_stores",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.corporate_vendors",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.corporate_products",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.corporate_recipes",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.store_sync",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "director.reports",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "orders.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "invoices.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "audits.view_historic",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "items.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "vendors.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "recipes.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "reports.view",
+        "is_granted": 1
+      },
+      {
+        "doctype": "Role Permission",
+        "permission_code": "reports.dashboard",
+        "is_granted": 1
+      }
+    ]
+  }
+]
+
