@@ -1,0 +1,100 @@
+{
+	"charts": [],
+	"content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h3\\\" style=\\\"\\\"><a href=\\\"https://blkshp.co\\\" target=\\\"_blank\\\">Open BLKSHP OS Web App</a></span>\",\"col\":12}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"paragraph\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Administration<br></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Department Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Permission Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"System Setup\",\"col\":4}}]",
+	"creation": "2025-11-08 00:00:00.000000",
+	"docstatus": 0,
+	"doctype": "Workspace",
+	"for_user": "",
+	"hide_custom": 0,
+	"icon": "octicon octicon-organization",
+	"idx": 0,
+	"label": "BLKSHP OS",
+	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Department Management",
+			"link_count": 2,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Departments",
+			"link_count": 0,
+			"link_to": "Department",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Department Permissions",
+			"link_count": 0,
+			"link_to": "Department Permission",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Permission Management",
+			"link_count": 2,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Permissions Registry",
+			"link_count": 0,
+			"link_to": "Role Permission",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Role Management",
+			"link_count": 0,
+			"link_to": "Role",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "System Setup",
+			"link_count": 1,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Custom Fields",
+			"link_count": 0,
+			"link_to": "Custom Field",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		}
+	],
+	"modified": "2025-11-08 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "BLKSHP OS",
+	"name": "BLKSHP OS",
+	"owner": "Administrator",
+	"parent_page": "",
+	"public": 1,
+	"quick_lists": [],
+	"roles": [],
+	"sequence_id": 1,
+	"shortcuts": [],
+	"title": "BLKSHP OS"
+}
