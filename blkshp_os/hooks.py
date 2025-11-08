@@ -5,6 +5,27 @@ app_description = "A business operating system for hospitality companiies"
 app_email = "blkshp-os@blkshp.co"
 app_license = "mit"
 
+fixtures = [
+	{
+		"dt": "Custom Field",
+		"filters": [
+			["name", "in", ["User-department_permissions", "User-is_team_account"]],
+		],
+	}
+]
+
+# Permissions
+# -----------
+permission_query_conditions = {
+	"Department": "blkshp_os.permissions.query.department_permission_query",
+}
+
+# Extend DocType Class
+# ------------------------------
+extend_doctype_class = {
+	"User": "blkshp_os.permissions.user.UserPermissionMixin",
+}
+
 # Apps
 # ------------------
 
@@ -43,7 +64,9 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"User": "public/js/user.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}

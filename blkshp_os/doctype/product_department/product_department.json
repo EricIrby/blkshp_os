@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "creation": "2025-11-07 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "department",
+  "is_primary",
+  "column_break_1",
+  "default_storage_area",
+  "section_inventory",
+  "par_level",
+  "column_break_2",
+  "order_quantity"
+ ],
+ "fields": [
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_primary",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Primary"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_storage_area",
+   "fieldtype": "Link",
+   "label": "Default Storage Area",
+   "options": "Storage Area"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_inventory",
+   "fieldtype": "Section Break",
+   "label": "Inventory Settings"
+  },
+  {
+   "fieldname": "par_level",
+   "fieldtype": "Float",
+   "label": "Par Level",
+   "precision": "3"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "order_quantity",
+   "fieldtype": "Float",
+   "label": "Order Quantity",
+   "precision": "3"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-07 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Departments",
+ "name": "Product Department",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
+
