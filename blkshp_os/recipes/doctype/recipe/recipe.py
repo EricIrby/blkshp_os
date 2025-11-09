@@ -19,6 +19,7 @@ class Recipe(Document):
 	def validate(self) -> None:
 		self._ensure_department()
 		self._ensure_ingredients_present()
+		self._ensure_output_product()
 		self._ensure_unique_code()
 		self._ensure_no_self_reference()
 		self._ensure_positive_yield()
@@ -39,6 +40,22 @@ class Recipe(Document):
 	def _ensure_department(self) -> None:
 		if not self.department:
 			frappe.throw(_("Recipes must be assigned to a department."))
+
+	def _ensure_output_product(self) -> None:
+		if self.is_prep_item or (self.recipe_type or "").lower() == "prep":
+			if not self.output_product:
+				frappe.throw(_("Prep recipes require an output product."))
+
+		if self.output_product:
+			product_department = frappe.db.get_value("Product", self.output_product, "default_department")
+			if product_department and self.department and product_department != self.department:
+				frappe.throw(
+					_("Output product {0} belongs to department {1}, which does not match recipe department {2}.").format(
+						self.output_product,
+						product_department,
+						self.department,
+					)
+				)
 
 	def _ensure_positive_yield(self) -> None:
 		if (self.yield_quantity or 0) <= 0:

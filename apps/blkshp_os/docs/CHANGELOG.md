@@ -8,4 +8,5 @@
 - Documented DocType structure requirements and ensured Based Pyright is configured with local stubs.
 - Shipped `Inventory Balance` and `Inventory Audit` DocTypes, including helpers that generate counting tasks, close audits, and persist the resulting inventory balances.
 - Added `Recipe` and `Recipe Ingredient` DocTypes with automatic costing, subrecipe support, parent recipe refresh, and accompanying documentation.
+- Introduced `Recipe Batch` with variance tracking, automated inventory movements, and documentation.
 

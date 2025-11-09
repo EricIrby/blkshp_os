@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:{recipe}-{#####}",
+ "creation": "2025-11-09 00:20:00",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "recipe",
+  "batch_date",
+  "department",
+  "company",
+  "produced_quantity",
+  "produced_unit",
+  "notes",
+  "section_break_ingredients",
+  "ingredients"
+ ],
+ "fields": [
+  {
+   "fieldname": "recipe",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Recipe",
+   "options": "Recipe",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "batch_date",
+   "fieldtype": "Date",
+   "label": "Batch Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "default": "1",
+   "fieldname": "produced_quantity",
+   "fieldtype": "Float",
+   "label": "Produced Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "produced_unit",
+   "fieldtype": "Data",
+   "label": "Produced Unit"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "section_break_ingredients",
+   "fieldtype": "Section Break",
+   "label": "Ingredients"
+  },
+  {
+   "fieldname": "ingredients",
+   "fieldtype": "Table",
+   "label": "Batch Ingredients",
+   "options": "Recipe Batch Ingredient"
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-09 00:20:00",
+ "modified_by": "Administrator",
+ "module": "Recipes",
+ "name": "Recipe Batch",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
+

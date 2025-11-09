@@ -14,6 +14,7 @@
   "is_prep_item",
   "company",
   "department",
+  "output_product",
   "yield_quantity",
   "yield_unit",
   "ingredients",
@@ -62,6 +63,12 @@
    "label": "Department",
    "options": "Department",
    "reqd": 1
+  },
+  {
+   "fieldname": "output_product",
+   "fieldtype": "Link",
+   "label": "Output Product",
+   "options": "Product"
   },
   {
    "default": "1",

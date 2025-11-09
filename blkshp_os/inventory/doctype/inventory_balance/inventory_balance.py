@@ -62,6 +62,44 @@ class InventoryBalance(Document):
 		"""Adjust the balance by the delta supplied."""
 		self.quantity = (self.quantity or 0) + quantity_delta
 
+	@classmethod
+	def apply_delta(
+		cls,
+		product: str,
+		department: str,
+		company: str,
+		delta: float,
+		*,
+		last_audit_date: str | None = None,
+	) -> "InventoryBalance":
+		"""Apply a quantity delta to an existing balance, creating it if missing."""
+		existing_name = frappe.db.exists(
+			"Inventory Balance",
+			{
+				"product": product,
+				"department": department,
+				"company": company,
+			},
+		)
+		if existing_name:
+			doc: InventoryBalance = frappe.get_doc("Inventory Balance", existing_name)
+		else:
+			doc = frappe.get_doc(
+				{
+					"doctype": "Inventory Balance",
+					"product": product,
+					"department": department,
+					"company": company,
+					"quantity": 0,
+				}
+			)
+
+		doc.apply_adjustment(float(delta or 0))
+		if last_audit_date:
+			doc.last_audit_date = last_audit_date
+		doc.save(ignore_permissions=True)
+		return doc
+
 	def _ensure_required_fields(self) -> None:
 		if not self.product:
 			frappe.throw(_("Product is required."))
