@@ -162,13 +162,20 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Department Permission": {
+		"validate": "blkshp_os.permissions.doctype.department_permission.department_permission.run_department_permission_validation",
+	},
+	"User": {
+		"validate": "blkshp_os.permissions.doctype.department_permission.department_permission.validate_user_department_permissions",
+	},
+	"Role Permission": {
+		"validate": "blkshp_os.permissions.doctype.role_permission.role_permission.run_role_permission_validation",
+	},
+	"Role": {
+		"validate": "blkshp_os.permissions.doctype.role_permission.role_permission.validate_role_permissions",
+	},
+}
 
 # Scheduled Tasks
 # ---------------

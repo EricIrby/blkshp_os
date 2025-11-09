@@ -7,9 +7,14 @@ from frappe.tests.utils import FrappeTestCase  # type: ignore[import]
 
 class TestProductDepartment(FrappeTestCase):
 	"""Test Product Department validation and functionality."""
+	_is_doctype_reloaded = False
 
 	def setUp(self) -> None:
 		super().setUp()
+		if not self.__class__._is_doctype_reloaded:
+			frappe.clear_cache(doctype="Department")
+			frappe.reload_doc("departments", "doctype", "department")
+			self.__class__._is_doctype_reloaded = True
 		self.company = self._ensure_company()
 		self.department_a = self._create_department("DEPT-A", "Department A")
 		self.department_b = self._create_department("DEPT-B", "Department B")
@@ -66,16 +71,18 @@ class TestProductDepartment(FrappeTestCase):
 		pass
 
 	def _ensure_company(self, name: str = "Test Company Prod Dept") -> str:
-		if frappe.db.exists("Company", {"company_name": name}):
-			return name
+		existing = frappe.db.exists("Company", {"company_name": name})
+		if existing:
+			return existing
 
 		company = frappe.get_doc({
 			"doctype": "Company",
 			"company_name": name,
+			"company_code": "".join(part[0] for part in name.split() if part).upper()[:8] or "COMP",
 			"default_currency": "USD"
 		})
 		company.insert(ignore_permissions=True)
-		return name
+		return company.name
 
 	def _create_department(self, code: str, name: str) -> frappe.Document:
 		department = frappe.get_doc({

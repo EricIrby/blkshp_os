@@ -1,0 +1,106 @@
+{
+ "actions": [],
+ "creation": "2025-11-08 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "purchase_unit",
+  "vendor",
+  "pack_size_description",
+  "column_break_1",
+  "conversion_to_primary_cu",
+  "minimum_order_qty",
+  "column_break_2",
+  "price",
+  "contract_price",
+  "is_preferred",
+  "active",
+  "vendor_sku"
+ ],
+ "fields": [
+  {
+   "fieldname": "purchase_unit",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Purchase Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vendor",
+   "options": "Vendor",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pack_size_description",
+   "fieldtype": "Data",
+   "label": "Pack Size Description"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Number of primary count units per purchase unit",
+   "fieldname": "conversion_to_primary_cu",
+   "fieldtype": "Float",
+   "label": "Conversion to Primary CU",
+   "precision": "3",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "minimum_order_qty",
+   "fieldtype": "Float",
+   "label": "Minimum Order Qty",
+   "precision": "3"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price"
+  },
+  {
+   "default": "0",
+   "fieldname": "contract_price",
+   "fieldtype": "Currency",
+   "label": "Contract Price"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_preferred",
+   "fieldtype": "Check",
+   "label": "Preferred"
+  },
+  {
+   "default": "1",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "label": "Active"
+  },
+  {
+   "fieldname": "vendor_sku",
+   "fieldtype": "Data",
+   "label": "Vendor SKU"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-08 20:12:10.636701",
+ "modified_by": "Administrator",
+ "module": "Products",
+ "name": "Product Purchase Unit",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -43,8 +43,8 @@ You are an AI development assistant working on the **BLKSHP Product Platform**, 
    - Shared patterns
    - Integration points
 
-4. **00-ARCHITECTURE/01-Architecture-Design.md**
-   - Core architecture
+4. **00-ARCHITECTURE/01-App-Structure.md**
+   - Current architecture
    - Department-based model
    - Multi-tenancy structure
 
@@ -198,28 +198,33 @@ You are an AI development assistant working on the **BLKSHP Product Platform**, 
    - Use shared utilities
    - Maintain consistency
 
-2. **Implement Complete Functionality**
+2. **Create DocType Module Structure**
+   - For every new DocType, create the Python controller file (`doctype/<doctype>/<doctype>.py`) even if it only contains a stub class
+   - Ensure `__init__.py` exists in each new module directory so imports resolve
+   - After modifying DocType fields, export the DocType JSON via `bench export-doc` so source control stays in sync
+
+3. **Implement Complete Functionality**
    - Complete method implementations
    - Add error handling
    - Add validation rules
    - Add permission checks
    - Add department filtering
 
-3. **Ensure Interoperability**
+4. **Ensure Interoperability**
    - Support department filtering
    - Use shared data models
    - Follow unit conversion patterns
    - Respect permissions
    - Integrate with dependent domains
 
-4. **Write Clean Code**
+5. **Write Clean Code**
    - Follow Python/JavaScript best practices
    - Follow Frappe code style
    - Add comments for complex logic
    - Use descriptive variable names
    - Write self-documenting code
 
-5. **Handle Edge Cases**
+6. **Handle Edge Cases**
    - Handle missing data
    - Handle invalid inputs
    - Handle permission errors
@@ -723,7 +728,7 @@ Alternatives considered:
 - [ ] Read PROJECT-CONTEXT.md
 - [ ] Read AGENT-INSTRUCTIONS.md (this document)
 - [ ] Read CROSS-DOMAIN-REFERENCE.md
-- [ ] Read 00-ARCHITECTURE/01-Architecture-Design.md
+- [ ] Read 00-ARCHITECTURE/01-App-Structure.md
 - [ ] Read your domain's README.md
 - [ ] Read function documents you're implementing
 

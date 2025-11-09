@@ -1,0 +1,277 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:product_code",
+ "creation": "2025-11-08 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "product_name",
+  "product_code",
+  "product_type",
+  "active",
+  "company",
+  "section_classification",
+  "category",
+  "subcategory",
+  "tags",
+  "section_units",
+  "primary_count_unit",
+  "volume_conversion_unit",
+  "volume_conversion_factor",
+  "weight_conversion_unit",
+  "weight_conversion_factor",
+  "section_purchase",
+  "preferred_vendor",
+  "preferred_purchase_unit",
+  "purchase_units",
+  "section_departments",
+  "default_department",
+  "departments",
+  "section_properties",
+  "is_generic",
+  "is_non_inventory",
+  "is_prep_item",
+  "linked_product",
+  "substitute_items",
+  "section_storage",
+  "storage_areas",
+  "bin_location",
+  "gl_code",
+  "image"
+ ],
+ "fields": [
+  {
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Product Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Product Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Food",
+   "fieldname": "product_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Product Type",
+   "options": "Food\nBeverage\nSupply\nEquipment\nOther"
+  },
+  {
+   "default": "1",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_classification",
+   "fieldtype": "Section Break",
+   "label": "Classification"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Product Category"
+  },
+  {
+   "fieldname": "subcategory",
+   "fieldtype": "Link",
+   "label": "Subcategory",
+   "options": "Product Category"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Table",
+   "label": "Tags",
+   "options": "Product Tag"
+  },
+  {
+   "fieldname": "section_units",
+   "fieldtype": "Section Break",
+   "label": "Count Units"
+  },
+  {
+   "fieldname": "primary_count_unit",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Primary Count Unit",
+   "options": "each\ncase\nlb\nkg\noz\nfl oz\nml\nliter\ngallon\nbottle",
+   "reqd": 1
+  },
+  {
+   "fieldname": "volume_conversion_unit",
+   "fieldtype": "Select",
+   "label": "Volume Conversion Unit",
+   "options": "fl oz\nml\nliter\npint\nquart\ngallon"
+  },
+  {
+   "description": "1 primary unit = X volume unit",
+   "fieldname": "volume_conversion_factor",
+   "fieldtype": "Float",
+   "label": "Volume Conversion Factor",
+   "precision": "3"
+  },
+  {
+   "fieldname": "weight_conversion_unit",
+   "fieldtype": "Select",
+   "label": "Weight Conversion Unit",
+   "options": "oz\nlb\ng\nkg"
+  },
+  {
+   "description": "1 primary unit = X weight unit",
+   "fieldname": "weight_conversion_factor",
+   "fieldtype": "Float",
+   "label": "Weight Conversion Factor",
+   "precision": "3"
+  },
+  {
+   "fieldname": "section_purchase",
+   "fieldtype": "Section Break",
+   "label": "Purchase"
+  },
+  {
+   "fieldname": "preferred_vendor",
+   "fieldtype": "Link",
+   "label": "Preferred Vendor",
+   "options": "Vendor"
+  },
+  {
+   "fieldname": "preferred_purchase_unit",
+   "fieldtype": "Link",
+   "label": "Preferred Purchase Unit",
+   "options": "Product Purchase Unit"
+  },
+  {
+   "fieldname": "purchase_units",
+   "fieldtype": "Table",
+   "label": "Purchase Units",
+   "options": "Product Purchase Unit"
+  },
+  {
+   "fieldname": "section_departments",
+   "fieldtype": "Section Break",
+   "label": "Departments"
+  },
+  {
+   "fieldname": "default_department",
+   "fieldtype": "Link",
+   "label": "Default Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "departments",
+   "fieldtype": "Table",
+   "label": "Department Allocations",
+   "options": "Product Department"
+  },
+  {
+   "fieldname": "section_properties",
+   "fieldtype": "Section Break",
+   "label": "Properties"
+  },
+  {
+   "fieldname": "is_generic",
+   "fieldtype": "Check",
+   "label": "Generic Item"
+  },
+  {
+   "fieldname": "is_non_inventory",
+   "fieldtype": "Check",
+   "label": "Non-Inventory Item"
+  },
+  {
+   "fieldname": "is_prep_item",
+   "fieldtype": "Check",
+   "label": "Prep Item"
+  },
+  {
+   "fieldname": "linked_product",
+   "fieldtype": "Link",
+   "label": "Linked Product",
+   "options": "Product"
+  },
+  {
+   "fieldname": "substitute_items",
+   "fieldtype": "Table",
+   "label": "Substitute Items",
+   "options": "Product Substitute Item"
+  },
+  {
+   "fieldname": "section_storage",
+   "fieldtype": "Section Break",
+   "label": "Storage & Metadata"
+  },
+  {
+   "fieldname": "storage_areas",
+   "fieldtype": "Table",
+   "label": "Storage Areas",
+   "options": "Product Storage Area"
+  },
+  {
+   "fieldname": "bin_location",
+   "fieldtype": "Data",
+   "label": "Bin / Shelf Location"
+  },
+  {
+   "fieldname": "gl_code",
+   "fieldtype": "Link",
+   "label": "GL Code",
+   "options": "Account"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  }
+ ],
+ "links": [],
+ "modified": "2025-11-08 20:12:10.463972",
+ "modified_by": "Administrator",
+ "module": "Products",
+ "name": "Product",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "product_name,product_code,category",
+ "sort_field": "product_name",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "product_name",
+ "track_changes": 1,
+ "track_seen": 1
+}

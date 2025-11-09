@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2025-11-07 00:00:00.000000",
+ "creation": "2025-11-07 23:51:39.904540",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -66,14 +66,14 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-11-07 00:00:00.000000",
+ "modified": "2025-11-08 21:01:25.740929",
  "modified_by": "Administrator",
  "module": "Departments",
  "name": "Product Department",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
 }
-

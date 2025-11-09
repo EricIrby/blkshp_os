@@ -59,11 +59,23 @@ class Department(Document):
 	"""Department master - foundation for department-based segmentation."""
 
 	def autoname(self) -> None:
-		"""Use normalized department code as the document name."""
+		"""Generate a unique name per company using the normalized department code."""
 		code = self._normalized_code()
 		if not code:
 			raise frappe.ValidationError(_("Department Code is required to name the record."))
-		self.name = code
+
+		company = (self.company or "").strip()
+		if not company:
+			raise frappe.ValidationError(_("Company is required before naming the department."))
+
+		company_code = (
+			frappe.db.get_value("Company", company, "company_code") or company
+		)
+		company_code = (company_code or "").strip().upper().replace(" ", "-")
+		if not company_code:
+			raise frappe.ValidationError(_("Company Code is required to name the department."))
+
+		self.name = f"{code}-{company_code}"
 
 	def validate(self) -> None:
 		self._normalize_fields()
@@ -97,7 +109,7 @@ class Department(Document):
 		"""Ensure department code is unique within company (case-insensitive)."""
 		code = self._normalized_code()
 		filters = {"department_code": code, "company": self.company}
-		if self.name:
+		if self.name and not self.is_new():
 			filters["name"] = ("!=", self.name)
 
 		if frappe.db.exists("Department", filters):

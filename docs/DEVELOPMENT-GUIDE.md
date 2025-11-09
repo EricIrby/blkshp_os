@@ -471,6 +471,12 @@ Based on dependencies and development phases, here's the recommended order for d
 - [ ] Follow Frappe best practices
 - [ ] Use type hints where appropriate
 
+**DocType & Module Structure:**
+- [ ] For every DocType created, add the Python controller file (even if empty) inside `doctype/<doctype>/<doctype>.py`
+- [ ] Ensure `__init__.py` exists in each new module directory
+- [ ] Keep DocType JSON definitions in sync by exporting via `bench export-doc`
+- [ ] Update fixtures if new fixtures are required
+
 **Architecture Compliance:**
 - [ ] Support department filtering in all queries
 - [ ] Respect department permissions

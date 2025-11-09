@@ -27,13 +27,11 @@ def get_user_roles(user: str | None = None) -> list[str]:
 
 def has_role(user: str | None = None, role: str | None = None) -> bool:
 	"""Check if user has a specific role."""
-	if not user:
-		user = frappe.session.user
-
 	if not role:
 		return False
 
-	return frappe.has_role(role, user=user)
+	roles = get_user_roles(user)
+	return role in roles
 
 
 def get_role_permissions(role: str) -> list[dict[str, Any]]:
@@ -121,7 +119,7 @@ def has_permission(
 		return False
 
 	# System Manager and Administrator have all permissions
-	if frappe.has_role("System Manager", user=user) or frappe.has_role("Administrator", user=user):
+	if has_role(user, "System Manager") or has_role(user, "Administrator"):
 		return True
 
 	# Validate permission code
@@ -158,7 +156,7 @@ def has_any_permission(
 		return False
 
 	# System Manager and Administrator have all permissions
-	if frappe.has_role("System Manager", user=user) or frappe.has_role("Administrator", user=user):
+	if has_role(user, "System Manager") or has_role(user, "Administrator"):
 		return True
 
 	for code in permission_codes:
@@ -180,7 +178,7 @@ def has_all_permissions(
 		return True
 
 	# System Manager and Administrator have all permissions
-	if frappe.has_role("System Manager", user=user) or frappe.has_role("Administrator", user=user):
+	if has_role(user, "System Manager") or has_role(user, "Administrator"):
 		return True
 
 	for code in permission_codes:

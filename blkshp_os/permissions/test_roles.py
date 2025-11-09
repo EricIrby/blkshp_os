@@ -9,9 +9,13 @@ from blkshp_os.permissions import roles as role_service
 
 class TestRolesService(FrappeTestCase):
 	"""Test role management service functions."""
+	_is_role_setup_done = False
 
 	def setUp(self) -> None:
 		super().setUp()
+		if not self.__class__._is_role_setup_done:
+			self._ensure_role_customizations()
+			self.__class__._is_role_setup_done = True
 		self.test_user = self._ensure_user("roles_test@example.com")
 		self.test_role = self._create_role("Test Role Service")
 
@@ -218,4 +222,58 @@ class TestRolesService(FrappeTestCase):
 		})
 		role.insert(ignore_permissions=True)
 		return role_name
+
+	def _ensure_role_customizations(self) -> None:
+		"""Ensure Role DocType has custom fields and child table used by the service."""
+		frappe.clear_cache(doctype="Role")
+		frappe.reload_doc("permissions", "doctype", "role_permission")
+
+		custom_fields = [
+			{
+				"fieldname": "custom_permissions",
+				"label": "Custom Permissions",
+				"fieldtype": "Table",
+				"insert_after": "desk_access",
+				"options": "Role Permission",
+				"description": "Custom application permissions for this role",
+			},
+			{
+				"fieldname": "is_custom_role",
+				"label": "Is Custom Role",
+				"fieldtype": "Check",
+				"insert_after": "custom_permissions",
+				"description": "Mark as custom role (not a Frappe standard role)",
+				"default": "0",
+			},
+			{
+				"fieldname": "role_description",
+				"label": "Role Description",
+				"fieldtype": "Small Text",
+				"insert_after": "is_custom_role",
+				"description": "Description of this role's purpose and permissions",
+			},
+		]
+
+		for field in custom_fields:
+			if not frappe.db.exists(
+				"Custom Field",
+				{"dt": "Role", "fieldname": field["fieldname"]},
+			):
+				doc = frappe.get_doc(
+					{
+						"doctype": "Custom Field",
+						"dt": "Role",
+						"fieldname": field["fieldname"],
+						"label": field["label"],
+						"fieldtype": field["fieldtype"],
+						"insert_after": field.get("insert_after"),
+						"options": field.get("options"),
+						"default": field.get("default"),
+						"description": field.get("description"),
+					}
+				)
+				doc.insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+		frappe.clear_cache(doctype="Role")
+		frappe.get_meta("Role", cached=False)
 

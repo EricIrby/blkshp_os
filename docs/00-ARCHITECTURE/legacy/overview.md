@@ -1,5 +1,7 @@
 # Project Overview
 
+> **Legacy Reference:** This document is preserved for historical context. Current guidance lives in `docs/README.md` and `00-ARCHITECTURE/01-App-Structure.md`.
+
 ## Executive Summary
 
 ### Project Overview

@@ -7,6 +7,7 @@ import frappe  # type: ignore[import]
 from frappe.tests.utils import FrappeTestCase  # type: ignore[import]
 
 from blkshp_os.api import departments as dept_api
+from blkshp_os.permissions import service as permission_service
 
 
 class TestDepartmentsAPI(FrappeTestCase):
@@ -15,6 +16,7 @@ class TestDepartmentsAPI(FrappeTestCase):
 	def setUp(self) -> None:
 		super().setUp()
 		self.company = self._ensure_company()
+		self._ensure_role("System User")
 		self.user = self._ensure_user("api_test@example.com")
 		self.department_a = self._create_department("API-A", "API Test Department A")
 		self.department_b = self._create_department("API-B", "API Test Department B")
@@ -144,32 +146,67 @@ class TestDepartmentsAPI(FrappeTestCase):
 		self.assertEqual(details["department"]["name"], self.department_b.name)
 
 	def _ensure_company(self, name: str = "Test Company API") -> str:
-		if frappe.db.exists("Company", {"company_name": name}):
-			return name
+		existing = frappe.db.exists("Company", {"company_name": name})
+		if existing:
+			return existing
 
+		code = "".join(part[0] for part in name.split() if part).upper()[:8] or "COMP"
 		company = frappe.get_doc({
 			"doctype": "Company",
 			"company_name": name,
-			"default_currency": "USD"
+			"company_code": code,
+			"default_currency": "USD",
 		})
 		company.insert(ignore_permissions=True)
-		return name
+		return company.name
 
 	def _ensure_user(self, email: str) -> str:
-		if frappe.db.exists("User", email):
-			return email
+		if not frappe.db.exists("User", email):
+			user = frappe.get_doc({
+				"doctype": "User",
+				"email": email,
+				"first_name": "API",
+				"last_name": "Test",
+				"enabled": 1,
+				"roles": [
+					{
+						"role": "System User",
+					}
+				],
+				"send_welcome_email": 0,
+			})
+			user.insert(ignore_permissions=True)
+		else:
+			user = frappe.get_doc("User", email)
+			if not any(role.role == "System User" for role in user.roles):
+				user.append("roles", {"role": "System User"})
+				user.save(ignore_permissions=True)
 
-		user = frappe.get_doc({
-			"doctype": "User",
-			"email": email,
-			"first_name": "API",
-			"last_name": "Test",
-			"send_welcome_email": 0
-		})
-		user.insert(ignore_permissions=True)
 		return email
 
+	def _ensure_role(self, role_name: str) -> None:
+		if frappe.db.exists("Role", role_name):
+			return
+		role = frappe.get_doc(
+			{
+				"doctype": "Role",
+				"role_name": role_name,
+				"desk_access": 0,
+			}
+		)
+		role.insert(ignore_permissions=True)
+
 	def _create_department(self, code: str, name: str) -> frappe.Document:
+		existing = frappe.db.exists(
+			"Department",
+			{
+				"department_code": code,
+				"company": self.company,
+			},
+		)
+		if existing:
+			return frappe.get_doc("Department", existing)
+
 		department = frappe.get_doc({
 			"doctype": "Department",
 			"department_code": code,
@@ -185,12 +222,19 @@ class TestDepartmentsAPI(FrappeTestCase):
 		self,
 		user: str,
 		department: str,
-		**flags: int
+		**flags: int,
 	) -> None:
-		user_doc = frappe.get_doc("User", user)
-		user_doc.append("department_permissions", {
-			"department": department,
-			**flags
-		})
-		user_doc.save(ignore_permissions=True)
+		default_flags = {flag: 0 for flag in permission_service.get_permission_flags()}
+		default_flags.update(flags)
+		permission = frappe.get_doc(
+			{
+				"doctype": "Department Permission",
+				"parent": user,
+				"parenttype": "User",
+				"parentfield": "department_permissions",
+				"department": department,
+				**default_flags,
+			}
+		)
+		permission.insert(ignore_permissions=True)
 

@@ -37,9 +37,11 @@ This directory contains foundational architecture documentation for BLKSHP OS.
 
 ### Legacy/Reference
 
-- **00-Overview.md** - Historical: Executive summary (consolidated into docs/README.md)
-- **01-Architecture-Design.md** - Historical: Core architecture (reference)
-- **02-Application-Structure.md** - Historical: Old structure (superseded by 01-App-Structure.md)
+Historical documents are preserved under `legacy/`:
+
+- **legacy/overview.md** - Executive summary (consolidated into docs/README.md)
+- **legacy/architecture-design.md** - Core architecture reference
+- **legacy/application-structure.md** - Previous structure guide (superseded by 01-App-Structure.md)
 
 ---
 
@@ -55,7 +57,7 @@ This directory contains foundational architecture documentation for BLKSHP OS.
 ### For Architecture Decisions
 
 1. **01-App-Structure.md** - Current implementation
-2. **01-Architecture-Design.md** - Core design principles
+2. **legacy/architecture-design.md** - Core design principles
 3. **04-Separate-Frontend.md** - Future SPA considerations (if needed)
 
 ### For Future SPA Migration
@@ -97,6 +99,13 @@ Code is organized by business domain:
 - `products/` - Product management (future)
 - `inventory/` - Inventory tracking (future)
 - etc.
+
+### First-Class DocTypes (No External Dependencies)
+
+- BLKSHP OS ships with **all** DocTypes needed for the platform inside this repository.
+- Do not rely on ERPNext, Helpdesk, or any other app for core masters (e.g., `Company`, `Vendor`, `Item`).
+- If additional masters are required, create them under the appropriate domain (`blkshp_os/<domain>/doctype/<doctype>/`), include the JSON, controller, and tests, and export the DocType via `bench export-doc`.
+- Integrations with external systems should be done via APIs, not by reusing their DocTypes inside this app.
 
 ### When to Consult These Docs
 

@@ -1,0 +1,45 @@
+{
+ "actions": [],
+ "creation": "2025-11-08 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "substitute_product",
+  "priority",
+  "is_preferred"
+ ],
+ "fields": [
+  {
+   "fieldname": "substitute_product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Substitute Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "label": "Priority"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_preferred",
+   "fieldtype": "Check",
+   "label": "Preferred"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-08 20:12:10.379327",
+ "modified_by": "Administrator",
+ "module": "Products",
+ "name": "Product Substitute Item",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "priority",
+ "sort_order": "ASC",
+ "states": []
+}

@@ -7,9 +7,18 @@ from frappe.tests.utils import FrappeTestCase  # type: ignore[import]
 
 class TestDepartmentPermission(FrappeTestCase):
 	"""Test Department Permission validation and functionality."""
+	_is_doctype_reloaded = False
 
 	def setUp(self) -> None:
 		super().setUp()
+		if not self.__class__._is_doctype_reloaded:
+			frappe.reload_doc("permissions", "doctype", "department_permission")
+			frappe.clear_cache(doctype="Department")
+			frappe.reload_doc("departments", "doctype", "department")
+			frappe.reload_doc("core", "doctype", "user")
+			frappe.reload_doc("core", "doctype", "user_role")
+			self._ensure_user_customizations()
+			self.__class__._is_doctype_reloaded = True
 		self.company = self._ensure_company()
 		self.user = self._ensure_user("dept_perm_test@example.com")
 		self.department = self._create_department("TESTDEPT", "Test Department")
@@ -104,16 +113,19 @@ class TestDepartmentPermission(FrappeTestCase):
 		self.assertEqual(user_doc.department_permissions[0].can_write, 1)
 
 	def _ensure_company(self, name: str = "Test Company Dept Perm") -> str:
-		if frappe.db.exists("Company", {"company_name": name}):
-			return name
+		existing = frappe.db.exists("Company", {"company_name": name})
+		if existing:
+			return existing
 
+		code = "".join(part[0] for part in name.split() if part).upper()[:8] or "COMP"
 		company = frappe.get_doc({
 			"doctype": "Company",
 			"company_name": name,
+			"company_code": code,
 			"default_currency": "USD"
 		})
 		company.insert(ignore_permissions=True)
-		return name
+		return company.name
 
 	def _ensure_user(self, email: str) -> str:
 		if frappe.db.exists("User", email):
@@ -130,6 +142,13 @@ class TestDepartmentPermission(FrappeTestCase):
 		return email
 
 	def _create_department(self, code: str, name: str) -> frappe.Document:
+		existing = frappe.db.exists(
+			"Department",
+			{"department_code": code, "company": self.company},
+		)
+		if existing:
+			return frappe.get_doc("Department", existing)
+
 		department = frappe.get_doc({
 			"doctype": "Department",
 			"department_code": code,
@@ -140,4 +159,29 @@ class TestDepartmentPermission(FrappeTestCase):
 		})
 		department.insert(ignore_permissions=True)
 		return department
+
+	@classmethod
+	def _ensure_user_customizations(cls) -> None:
+		from frappe.custom.doctype.custom_field.custom_field import create_custom_field
+
+		if not frappe.db.exists(
+			"Custom Field",
+			{"dt": "User", "fieldname": "department_permissions"},
+		):
+			create_custom_field(
+				"User",
+				{
+					"doctype": "Custom Field",
+					"fieldname": "department_permissions",
+					"label": "Department Permissions",
+					"fieldtype": "Table",
+					"insert_after": "roles",
+					"options": "Department Permission",
+					"reqd": 0,
+				},
+				ignore_validate=True,
+				is_system_generated=False,
+			)
+
+		frappe.clear_cache(doctype="User")
 

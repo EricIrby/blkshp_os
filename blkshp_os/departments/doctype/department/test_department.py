@@ -15,9 +15,14 @@ from blkshp_os.departments.doctype.department.department import (
 
 class TestDepartment(FrappeTestCase):
 	"""Exercise core validation and helper utilities for the Department DocType."""
+	_is_doctype_reloaded = False
 
 	def setUp(self) -> None:
 		super().setUp()
+		if not self.__class__._is_doctype_reloaded:
+			frappe.clear_cache(doctype="Department")
+			frappe.reload_doc("departments", "doctype", "department")
+			self.__class__._is_doctype_reloaded = True
 		self.company = self._ensure_company()
 
 	def tearDown(self) -> None:
@@ -127,18 +132,20 @@ class TestDepartment(FrappeTestCase):
 		permission.insert(ignore_permissions=True)
 
 	def _ensure_company(self, name: str = "Test Company 1") -> str:
-		if frappe.db.exists("Company", {"company_name": name}):
-			return name
+		existing = frappe.db.exists("Company", {"company_name": name})
+		if existing:
+			return existing
 
 		company = frappe.get_doc(
 			{
 				"doctype": "Company",
 				"company_name": name,
+				"company_code": "".join(part[0] for part in name.split() if part).upper()[:8] or "COMP",
 				"default_currency": "USD",
 			}
 		)
 		company.insert(ignore_permissions=True)
-		return name
+		return company.name
 
 	def _ensure_user(self, email: str) -> str:
 		if frappe.db.exists("User", email):

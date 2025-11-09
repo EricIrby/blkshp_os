@@ -1,5 +1,7 @@
 # Architecture Design
 
+> **Legacy Reference:** Retained for historical design notes. For current architecture, see `00-ARCHITECTURE/01-App-Structure.md`.
+
 ## Multi-Tenancy Structure
 
 Frappe's native Company hierarchy maps to BLKSHP's Director/Store structure, with **Department-based segmentation** instead of separate platforms:

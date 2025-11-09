@@ -33,6 +33,7 @@ BLKSHP OS is a **traditional Frappe Desk application** that leverages Frappe's b
 - **Client Scripts** - JavaScript enhancements for forms (.js files)
 - **Server Scripts** - Python automation and workflows
 - **REST API** - Auto-generated + custom whitelisted methods
+- **First-Class DocTypes** - Every business entity lives under `blkshp_os` (no reliance on ERPNext or other apps)
 
 ### Access Points
 
@@ -378,6 +379,7 @@ permissions/
 - Located at `blkshp_os/domain_name/`
 - Contain DocTypes, services, and tests
 - Examples: `departments/`, `permissions/`, `products/`
+- Must include the full DocType stack (JSON, controller, tests). BLKSHP OS does **not** depend on DocTypes shipped by ERPNext/Helpdesk/etc.; if the platform needs `Company`, `Vendor`, or similar masters they must be defined inside this app (e.g. `director/doctype/company`).
 
 **Frappe Modules** (metadata):
 - Organize DocTypes in Frappe UI
@@ -436,6 +438,8 @@ doctype_name/
 ├── doctype_name.js             # Client-side form scripts (optional)
 └── test_doctype_name.py        # Unit tests (optional)
 ```
+
+> **Important:** Always create the controller (`doctype_name.py`) and export the JSON. Stubs are acceptable, but the files must exist so installations that only include BLKSHP OS can migrate without pulling in other apps.
 
 ### Python Controller (`doctype_name.py`)
 

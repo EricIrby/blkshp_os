@@ -1,5 +1,7 @@
 # Application Structure
 
+> **Legacy Reference:** Superseded by `00-ARCHITECTURE/01-App-Structure.md`. Consult the new guide for the current layout.
+
 ## Frappe App Layout
 
 The `blkshp_os` repository follows the standard Frappe pattern. The Desk workspace ships inside the `blkshp_os` module (`blkshp_os/blkshp_os/workspace`) so Frappe can auto-discover it during `bench migrate`.
