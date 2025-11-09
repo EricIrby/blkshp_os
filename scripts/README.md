@@ -83,6 +83,37 @@ bench --site blkshp.local execute blkshp_os.scripts.sync_doctypes.sync_all
 
 ---
 
+### dev_server.sh
+
+Helper for starting, stopping, and monitoring the BLKSHP development stack (web, Socket.IO, workers, scheduler, Redis, asset watcher) in the background using `honcho`.
+
+**Location:** `scripts/dev_server.sh`
+
+**Usage:**
+```bash
+./scripts/dev_server.sh start    # launch bench start under honcho (nohup)
+./scripts/dev_server.sh stop     # terminate bench + helpers and clean up pid file
+./scripts/dev_server.sh restart  # convenience wrapper around stop + start
+./scripts/dev_server.sh status   # show currently running bench helper processes
+./scripts/dev_server.sh logs     # tail the aggregated background log output
+```
+
+**Notes:**
+- Ensures the bench env bin directory is first on PATH so `honcho` is selected instead of Ruby `foreman`.
+- Persists a pid file at `config/dev_server.pid` and writes combined output to `logs/dev-server.log`.
+- `stop` also clears orphaned `frappe.utils.bench_helper` processes and the esbuild watcher to avoid stale schedulers.
+
+**Add handy aliases** (append to `~/.zshrc` or run manually):
+```bash
+alias blkbench='cd /Users/Eric/Development/BLKSHP/BLKSHP-DEV && ./apps/blkshp_os/scripts/dev_server.sh'
+alias blkstart='blkbench start'
+alias blkstop='blkbench stop'
+alias blkstatus='blkbench status'
+alias blklogs='blkbench logs'
+```
+
+---
+
 ## First-Time Setup
 
 If you're setting up BLKSHP OS for the first time, follow these steps:
