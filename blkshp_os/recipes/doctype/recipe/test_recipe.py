@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import frappe  # type: ignore[import]
+from frappe.model.document import Document  # type: ignore[import]
 from frappe.tests.utils import FrappeTestCase  # type: ignore[import]
 
 
@@ -15,6 +16,12 @@ class TestRecipe(FrappeTestCase):
 		if not cls._is_reloaded:
 			frappe.clear_cache(doctype="Recipe Ingredient")
 			frappe.reload_doc("recipes", "doctype", "recipe_ingredient")
+			frappe.clear_cache(doctype="Recipe Allergen")
+			frappe.reload_doc("recipes", "doctype", "recipe_allergen")
+			frappe.clear_cache(doctype="Recipe Inherited Allergen")
+			frappe.reload_doc("recipes", "doctype", "recipe_inherited_allergen")
+			frappe.clear_cache(doctype="Allergen")
+			frappe.reload_doc("recipes", "doctype", "allergen")
 			frappe.clear_cache(doctype="Recipe")
 			frappe.reload_doc("recipes", "doctype", "recipe")
 			cls._is_reloaded = True
@@ -29,6 +36,61 @@ class TestRecipe(FrappeTestCase):
 	def tearDown(self) -> None:
 		frappe.db.rollback()
 		super().tearDown()
+
+	def test_department_company_alignment_is_enforced(self) -> None:
+		other_company = self._ensure_company("Recipe QA Alt Company")
+		other_department = self._ensure_department("Recipe Alt Department", company=other_company)
+		external_product = self._ensure_product(
+			"Recipe Alt Product",
+			other_department,
+			company=other_company,
+		)
+
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Recipe",
+					"recipe_name": "Mismatched Company Recipe",
+					"department": other_department,
+					"company": self.company,
+					"yield_quantity": 1,
+					"yield_unit": "each",
+					"ingredients": [
+						{
+							"ingredient_type": "Product",
+							"product": external_product,
+							"quantity": 1,
+							"unit": "each",
+							"cost_per_unit": 1.0,
+						}
+					],
+				}
+			).insert(ignore_permissions=True)
+
+	def test_product_ingredient_must_match_department(self) -> None:
+		other_department = self._ensure_department("Recipe Alt Department 2")
+		misaligned_product = self._ensure_product("Recipe Alt Product 2", other_department)
+
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Recipe",
+					"recipe_name": "Department Mismatch Recipe",
+					"department": self.department,
+					"company": self.company,
+					"yield_quantity": 1,
+					"yield_unit": "each",
+					"ingredients": [
+						{
+							"ingredient_type": "Product",
+							"product": misaligned_product,
+							"quantity": 1,
+							"unit": "each",
+							"cost_per_unit": 1.0,
+						}
+					],
+				}
+			).insert(ignore_permissions=True)
 
 	def test_product_ingredient_costing(self) -> None:
 		recipe = frappe.get_doc(
@@ -137,6 +199,95 @@ class TestRecipe(FrappeTestCase):
 		parent = frappe.get_doc("Recipe", parent.name)
 		self.assertAlmostEqual(parent.cost_per_unit, 0.75)
 
+	def test_duplicate_allergens_are_rejected(self) -> None:
+		gluten = self._ensure_allergen("Gluten")
+
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Recipe",
+					"recipe_name": "Duplicate Allergen Test",
+					"department": self.department,
+					"company": self.company,
+					"yield_quantity": 1,
+					"yield_unit": "each",
+					"ingredients": [
+						{
+							"ingredient_type": "Product",
+							"product": self.product_a,
+							"quantity": 1,
+							"unit": "each",
+							"cost_per_unit": 1.0,
+						}
+					],
+					"allergens": [
+						{"allergen": gluten},
+						{"allergen": gluten},
+					],
+				}
+			).insert(ignore_permissions=True)
+
+	def test_allergens_inherit_from_subrecipes(self) -> None:
+		gluten = self._ensure_allergen("Gluten")
+		shellfish = self._ensure_allergen("Shellfish")
+		output_product = self._ensure_product("Allergen Output Product", self.department)
+
+		subrecipe = frappe.get_doc(
+			{
+				"doctype": "Recipe",
+				"recipe_name": "Allergen Heavy Base",
+				"recipe_type": "Prep",
+				"is_prep_item": 1,
+				"output_product": output_product,
+				"department": self.department,
+				"company": self.company,
+				"yield_quantity": 1,
+				"yield_unit": "each",
+				"ingredients": [
+					{
+						"ingredient_type": "Product",
+						"product": self.product_a,
+						"quantity": 1,
+						"unit": "each",
+						"cost_per_unit": 1.0,
+					}
+				],
+				"allergens": [
+					{"allergen": gluten},
+				],
+			}
+		).insert(ignore_permissions=True)
+
+		parent = frappe.get_doc(
+			{
+				"doctype": "Recipe",
+				"recipe_name": "Parent Recipe With Allergens",
+				"department": self.department,
+				"company": self.company,
+				"yield_quantity": 1,
+				"yield_unit": "each",
+				"ingredients": [
+					{
+						"ingredient_type": "Recipe",
+						"subrecipe": subrecipe.name,
+						"quantity": 1,
+					}
+				],
+				"allergens": [
+					{"allergen": shellfish},
+				],
+			}
+		).insert(ignore_permissions=True)
+
+		self.assertIn(shellfish, {row.allergen for row in parent.allergens})
+		inherited = {row.allergen for row in parent.inherited_allergens}
+		self.assertIn(gluten, inherited)
+		self.assertNotIn(shellfish, inherited)
+		matching_row = next(
+			row for row in parent.inherited_allergens if row.allergen == gluten
+		)
+		self.assertEqual(matching_row.source_recipes, subrecipe.name)
+
 	def _create_basic_recipe(
 		self,
 		*,
@@ -144,7 +295,7 @@ class TestRecipe(FrappeTestCase):
 		product: str,
 		cost_per_unit: float,
 		yield_quantity: float,
-	) -> frappe.model.document.Document:
+	) -> Document:
 		return frappe.get_doc(
 			{
 				"doctype": "Recipe",
@@ -182,11 +333,12 @@ class TestRecipe(FrappeTestCase):
 		doc.insert(ignore_permissions=True)
 		return doc.name
 
-	def _ensure_department(self, name: str) -> str:
+	def _ensure_department(self, name: str, *, company: str | None = None) -> str:
 		existing = frappe.db.exists("Department", {"department_name": name})
 		if existing:
 			return existing
 
+		target_company = company or self.company
 		doc = frappe.get_doc(
 			{
 				"doctype": "Department",
@@ -194,28 +346,45 @@ class TestRecipe(FrappeTestCase):
 				"department_code": "".join(part[0] for part in name.split() if part).upper()[:8]
 				or "DEPT",
 				"department_type": "Food",
-				"company": self.company,
+				"company": target_company,
 			}
 		)
 		doc.insert(ignore_permissions=True)
 		return doc.name
 
-	def _ensure_product(self, name: str, department: str) -> str:
+	def _ensure_product(self, name: str, department: str, *, company: str | None = None) -> str:
 		existing = frappe.db.exists("Product", {"product_name": name})
 		if existing:
 			return existing
 
+		target_company = company or self.company
 		doc = frappe.get_doc(
 			{
 				"doctype": "Product",
 				"product_name": name,
 				"primary_count_unit": "each",
 				"default_department": department,
-				"company": self.company,
+				"company": target_company,
 				"volume_conversion_unit": "ml",
 				"volume_conversion_factor": 1,
 				"weight_conversion_unit": "g",
 				"weight_conversion_factor": 1,
+			}
+		)
+		doc.insert(ignore_permissions=True)
+		return doc.name
+
+	def _ensure_allergen(self, name: str) -> str:
+		existing = frappe.db.exists("Allergen", name)
+		if existing:
+			return existing
+
+		doc = frappe.get_doc(
+			{
+				"doctype": "Allergen",
+				"allergen_name": name,
+				"allergen_code": "".join(part[0] for part in name.split() if part).upper()[:8]
+				or name[:8].upper(),
 			}
 		)
 		doc.insert(ignore_permissions=True)

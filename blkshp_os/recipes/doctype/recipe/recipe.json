@@ -18,6 +18,9 @@
   "yield_quantity",
   "yield_unit",
   "ingredients",
+  "section_break_allergens",
+  "allergens",
+  "inherited_allergens",
   "total_cost",
   "cost_per_unit",
   "notes"
@@ -87,6 +90,24 @@
    "fieldtype": "Table",
    "label": "Ingredients",
    "options": "Recipe Ingredient"
+  },
+  {
+   "fieldname": "section_break_allergens",
+   "fieldtype": "Section Break",
+   "label": "Allergens"
+  },
+  {
+   "fieldname": "allergens",
+   "fieldtype": "Table",
+   "label": "Allergens",
+   "options": "Recipe Allergen"
+  },
+  {
+   "fieldname": "inherited_allergens",
+   "fieldtype": "Table",
+   "label": "Inherited Allergens",
+   "options": "Recipe Inherited Allergen",
+   "read_only": 1
   },
   {
    "fieldname": "total_cost",

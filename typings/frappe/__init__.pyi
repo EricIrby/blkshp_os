@@ -9,6 +9,9 @@ class PermissionError(Exception):
 class UniqueValidationError(Exception):
 	...
 
+class ValidationError(Exception):
+	...
+
 
 class Document:
 	name: str
@@ -16,6 +19,8 @@ class Document:
 	def __init__(self, data: Mapping[str, Any] | None = ...) -> None: ...
 
 	def insert(self, *, ignore_permissions: bool | None = ...) -> Document: ...
+
+	def __getattr__(self, item: str) -> Any: ...
 
 
 class _DatabaseModule:
@@ -55,6 +60,8 @@ session: Any
 def set_user(user: str) -> None: ...
 
 def clear_cache(*, doctype: str | None = ...) -> None: ...
+
+def clear_document_cache(doctype: str, docname: str | None = ...) -> None: ...
 
 def reload_doc(
 	module: str,

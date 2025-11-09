@@ -1,0 +1,5 @@
+"""
+Allergen DocType package.
+"""
+
+

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import defaultdict
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -23,6 +25,8 @@ class Recipe(Document):
 		self._ensure_unique_code()
 		self._ensure_no_self_reference()
 		self._ensure_positive_yield()
+		self._ensure_ingredient_company_alignment()
+		self._refresh_allergens()
 		self._calculate_costs()
 
 	def after_save(self) -> None:
@@ -41,6 +45,33 @@ class Recipe(Document):
 		if not self.department:
 			frappe.throw(_("Recipes must be assigned to a department."))
 
+		dept_info = frappe.db.get_value(
+			"Department",
+			self.department,
+			["company"],
+			as_dict=True,
+		)
+		if not dept_info:
+			frappe.throw(_("Department {0} does not exist.").format(self.department))
+
+		dept_company = (dept_info.get("company") or "").strip()
+		if not dept_company:
+			frappe.throw(
+				_("Department {0} must be linked to a company before recipes can reference it.").format(
+					self.department
+				)
+			)
+
+		if self.company and self.company != dept_company:
+			frappe.throw(
+				_("Recipe company {0} must match the department's company {1}.").format(
+					self.company,
+					dept_company,
+				)
+			)
+
+		self.company = self.company or dept_company
+
 	def _ensure_output_product(self) -> None:
 		if self.is_prep_item or (self.recipe_type or "").lower() == "prep":
 			if not self.output_product:
@@ -57,6 +88,16 @@ class Recipe(Document):
 					)
 				)
 
+			product_company = frappe.db.get_value("Product", self.output_product, "company")
+			if product_company and self.company and product_company != self.company:
+				frappe.throw(
+					_("Output product {0} belongs to company {1}, which does not match recipe company {2}.").format(
+						self.output_product,
+						product_company,
+						self.company,
+					)
+				)
+
 	def _ensure_positive_yield(self) -> None:
 		if (self.yield_quantity or 0) <= 0:
 			frappe.throw(_("Yield quantity must be greater than zero."))
@@ -64,6 +105,60 @@ class Recipe(Document):
 	def _ensure_ingredients_present(self) -> None:
 		if not self.ingredients:
 			frappe.throw(_("Add at least one ingredient to the recipe."))
+
+	def _ensure_ingredient_company_alignment(self) -> None:
+		if not self.company:
+			return
+
+		for row in self.ingredients or []:
+			if row.ingredient_type == "Product" and row.product:
+				product_info = frappe.db.get_value(
+					"Product",
+					row.product,
+					["company", "default_department"],
+					as_dict=True,
+				)
+				if product_info:
+					if product_info.company and product_info.company != self.company:
+						frappe.throw(
+							_("Product {0} belongs to company {1}, which does not match recipe company {2}.").format(
+								row.product,
+								product_info.company,
+								self.company,
+							)
+						)
+					if product_info.default_department and product_info.default_department != self.department:
+						frappe.throw(
+							_("Product {0} is assigned to department {1}, which does not match recipe department {2}.").format(
+								row.product,
+								product_info.default_department,
+								self.department,
+							)
+						)
+			if row.ingredient_type == "Recipe" and row.subrecipe:
+				subrecipe_info = frappe.db.get_value(
+					"Recipe",
+					row.subrecipe,
+					["company", "department"],
+					as_dict=True,
+				)
+				if subrecipe_info:
+					if subrecipe_info.company and subrecipe_info.company != self.company:
+						frappe.throw(
+							_("Subrecipe {0} belongs to company {1}, which does not match recipe company {2}.").format(
+								row.subrecipe,
+								subrecipe_info.company,
+								self.company,
+							)
+						)
+					if subrecipe_info.department and subrecipe_info.department != self.department:
+						frappe.throw(
+							_("Subrecipe {0} is assigned to department {1}, which does not match recipe department {2}.").format(
+								row.subrecipe,
+								subrecipe_info.department,
+								self.department,
+							)
+						)
 
 	def _ensure_unique_code(self) -> None:
 		if not self.recipe_code:
@@ -130,6 +225,71 @@ class Recipe(Document):
 		frappe.throw(_("Invalid ingredient type {0}.").format(row.ingredient_type))
 		return 0.0
 
+	def _refresh_allergens(self) -> None:
+		manual_allergens: set[str] = set()
+		duplicate_entries: set[str] = set()
+
+		for row in self.allergens or []:
+			if not row.allergen:
+				continue
+			if row.allergen in manual_allergens:
+				duplicate_entries.add(row.allergen)
+			manual_allergens.add(row.allergen)
+
+		if duplicate_entries:
+			frappe.throw(
+				_("Allergens cannot be duplicated: {0}.").format(
+					", ".join(sorted(duplicate_entries))
+				)
+			)
+
+		inherited_map: defaultdict[str, set[str]] = defaultdict(set)
+		visited: set[str] = set(filter(None, [self.name]))
+
+		for ingredient in self.ingredients or []:
+			if ingredient.ingredient_type != "Recipe" or not ingredient.subrecipe:
+				continue
+			sub_allergens = self._collect_allergens_from_recipe(
+				ingredient.subrecipe,
+				visited.copy(),
+			)
+			for allergen in sub_allergens:
+				if allergen not in manual_allergens:
+					inherited_map[allergen].add(ingredient.subrecipe)
+
+		self.set("inherited_allergens", [])
+		for allergen in sorted(inherited_map):
+			self.append(
+				"inherited_allergens",
+				{
+					"allergen": allergen,
+					"source_recipes": ", ".join(sorted(inherited_map[allergen])),
+				},
+			)
+
+	def _collect_allergens_from_recipe(self, recipe_name: str, visited: set[str]) -> set[str]:
+		if recipe_name in visited:
+			return set()
+
+		visited.add(recipe_name)
+		recipe_doc = frappe.get_cached_doc("Recipe", recipe_name)
+
+		manual = {
+			row.allergen
+			for row in recipe_doc.get("allergens") or []
+			if getattr(row, "allergen", None)
+		}
+		aggregated = set(manual)
+
+		for ingredient in recipe_doc.get("ingredients") or []:
+			if ingredient.ingredient_type == "Recipe" and ingredient.subrecipe:
+				aggregated |= self._collect_allergens_from_recipe(
+					ingredient.subrecipe,
+					visited.copy(),
+				)
+
+		return aggregated
+
 	def _update_parent_recipes(self) -> None:
 		if getattr(frappe.flags, "_updating_recipe_parents", False):
 			return
@@ -166,14 +326,8 @@ class Recipe(Document):
 								},
 							)
 				parent_recipe._calculate_costs()
-				frappe.db.set_value(
-					"Recipe",
-					parent_recipe.name,
-					{
-						"total_cost": parent_recipe.total_cost,
-						"cost_per_unit": parent_recipe.cost_per_unit,
-					},
-				)
+				parent_recipe._refresh_allergens()
+				parent_recipe.save(ignore_permissions=True)
 		finally:
 			frappe.flags._updating_recipe_parents = False  # type: ignore[attr-defined]
 

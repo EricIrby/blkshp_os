@@ -30,8 +30,8 @@ The Recipes domain manages recipe creation, costing, and batch production. Recip
 4. ✅ **Subrecipes** - Subrecipe support, nested recipes
 5. ✅ **Prep Items** - Prep item management
 6. ✅ **Batch Management** - Batch production, tracking
-7. ⏳ **Recipe Departments** - Recipe-to-department assignment
-8. ⏳ **Recipe Allergens** - Allergen tracking, inherited allergens
+7. ✅ **Recipe Departments** - Recipe-to-department assignment
+8. ✅ **Recipe Allergens** - Allergen tracking, inherited allergens
 9. ⏳ **Menu Lists** - Menu list grouping, management
 10. ⏳ **Recipe Printing** - Recipe cards, menu list printing
 11. ⏳ **Pours** - Beverage pour settings
@@ -39,10 +39,10 @@ The Recipes domain manages recipe creation, costing, and batch production. Recip
 
 ## Status
 
-✅ **Recipe Master + Batch Management implemented** – DocTypes, costing, and production flows shipped
-⏳ **Remaining items** – Department assignment, allergens, menu lists, pours, repricing workflows
+✅ **Recipe Master + Batch Management implemented** – DocTypes, costing, production flows, department alignment, and allergen propagation shipped
+⏳ **Remaining items** – Menu lists, pours, repricing workflows
 
 ---
 
-**Next Steps**: Finish department/allergen metadata, then plan menu lists, pours, and repricing workflows.
+**Next Steps**: Plan menu lists, pours, and repricing workflows.
 

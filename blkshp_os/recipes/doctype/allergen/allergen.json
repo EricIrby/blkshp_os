@@ -1,0 +1,61 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:allergen_name",
+ "creation": "2025-11-09 00:30:00",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "allergen_name",
+  "allergen_code",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "allergen_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Allergen Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "allergen_code",
+   "fieldtype": "Data",
+   "label": "Allergen Code",
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "links": [],
+ "modified": "2025-11-09 00:30:00",
+ "modified_by": "Administrator",
+ "module": "Recipes",
+ "name": "Allergen",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "allergen_name",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}
+

@@ -357,6 +357,64 @@ curl -X POST https://your-site.com/api/method/blkshp_os.api.departments.get_depa
 
 ---
 
+## Recipe API
+
+### Get Recipe Details
+
+Fetch a recipe document including costing, department alignment, and allergen metadata.
+
+**Endpoint:** `/api/resource/Recipe/<recipe_name>`
+
+**Method:** `GET`
+
+**Response (excerpt):**
+```json
+{
+  "name": "RECIPE-00001",
+  "recipe_name": "House Salsa",
+  "department": "KITCHEN-TC1",
+  "company": "Test Company",
+  "yield_quantity": 4,
+  "ingredients": [
+    {
+      "ingredient_type": "Product",
+      "product": "PROD-00001",
+      "quantity": 2,
+      "unit": "each",
+      "cost_per_unit": 1.5,
+      "cost_total": 3.0
+    }
+  ],
+  "allergens": [
+    {
+      "allergen": "Shellfish",
+      "notes": null
+    }
+  ],
+  "inherited_allergens": [
+    {
+      "allergen": "Gluten",
+      "source_recipes": "RECIPE-00042"
+    }
+  ],
+  "total_cost": 5.25,
+  "cost_per_unit": 1.3125
+}
+```
+
+**Notes:**
+- `company` is enforced to match the owning department.
+- `allergens` lists manual tags, while `inherited_allergens` captures allergens propagated from subrecipes alongside their sources.
+- Use standard Frappe authentication headers (`Authorization: token api_key:api_secret`) to access the resource.
+
+**Example:**
+```bash
+curl -X GET https://your-site.com/api/resource/Recipe/RECIPE-00001 \
+  -H "Authorization: token api_key:api_secret"
+```
+
+---
+
 ## Permission Flags
 
 The following permission flags are used throughout the API:

@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "creation": "2025-11-09 00:30:00",
+ "doctype": "DocType",
+ "document_type": "Table",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "allergen",
+  "source_recipes"
+ ],
+ "fields": [
+  {
+   "fieldname": "allergen",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Allergen",
+   "options": "Allergen",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "source_recipes",
+   "fieldtype": "Data",
+   "label": "Source Recipes",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-09 00:30:00",
+ "modified_by": "Administrator",
+ "module": "Recipes",
+ "name": "Recipe Inherited Allergen",
+ "owner": "Administrator",
+ "permissions": [],
+ "track_changes": 0
+}
+
