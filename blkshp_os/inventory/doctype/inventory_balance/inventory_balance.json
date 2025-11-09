@@ -1,0 +1,94 @@
+{
+ "actions": [],
+ "allow_copy": 0,
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "format:{product}-{department}-{company}",
+ "creation": "2025-11-09 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "product",
+  "department",
+  "company",
+  "quantity",
+  "last_updated",
+  "last_audit_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity",
+   "precision": "",
+   "reqd": 1
+  },
+  {
+   "fieldname": "last_updated",
+   "fieldtype": "Datetime",
+   "label": "Last Updated",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_audit_date",
+   "fieldtype": "Date",
+   "label": "Last Audit Date"
+  }
+ ],
+ "links": [],
+ "modified": "2025-11-09 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Inventory",
+ "name": "Inventory Balance",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "product,department",
+ "sort_field": "product",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}
+

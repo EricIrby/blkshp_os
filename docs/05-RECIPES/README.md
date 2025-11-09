@@ -39,7 +39,8 @@ The Recipes domain manages recipe creation, costing, and batch production. Recip
 
 ## Status
 
-⏳ **To be extracted from FRAPPE_IMPLEMENTATION_PLAN.md**
+✅ **Recipe Master implemented** – DocType + costing logic shipped
+⏳ **Remaining items** – Batch management, menu lists, pours, repricing workflows
 
 ---
 

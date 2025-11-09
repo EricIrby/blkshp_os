@@ -6,6 +6,9 @@ from typing import Any, Mapping, overload
 class PermissionError(Exception):
 	...
 
+class UniqueValidationError(Exception):
+	...
+
 
 class Document:
 	name: str
@@ -43,6 +46,10 @@ class _DatabaseModule:
 
 
 db: _DatabaseModule
+
+
+flags: Any
+session: Any
 
 
 def set_user(user: str) -> None: ...

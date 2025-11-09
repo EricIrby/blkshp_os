@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:audit_name",
+ "creation": "2025-11-09 00:05:00",
+ "doctype": "DocType",
+ "document_type": "Data",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "audit_name",
+  "audit_type",
+  "audit_date",
+  "company",
+  "status",
+  "pos_sales_date_from",
+  "pos_sales_date_to",
+  "audit_departments",
+  "audit_storage_locations",
+  "audit_categories",
+  "counting_tasks",
+  "audit_lines",
+  "total_products_counted",
+  "total_value",
+  "closed_by",
+  "closed_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "audit_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Audit Name",
+   "reqd": 1
+  },
+  {
+   "default": "Full",
+   "fieldname": "audit_type",
+   "fieldtype": "Select",
+   "label": "Audit Type",
+   "options": "Full\nPartial",
+   "reqd": 1
+  },
+  {
+   "fieldname": "audit_date",
+   "fieldtype": "Date",
+   "label": "Audit Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "Setup",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Setup\nReady\nIn Progress\nReview\nClosed\nLocked",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pos_sales_date_from",
+   "fieldtype": "Date",
+   "label": "POS Sales Date From"
+  },
+  {
+   "fieldname": "pos_sales_date_to",
+   "fieldtype": "Date",
+   "label": "POS Sales Date To"
+  },
+  {
+   "fieldname": "audit_departments",
+   "fieldtype": "Table",
+   "label": "Audit Departments",
+   "options": "Inventory Audit Department"
+  },
+  {
+   "fieldname": "audit_storage_locations",
+   "fieldtype": "Table",
+   "label": "Audit Storage Locations",
+   "options": "Inventory Audit Storage Location"
+  },
+  {
+   "fieldname": "audit_categories",
+   "fieldtype": "Table",
+   "label": "Audit Categories",
+   "options": "Inventory Audit Category"
+  },
+  {
+   "fieldname": "counting_tasks",
+   "fieldtype": "Table",
+   "label": "Counting Tasks",
+   "options": "Inventory Counting Task"
+  },
+  {
+   "fieldname": "audit_lines",
+   "fieldtype": "Table",
+   "label": "Audit Lines",
+   "options": "Inventory Audit Line"
+  },
+  {
+   "fieldname": "total_products_counted",
+   "fieldtype": "Int",
+   "label": "Total Products Counted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_value",
+   "fieldtype": "Currency",
+   "label": "Total Value",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_by",
+   "fieldtype": "Link",
+   "label": "Closed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_at",
+   "fieldtype": "Datetime",
+   "label": "Closed At",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2025-11-09 00:05:00",
+ "modified_by": "Administrator",
+ "module": "Inventory",
+ "name": "Inventory Audit",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 0,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "audit_name",
+ "track_changes": 1
+}
+

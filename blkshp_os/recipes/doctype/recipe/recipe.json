@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:recipe_code",
+ "creation": "2025-11-09 00:10:00",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "recipe_name",
+  "recipe_code",
+  "recipe_type",
+  "is_prep_item",
+  "company",
+  "department",
+  "yield_quantity",
+  "yield_unit",
+  "ingredients",
+  "total_cost",
+  "cost_per_unit",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "recipe_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Recipe Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "recipe_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Recipe Code",
+   "unique": 1
+  },
+  {
+   "default": "Food",
+   "fieldname": "recipe_type",
+   "fieldtype": "Select",
+   "label": "Recipe Type",
+   "options": "Food\nBeverage\nPrep",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_prep_item",
+   "fieldtype": "Check",
+   "label": "Is Prep Item"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "yield_quantity",
+   "fieldtype": "Float",
+   "label": "Yield Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "yield_unit",
+   "fieldtype": "Data",
+   "label": "Yield Unit"
+  },
+  {
+   "fieldname": "ingredients",
+   "fieldtype": "Table",
+   "label": "Ingredients",
+   "options": "Recipe Ingredient"
+  },
+  {
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "label": "Total Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_per_unit",
+   "fieldtype": "Currency",
+   "label": "Cost Per Unit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "links": [],
+ "modified": "2025-11-09 00:10:00",
+ "modified_by": "Administrator",
+ "module": "Recipes",
+ "name": "Recipe",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 0,
+ "sort_field": "recipe_name",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "recipe_name",
+ "track_changes": 1
+}
+
