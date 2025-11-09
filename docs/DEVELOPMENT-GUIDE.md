@@ -11,10 +11,24 @@
 - [Supporting Domains](#supporting-domains)
 - [Integration Domains](#integration-domains)
 - [Development Roadmap](#development-roadmap)
+- [Local Bench Commands](#local-bench-commands)
 
 ---
 
 ## Architecture & Foundation
+-### Local Bench Commands
+
+When running Frappe CLI operations (migrate, tests, exports, etc.), change into the bench directory and invoke the virtualenv-managed binary:
+
+```bash
+cd /Users/Eric/Development/BLKSHP/BLKSHP-DEV
+../venv/bin/bench --site blkshp.local migrate
+```
+
+Using the global `bench` executable outside this directory will not detect the BLKSHP bench or its sites.
+
+---
+
 
 Start here for foundational understanding:
 

@@ -105,7 +105,9 @@ class TestRecipeBatch(FrappeTestCase):
 		row.quantity_used = 5
 		batch.save(ignore_permissions=True)
 
-		self.assertGreater(row.variance, 0)
+		batch.reload()
+		reloaded_row = batch.ingredients[0]
+		self.assertGreater(reloaded_row.variance, 0)
 
 		batch.submit()
 
@@ -172,6 +174,10 @@ class TestRecipeBatch(FrappeTestCase):
 				"default_department": department,
 				"company": self.company,
 				"prep_item": 1 if is_prep else 0,
+				"volume_conversion_unit": "ml",
+				"volume_conversion_factor": 1,
+				"weight_conversion_unit": "g",
+				"weight_conversion_factor": 1,
 			}
 		)
 		doc.insert(ignore_permissions=True)

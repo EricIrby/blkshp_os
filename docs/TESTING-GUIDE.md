@@ -14,6 +14,7 @@ Before testing, ensure you have:
 2. **Frappe Bench** set up
 3. **A test site** created
 4. **BLKSHP OS app** installed on your site
+5. **Bench commands** run from the bench directory (`/Users/Eric/Development/BLKSHP/BLKSHP-DEV`) using the project virtualenv executable (`../venv/bin/bench`). Running the system `bench` binary outside this path will fail to find the site.
 
 ---
 
@@ -28,13 +29,13 @@ If you haven't installed the app yet:
 cd /Users/Eric/Development/BLKSHP/BLKSHP-DEV
 
 # Install the app on your site
-bench --site [your-site-name] install-app blkshp_os
+../venv/bin/bench --site [your-site-name] install-app blkshp_os
 
 # Run migrations
-bench --site [your-site-name] migrate
+../venv/bin/bench --site [your-site-name] migrate
 
 # Clear cache
-bench --site [your-site-name] clear-cache
+../venv/bin/bench --site [your-site-name] clear-cache
 ```
 
 ### Option B: Update Existing Installation
@@ -52,11 +53,11 @@ cd ../..
 
 # Run migrations to create new DocTypes
 # Note: This also automatically loads fixtures (custom fields and standard roles)
-bench --site [your-site-name] migrate
+../venv/bin/bench --site [your-site-name] migrate
 
 # Clear cache and restart
-bench --site [your-site-name] clear-cache
-bench restart
+../venv/bin/bench --site [your-site-name] clear-cache
+../venv/bin/bench restart
 ```
 
 ---
@@ -102,7 +103,7 @@ bench --site [your-site-name] console
 
 ```bash
 # Start the bench
-bench start
+../venv/bin/bench start
 
 # Or if you want to run in the background:
 bench start &
