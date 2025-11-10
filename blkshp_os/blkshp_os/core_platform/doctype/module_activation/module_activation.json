@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:{plan}-{module_key}",
+ "creation": "2025-11-10 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "plan",
+  "module_key",
+  "module_label",
+  "is_enabled",
+  "is_required",
+  "depends_on",
+  "section_features",
+  "feature_overrides",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subscription Plan",
+   "options": "Subscription Plan",
+   "reqd": 1
+  },
+  {
+   "description": "Identifier used for programmatic checks (e.g. inventory, procurement)",
+   "fieldname": "module_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Module Key",
+   "reqd": 1
+  },
+  {
+   "fieldname": "module_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Module Label",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "description": "Required modules cannot be disabled when the plan is assigned",
+   "fieldname": "is_required",
+   "fieldtype": "Check",
+   "label": "Required"
+  },
+  {
+   "description": "Comma-separated list of module keys that must be enabled before this module",
+   "fieldname": "depends_on",
+   "fieldtype": "Data",
+   "label": "Depends On"
+  },
+  {
+   "fieldname": "section_features",
+   "fieldtype": "Section Break",
+   "label": "Feature Overrides"
+  },
+  {
+   "description": "JSON object describing feature overrides (toggle key → override settings)",
+   "fieldname": "feature_overrides",
+   "fieldtype": "JSON",
+   "label": "Feature Overrides"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "links": [],
+ "module": "Core Platform",
+ "name": "Module Activation",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "doctype": "Subscription Plan",
+    "plan_name": "Foundation",
+    "plan_code": "FOUNDATION",
+    "is_default": 1,
+    "is_active": 1,
+    "billing_frequency": "Monthly",
+    "billing_currency": "USD",
+    "base_price": 499.0,
+    "description": "Core BLKSHP OS capabilities including products, inventory, procurement, and analytics dashboards.",
+    "default_feature_overrides": "{\n  \"core.workspace.access\": true,\n  \"inventory.audit_workflows\": true,\n  \"analytics.finance_dashboard\": true\n}"
+  }
+]

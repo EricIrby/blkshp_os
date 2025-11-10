@@ -488,6 +488,7 @@ mypy blkshp_os/
   - `02-Frappe-Framework.md` - Frappe framework guide
   - `03-Deployment.md` - Deployment and scaling
   - `04-Separate-Frontend.md` - Future SPA architecture (reference)
+  - `06-Core-Platform.md` - Subscription plans, feature toggles, and branding
 
 **Domain Documentation:**
 - **01-PRODUCTS/** - Product management (11 functions)

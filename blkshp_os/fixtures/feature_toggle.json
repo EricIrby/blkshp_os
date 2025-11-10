@@ -1,0 +1,47 @@
+[
+  {
+    "doctype": "Feature Toggle",
+    "feature_name": "Workspace Access",
+    "feature_key": "core.workspace.access",
+    "category": "Core",
+    "default_enabled": 1,
+    "description": "Grants access to the BLKSHP OS workspace and core navigation tiles.",
+    "rollout_notes": "Enable for all active tenants."
+  },
+  {
+    "doctype": "Feature Toggle",
+    "feature_name": "Bulk Product Operations",
+    "feature_key": "products.bulk_operations",
+    "category": "Products",
+    "default_enabled": 0,
+    "description": "Allows multi-record product updates, imports, and category reassignment tools.",
+    "rollout_notes": "Requires Products module access."
+  },
+  {
+    "doctype": "Feature Toggle",
+    "feature_name": "Inventory Audit Workflows",
+    "feature_key": "inventory.audit_workflows",
+    "category": "Inventory",
+    "default_enabled": 1,
+    "description": "Enables the full inventory audit queue, approvals, and discrepancy workflows.",
+    "rollout_notes": "Depends on Products module and department permissions."
+  },
+  {
+    "doctype": "Feature Toggle",
+    "feature_name": "Ottimate Receiving Import",
+    "feature_key": "procurement.ottimate_import",
+    "category": "Procurement",
+    "default_enabled": 0,
+    "description": "Activates the Ottimate integration pipeline for receiving invoices.",
+    "rollout_notes": "Use when Ottimate integration has been provisioned for the tenant."
+  },
+  {
+    "doctype": "Feature Toggle",
+    "feature_name": "Finance Analytics Dashboard",
+    "feature_key": "analytics.finance_dashboard",
+    "category": "Analytics",
+    "default_enabled": 1,
+    "description": "Provides consolidated finance KPIs, balances, and intercompany metrics.",
+    "rollout_notes": "Requires Core + Finance module activations."
+  }
+]

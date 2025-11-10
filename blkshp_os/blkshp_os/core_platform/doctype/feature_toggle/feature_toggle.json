@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:feature_key",
+ "creation": "2025-11-10 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "feature_name",
+  "feature_key",
+  "category",
+  "default_enabled",
+  "description",
+  "rollout_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "feature_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Feature Name",
+   "reqd": 1
+  },
+  {
+   "description": "Programmatic identifier (e.g. products.bulk_operations)",
+   "fieldname": "feature_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Feature Key",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Core",
+   "description": "Primary functional area where this feature lives",
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "Core\nProducts\nInventory\nProcurement\nRecipes\nPOS\nFinance\nAnalytics\nPermissions"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, tenants receive this feature unless explicitly disabled",
+   "fieldname": "default_enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Default Enabled"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "description": "Notes for roll-out, dependencies, or additional context",
+   "fieldname": "rollout_notes",
+   "fieldtype": "Small Text",
+   "label": "Roll-out Notes"
+  }
+ ],
+ "links": [],
+ "module": "Core Platform",
+ "name": "Feature Toggle",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1
+}
