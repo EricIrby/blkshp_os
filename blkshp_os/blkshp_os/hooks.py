@@ -27,6 +27,10 @@ fixtures = [
 	},
 	{
 		"dt": "Module Activation",
+<<<<<<< HEAD
 		"filters": [["plan", "in", ["Foundation"]]],
+=======
+		"filters": [["plan", "in", ["FOUNDATION"]]],
+>>>>>>> 4fc7b1b (BLK-6: Add core subscription DocTypes and fixtures)
 	},
 ]

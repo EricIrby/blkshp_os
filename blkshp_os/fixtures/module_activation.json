@@ -1,7 +1,11 @@
 [
   {
     "doctype": "Module Activation",
+<<<<<<< HEAD
     "plan": "Foundation",
+=======
+    "plan": "FOUNDATION",
+>>>>>>> 4fc7b1b (BLK-6: Add core subscription DocTypes and fixtures)
     "module_key": "core",
     "module_label": "Core Platform",
     "is_enabled": 1,
@@ -12,7 +16,11 @@
   },
   {
     "doctype": "Module Activation",
+<<<<<<< HEAD
     "plan": "Foundation",
+=======
+    "plan": "FOUNDATION",
+>>>>>>> 4fc7b1b (BLK-6: Add core subscription DocTypes and fixtures)
     "module_key": "products",
     "module_label": "Products",
     "is_enabled": 1,
@@ -23,7 +31,11 @@
   },
   {
     "doctype": "Module Activation",
+<<<<<<< HEAD
     "plan": "Foundation",
+=======
+    "plan": "FOUNDATION",
+>>>>>>> 4fc7b1b (BLK-6: Add core subscription DocTypes and fixtures)
     "module_key": "inventory",
     "module_label": "Inventory",
     "is_enabled": 1,
@@ -34,7 +46,11 @@
   },
   {
     "doctype": "Module Activation",
+<<<<<<< HEAD
     "plan": "Foundation",
+=======
+    "plan": "FOUNDATION",
+>>>>>>> 4fc7b1b (BLK-6: Add core subscription DocTypes and fixtures)
     "module_key": "procurement",
     "module_label": "Procurement",
     "is_enabled": 1,
@@ -45,7 +61,11 @@
   },
   {
     "doctype": "Module Activation",
+<<<<<<< HEAD
     "plan": "Foundation",
+=======
+    "plan": "FOUNDATION",
+>>>>>>> 4fc7b1b (BLK-6: Add core subscription DocTypes and fixtures)
     "module_key": "analytics",
     "module_label": "Analytics",
     "is_enabled": 1,

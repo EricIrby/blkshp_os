@@ -53,7 +53,7 @@ class TestSubscriptionPlanFixtures(FrappeTestCase):
 	def test_module_activation_dependencies(self) -> None:
 		modules = frappe.get_all(
 			"Module Activation",
-			filters={"plan": "Foundation"},
+			filters={"plan": "FOUNDATION"},
 			fields=["module_key", "depends_on", "is_required", "feature_overrides"],
 		)
 		module_keys = {row.module_key for row in modules}
@@ -82,8 +82,9 @@ class TestSubscriptionPlanFixtures(FrappeTestCase):
 		return {token.strip().lower() for token in raw.split(",") if token.strip()}
 
 	def _assert_dependencies_valid(self, module_key: str, dependencies: Iterable[str]) -> None:
-		self.assertNotIn(module_key, dependencies, f"Module {module_key} cannot depend on itself")
-		self.assertTrue(dependencies.issubset(EXPECTED_MODULE_KEYS), "Dependencies must reference known modules")
+		dependency_set = set(dependencies)
+		self.assertNotIn(module_key, dependency_set, f"Module {module_key} cannot depend on itself")
+		self.assertTrue(dependency_set.issubset(EXPECTED_MODULE_KEYS), "Dependencies must reference known modules")
 
 	def _load_json(self, raw: str | None) -> dict[str, object]:
 		if not raw:

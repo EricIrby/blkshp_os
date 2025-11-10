@@ -17,7 +17,11 @@ fixtures = [
 				"Role-role_description"
 			]],
 		],
-	}
+	},
+	{
+		"dt": "Module Activation",
+		"filters": [["plan", "in", ["FOUNDATION"]]],
+	},
 ]
 
 # Permissions
