@@ -19,6 +19,20 @@ fixtures = [
 		],
 	},
 	{
+		"dt": "Feature Toggle",
+		"filters": [["feature_key", "in", [
+			"core.workspace.access",
+			"products.bulk_operations",
+			"inventory.audit_workflows",
+			"procurement.ottimate_import",
+			"analytics.finance_dashboard"
+		]]],
+	},
+	{
+		"dt": "Subscription Plan",
+		"filters": [["plan_code", "in", ["FOUNDATION"]]],
+	},
+	{
 		"dt": "Module Activation",
 		"filters": [["plan", "in", ["FOUNDATION"]]],
 	},
