@@ -8,13 +8,36 @@ This guide provides the day-to-day workflow, tooling expectations, and reference
 
 1. **Clone bench & apps** – see `docs/README.md` for installation details.
 2. **Install dependencies** – ensure Python 3.10+, Node 18 LTS, Yarn/NPM as preferred.
-3. **Sync documentation** – review:
+3. **Install app** – follow the bench app installation order (see section 1.1 below).
+4. **Sync documentation** – review:
    - `docs/CONSOLIDATED_DECISION_LOG.md`
    - `docs/PROJECT-TIMELINE.md`
    - Relevant domain docs under `docs/`
-4. **Connect to Linear** – issues live in the [BLKSHP Linear workspace](https://linear.app/blkshp/). Link Cursor → Linear for in-editor access.
-5. **Create feature branch** – use Linear issue identifier, e.g. `feature/blk-17-inventory-audit-api`.
-6. **Run local bench** – `bench start` (backend) + `npm run dev` (frontend once scaffolded).
+5. **Connect to Linear** – issues live in the [BLKSHP Linear workspace](https://linear.app/blkshp/). Link Cursor → Linear for in-editor access.
+6. **Create feature branch** – use Linear issue identifier, e.g. `feature/blk-17-inventory-audit-api`.
+7. **Run local bench** – `bench start` (backend) + `npm run dev` (frontend once scaffolded).
+
+### 1.1 Bench App Installation Order
+
+When setting up a new bench or site, install apps in the following order:
+
+```bash
+# 1. Frappe Framework (installed by default with bench init)
+# 2. ERPNext (if not already installed)
+bench get-app erpnext --branch version-15
+
+# 3. BLKSHP OS (this app)
+bench get-app https://github.com/your-org/blkshp_os --branch main
+
+# Install on site in the same order
+bench --site mysite.local install-app erpnext
+bench --site mysite.local install-app blkshp_os
+```
+
+**Important Notes:**
+- BLKSHP OS has no `required_apps` specified in `hooks.py`, but it extends ERPNext/Frappe core DocTypes (User, Role)
+- Always install ERPNext before BLKSHP OS to ensure core DocTypes exist
+- The app is compatible with ERPNext v15 and Frappe v15+
 
 ## 2. Tooling & Workflow
 
@@ -78,6 +101,58 @@ Phases are tracked in `docs/PROJECT-TIMELINE.md` and Linear milestones:
 - **Staging Press Site:** provisioned per Phase 3 using automation in `scripts/bootstrap_site.py` and Press tools.
 - **Production Press Sites:** one Press site per customer, configured via Module Activation + Subscription Plan DocTypes.
 - **Frontend Deployments:** Vercel recommended; Press static hosting supported if needed.
+
+### 5.1 ERPNext v15 & Frappe Press Compatibility
+
+**Compatibility Status:** ✅ Fully compatible with ERPNext v15 and Frappe Press
+
+BLKSHP OS has been audited for ERPNext v15 compatibility (see BLK-5). Key findings:
+
+**Dependencies:**
+- Python 3.10+ required (compatible with ERPNext v15)
+- No external Python dependencies beyond Frappe/ERPNext
+- No custom frontend build pipeline (uses Frappe's built-in asset bundling)
+- No Node.js dependencies (no package.json)
+
+**Build & Update:**
+- `bench build --app blkshp_os` - Compiles JS/CSS assets using Frappe's bundler
+- `bench --site <site> migrate` - Runs database migrations
+- `bench update --patch` - Updates app and applies patches
+- All standard bench commands are supported
+
+**Frappe Press Deployment:**
+- Pure Python/JS app with no custom build requirements
+- Uses standard Frappe fixtures mechanism for Custom Fields and Roles
+- No special server configuration needed
+- Compatible with Press's standard deployment pipeline
+
+**App Structure:**
+- Follows Frappe v15 app structure conventions
+- Uses modern hook patterns (e.g., `extend_doctype_class`)
+- No deprecated APIs or patterns
+- Frontend assets: minimal client scripts for User and Role forms only
+
+**Configuration Files:**
+- `pyproject.toml` - Uses flit_core build backend (standard for Frappe apps)
+- `hooks.py` - Standard v15 hooks, no deprecated patterns
+- `modules.txt` - Defines 14 modules for the app
+- `patches.txt` - Empty (ready for future database patches)
+- No `requirements.txt` needed (dependencies managed by bench)
+
+**Testing:**
+```bash
+# Verify build works
+bench build --app blkshp_os
+
+# Run migrations
+bench --site <site> migrate
+
+# Run app tests
+bench --site <site> run-tests --app blkshp_os
+
+# Update app (includes patches)
+bench update --patch
+```
 
 ## 6. Branching & PR Conventions
 
