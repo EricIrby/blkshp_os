@@ -8,6 +8,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from blkshp_os.core_platform.services import clear_subscription_context_cache
+
 
 class TenantBranding(Document):
 	"""Stores branding assets and theming information for a tenant."""
@@ -35,3 +37,9 @@ class TenantBranding(Document):
 			raise frappe.ValidationError(
 				_("Custom Properties must be a JSON object mapping variable names to values."),
 			)
+
+	def on_update(self) -> None:
+		clear_subscription_context_cache()
+
+	def on_trash(self) -> None:
+		clear_subscription_context_cache()

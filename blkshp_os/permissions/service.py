@@ -6,6 +6,8 @@ from typing import Iterable, Sequence
 import frappe
 from frappe import _
 
+from blkshp_os.core_platform.services import get_subscription_context
+
 PERMISSION_FLAGS: tuple[str, ...] = (
 	"can_read",
 	"can_write",
@@ -37,6 +39,55 @@ def _user_bypasses_department_permissions(user: str | None) -> bool:
 		return True
 	user_roles = set(frappe.get_roles(user))
 	return any(role in user_roles for role in SYSTEM_ROLES_BYPASS)
+
+
+def get_user_company(user: str | None) -> str | None:
+	"""Return the company associated with the provided user."""
+	if not user:
+		return None
+	user_doc = frappe.get_cached_doc("User", user)
+	get_company = getattr(user_doc, "get_company", None)
+	if callable(get_company):
+		return get_company()
+	return frappe.db.get_value("User", user, "company")
+
+
+def get_user_subscription_context(user: str | None, *, refresh: bool = False):
+	"""Return the subscription context for the supplied user."""
+	if not user:
+		return get_subscription_context(plan_code=None)
+	user_doc = frappe.get_cached_doc("User", user)
+	get_context = getattr(user_doc, "get_subscription_context", None)
+	if callable(get_context):
+		return get_context(refresh=refresh)
+	return get_subscription_context(company=get_user_company(user))
+
+
+def user_has_module_access(user: str | None, module_key: str, *, refresh: bool = False) -> bool:
+	"""Return True when the user has access to the supplied module."""
+	if not user:
+		return False
+	user_doc = frappe.get_cached_doc("User", user)
+	check = getattr(user_doc, "is_module_enabled", None)
+	if callable(check):
+		return check(module_key, refresh=refresh)
+
+	context = get_subscription_context(company=get_user_company(user), use_cache=not refresh)
+	module = context.modules.get((module_key or "").strip().lower())
+	return bool(module and module.is_enabled)
+
+
+def user_has_feature(user: str | None, feature_key: str, *, refresh: bool = False) -> bool:
+	"""Return True when the user has access to the supplied feature toggle."""
+	if not user:
+		return False
+	user_doc = frappe.get_cached_doc("User", user)
+	check = getattr(user_doc, "is_feature_enabled", None)
+	if callable(check):
+		return check(feature_key, refresh=refresh)
+
+	context = get_subscription_context(company=get_user_company(user), use_cache=not refresh)
+	return bool(context.feature_states.get((feature_key or "").strip().lower()))
 
 
 def get_accessible_departments(
