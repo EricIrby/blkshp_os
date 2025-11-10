@@ -3,7 +3,7 @@
 **A unified inventory management and cost control platform for hospitality operations.**
 
 **Version:** 0.0.1  
-**Architecture:** Frappe Desk-Only Application  
+**Architecture:** Frappe Desk + External SPA (Next.js) on ERPNext/Frappe Press  
 **License:** MIT
 
 ---
@@ -47,45 +47,52 @@ bench start
 
 ---
 
-## Documentation
+## Documentation & Planning
 
-📚 **[Complete Documentation → docs/README.md](docs/README.md)**
+📚 **Primary References**
+
+- **[Complete Documentation → docs/README.md](docs/README.md)**
+- **[Consolidated Decision Log](docs/CONSOLIDATED_DECISION_LOG.md)** – Architecture, platform decisions, subscription & feature strategy
+- **[Project Timeline](docs/PROJECT-TIMELINE.md)** – Phase-by-phase plan aligned with Linear issues
+- **[Development Guide](docs/DEVELOPMENT-GUIDE.md)** – Daily workflow, tooling, onboarding checklist
+- **Linear Workspace:** [BLKSHP Linear](https://linear.app/blkshp/) (projects synced with GitHub `blkshp_os`)
 
 ### Quick Links
 
-- **[Getting Started](docs/README.md#quick-start)** - 5-minute setup guide
-- **[First-Time Setup](docs/README.md#first-time-setup)** - Detailed installation
-- **[Development Guide](docs/DEVELOPMENT-GUIDE.md)** - Development roadmap
-- **[Architecture](docs/00-ARCHITECTURE/)** - Architecture documentation
-- **[Testing Guide](docs/TESTING-GUIDE.md)** - Testing practices
-- **[API Reference](docs/API-REFERENCE.md)** - API documentation
+- **[Getting Started](docs/README.md#quick-start)** – 5-minute setup guide
+- **[Architecture](docs/00-ARCHITECTURE/)** – Platform structure & deployment
+- **[Frontend Architecture](docs/00-ARCHITECTURE/05-Frontend-Architecture.md)** – Next.js SPA integration plan
+- **[Testing Guide](docs/TESTING-GUIDE.md)** – Testing practices
+- **[API Reference](docs/API-REFERENCE.md)** – REST/GraphQL endpoints
 
 ### Domain Documentation
 
-- **[Departments](docs/02-DEPARTMENTS/)** - ✅ Complete
-- **[Permissions](docs/11-PERMISSIONS/)** - ✅ Complete
-- **[Products](docs/01-PRODUCTS/)** - ⏳ Next Priority
-- **[Inventory](docs/03-INVENTORY/)** - Planned
-- **[Procurement](docs/04-PROCUREMENT/)** - Planned
-- **[Other Domains](docs/)** - See docs/ directory
+- **[Departments](docs/02-DEPARTMENTS/)** – ✅ Complete foundation
+- **[Permissions](docs/11-PERMISSIONS/)** – ✅ Complete
+- **[Products](docs/01-PRODUCTS/)** – 🔧 Consolidation in progress
+- **[Inventory](docs/03-INVENTORY/)** – 🔧 Consolidation in progress
+- **[Finance / Intercompany](docs/07-ACCOUNTING/)** – 🔧 Consolidation in progress
+- **[Other Domains](docs/)** – See docs/ directory for domain-specific plans
 
 ---
 
 ## Current Status
 
-### Completed (Phase 1)
+### Completed (Foundational)
 
-- ✅ **Departments Domain** - Department management and segmentation
-- ✅ **Permissions Domain** - Role-based and department-based permissions
-- ✅ **API Layer** - 20 whitelisted API endpoints
-- ✅ **Fixtures** - Custom fields and standard roles
-- ✅ **Test Coverage** - Comprehensive unit tests
+- ✅ **Departments Domain** – Department management and segmentation
+- ✅ **Permissions Domain** – Role-based and department-based permissions
+- ✅ **API Layer (v1)** – 20 whitelisted API endpoints
+- ✅ **Fixtures** – Custom fields and standard roles
+- ✅ **Test Coverage** – Baseline unit tests and fixtures
 
-### Next Steps (Phase 2)
+### Current Roadmap Highlights
 
-- ⏳ **Products Domain** - Unified product management
-- ⏳ **Inventory Domain** - Inventory tracking and audits
-- ⏳ **Procurement Domain** - Vendor management and ordering
+- 🎯 **Phase 0 (Foundations):** Bench alignment, provisioning scripts, compatibility checks
+- 🎯 **Phase 1 (Core Consolidation):** Subscription core, Product/Inventory DocTypes, Intercompany automation
+- 🎯 **Phase 2 (MVP Readiness):** Feature gating, demo data, SPA MVP
+- 🎯 **Phase 3 (Demo):** Staging deployment, end-to-end demo rehearsal
+- 🎯 **Phase 4 (Hardening):** Security, observability, documentation
 
 ### Key Features
 
@@ -239,11 +246,11 @@ BLKSHP OS uses a **Frappe Desk-only architecture**:
 
 **Key Architectural Decisions:**
 
-1. **Desk-Only** - No separate frontend (can add later if needed)
-2. **Domain-Based** - Code organized by business domain
-3. **Department-Centric** - Department-based permissions and organization
-4. **2D Inventory** - Product + Department (not storage location)
-5. **Hub-and-Spoke Units** - All quantities in primary count unit
+1. **Dual UI** – Frappe Desk for internal ops, Next.js SPA for client-facing workflows
+2. **Domain-Based** – Code organized by business domain
+3. **Department-Centric** – Department-based permissions and organization
+4. **2D Inventory** – Product + Department (not storage location)
+5. **Hub-and-Spoke Units** – All quantities in primary count unit
 
 See [Architecture Documentation](docs/00-ARCHITECTURE/) for details.
 
@@ -254,9 +261,12 @@ See [Architecture Documentation](docs/00-ARCHITECTURE/) for details.
 ### Documentation
 
 - **Main Documentation:** [docs/README.md](docs/README.md)
+- **Consolidated Decision Log:** [docs/CONSOLIDATED_DECISION_LOG.md](docs/CONSOLIDATED_DECISION_LOG.md)
+- **Project Timeline:** [docs/PROJECT-TIMELINE.md](docs/PROJECT-TIMELINE.md)
 - **Development Guide:** [docs/DEVELOPMENT-GUIDE.md](docs/DEVELOPMENT-GUIDE.md)
 - **API Reference:** [docs/API-REFERENCE.md](docs/API-REFERENCE.md)
 - **Architecture:** [docs/00-ARCHITECTURE/](docs/00-ARCHITECTURE/)
+- **Frontend Architecture:** [docs/00-ARCHITECTURE/05-Frontend-Architecture.md](docs/00-ARCHITECTURE/05-Frontend-Architecture.md)
 
 ### Getting Help
 
