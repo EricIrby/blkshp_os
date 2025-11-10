@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "field:company",
+ "creation": "2025-11-10 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Master",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "plan",
+  "theme_name",
+  "section_colors",
+  "primary_color",
+  "secondary_color",
+  "accent_color",
+  "section_media",
+  "logo",
+  "login_background",
+  "typography",
+  "custom_properties"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "description": "Optional link to the subscription plan assigned to this tenant",
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "label": "Subscription Plan",
+   "options": "Subscription Plan"
+  },
+  {
+   "default": "Default",
+   "fieldname": "theme_name",
+   "fieldtype": "Data",
+   "label": "Theme Name"
+  },
+  {
+   "fieldname": "section_colors",
+   "fieldtype": "Section Break",
+   "label": "Colors"
+  },
+  {
+   "default": "#111827",
+   "fieldname": "primary_color",
+   "fieldtype": "Color",
+   "label": "Primary Color"
+  },
+  {
+   "default": "#1F2937",
+   "fieldname": "secondary_color",
+   "fieldtype": "Color",
+   "label": "Secondary Color"
+  },
+  {
+   "default": "#F59E0B",
+   "fieldname": "accent_color",
+   "fieldtype": "Color",
+   "label": "Accent Color"
+  },
+  {
+   "fieldname": "section_media",
+   "fieldtype": "Section Break",
+   "label": "Media"
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "description": "Optional background image displayed on the login screen",
+   "fieldname": "login_background",
+   "fieldtype": "Attach Image",
+   "label": "Login Background"
+  },
+  {
+   "default": "Default",
+   "fieldname": "typography",
+   "fieldtype": "Select",
+   "label": "Typography",
+   "options": "Default\nRounded\nSerif"
+  },
+  {
+   "description": "JSON structure for additional CSS variables or theming overrides",
+   "fieldname": "custom_properties",
+   "fieldtype": "JSON",
+   "label": "Custom Properties"
+  }
+ ],
+ "links": [],
+ "module": "Core Platform",
+ "name": "Tenant Branding",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1
+}

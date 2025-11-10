@@ -1,0 +1,57 @@
+[
+  {
+    "doctype": "Module Activation",
+    "plan": "FOUNDATION",
+    "module_key": "core",
+    "module_label": "Core Platform",
+    "is_enabled": 1,
+    "is_required": 1,
+    "depends_on": "",
+    "feature_overrides": "{\n  \"core.workspace.access\": true\n}",
+    "notes": "Provides workspace access, subscription plan linkage, and feature enforcement."
+  },
+  {
+    "doctype": "Module Activation",
+    "plan": "FOUNDATION",
+    "module_key": "products",
+    "module_label": "Products",
+    "is_enabled": 1,
+    "is_required": 1,
+    "depends_on": "core",
+    "feature_overrides": "{\n  \"products.bulk_operations\": true\n}",
+    "notes": "Unlocks product master management and shared conversion utilities."
+  },
+  {
+    "doctype": "Module Activation",
+    "plan": "FOUNDATION",
+    "module_key": "inventory",
+    "module_label": "Inventory",
+    "is_enabled": 1,
+    "is_required": 0,
+    "depends_on": "core, products",
+    "feature_overrides": "{\n  \"inventory.audit_workflows\": true\n}",
+    "notes": "Enables theoretical inventory, audits, and department level stock tracking."
+  },
+  {
+    "doctype": "Module Activation",
+    "plan": "FOUNDATION",
+    "module_key": "procurement",
+    "module_label": "Procurement",
+    "is_enabled": 1,
+    "is_required": 0,
+    "depends_on": "core, products",
+    "feature_overrides": "{\n  \"procurement.ottimate_import\": true\n}",
+    "notes": "Includes purchase orders, vendor management, and Ottimate ingestion pipeline."
+  },
+  {
+    "doctype": "Module Activation",
+    "plan": "FOUNDATION",
+    "module_key": "analytics",
+    "module_label": "Analytics",
+    "is_enabled": 1,
+    "is_required": 0,
+    "depends_on": "core",
+    "feature_overrides": "{\n  \"analytics.finance_dashboard\": true\n}",
+    "notes": "Provides dashboards and KPIs across finance and operations."
+  }
+]

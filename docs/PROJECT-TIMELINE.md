@@ -13,7 +13,7 @@
 
 ## Phase 1 – Core Consolidation (Week 1)
 - [ ] Core app (`blkshp_core`)
-  - Implement/validate DocTypes: `Subscription Plan`, `Feature Toggle`, `Module Activation`, `Tenant Branding`
+  - [x] Implement/validate DocTypes: `Subscription Plan`, `Feature Toggle`, `Module Activation`, `Tenant Branding`
   - Enhance `UserPermissionMixin` for company + department + functional checks with tests
   - Build feature flag utilities + `/api/method/blkshp_core.get_feature_matrix`
 - [ ] Products & Inventory alignment (`blkshp_ops`)

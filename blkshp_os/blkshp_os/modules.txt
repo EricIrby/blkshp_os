@@ -1,0 +1,15 @@
+BLKSHP OS
+Core Platform
+Departments
+Products
+Inventory
+Procurement
+Recipes
+POS Integration
+Accounting
+Analytics
+Director
+Transfers Depletions
+Permissions
+Budgets
+Payments
