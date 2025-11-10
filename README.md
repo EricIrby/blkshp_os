@@ -112,7 +112,7 @@ bench start
 
 - Python 3.10+
 - Node.js 18+
-- Frappe Framework v14+
+- Frappe Framework v15+
 - MariaDB/PostgreSQL
 
 ### Setup for Development
@@ -241,7 +241,7 @@ BLKSHP OS uses a **Frappe Desk-only architecture**:
 - **Backend:** Python (DocTypes, API endpoints, business logic)
 - **Frontend:** Frappe's built-in Desk UI
 - **Database:** MariaDB/PostgreSQL
-- **Framework:** Frappe Framework v14+
+- **Framework:** Frappe Framework v15+
 - **Organization:** Domain-based modules
 
 **Key Architectural Decisions:**

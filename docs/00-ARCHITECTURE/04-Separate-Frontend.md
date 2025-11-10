@@ -1211,7 +1211,7 @@ Use this checklist to verify your app structure:
 ---
 
 **Last Updated:** November 2025  
-**Compatible with:** Frappe Framework v14+  
+**Compatible with:** Frappe Framework v15+  
 **Example Apps:** Frappe Helpdesk, Frappe CRM
 
 For issues or questions, refer to the [Frappe Forum](https://discuss.frappe.io/)

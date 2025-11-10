@@ -24,7 +24,7 @@ Automated testing and setup script.
 
 **Example:**
 ```bash
-cd /Users/Eric/Development/BLKSHP/BLKSHP-DEV/apps/blkshp_os
+cd /path/to/frappe-bench/apps/blkshp_os
 ./scripts/test.sh site1.local
 ```
 
@@ -103,9 +103,9 @@ Helper for starting, stopping, and monitoring the BLKSHP development stack (web,
 - Persists a pid file at `config/dev_server.pid` and writes combined output to `logs/dev-server.log`.
 - `stop` also clears orphaned `frappe.utils.bench_helper` processes and the esbuild watcher to avoid stale schedulers.
 
-**Add handy aliases** (append to `~/.zshrc` or run manually):
+**Add handy aliases** (append to `~/.zshrc` or run manually, replacing `/path/to/frappe-bench` with your environment):
 ```bash
-alias blkbench='cd /Users/Eric/Development/BLKSHP/BLKSHP-DEV && ./apps/blkshp_os/scripts/dev_server.sh'
+alias blkbench='cd /path/to/frappe-bench && ./apps/blkshp_os/scripts/dev_server.sh'
 alias blkstart='blkbench start'
 alias blkstop='blkbench stop'
 alias blkstatus='blkbench status'
@@ -120,7 +120,7 @@ If you're setting up BLKSHP OS for the first time, follow these steps:
 
 ```bash
 # 1. Navigate to bench directory
-cd /Users/Eric/Development/BLKSHP/BLKSHP-DEV
+cd /path/to/frappe-bench
 
 # 2. Install the app (REQUIRED FIRST STEP)
 bench --site [your-site] install-app blkshp_os
@@ -165,8 +165,8 @@ ls sites/
 
 ## Documentation
 
-- **First-Time Setup**: `docs/FIRST-TIME-SETUP.md`
-- **Quick Start**: `docs/QUICK-START.md`
+- **First-Time Setup**: `docs/README.md#first-time-setup`
+- **Quick Start**: `docs/README.md#quick-start`
 - **Testing Guide**: `docs/TESTING-GUIDE.md`
 - **Fixtures Info**: `docs/FIXTURES-INFO.md`
 

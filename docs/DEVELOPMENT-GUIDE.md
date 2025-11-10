@@ -7,7 +7,7 @@ This guide provides the day-to-day workflow, tooling expectations, and reference
 ## 1. Quick Start Checklist
 
 1. **Clone bench & apps** – see `docs/README.md` for installation details.
-2. **Install dependencies** – ensure Python 3.10+, Node ≥20, Yarn/NPM as preferred.
+2. **Install dependencies** – ensure Python 3.10+, Node 18 LTS, Yarn/NPM as preferred.
 3. **Sync documentation** – review:
    - `docs/CONSOLIDATED_DECISION_LOG.md`
    - `docs/PROJECT-TIMELINE.md`
