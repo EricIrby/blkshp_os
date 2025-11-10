@@ -15,7 +15,8 @@
 - [ ] Core app (`blkshp_core`)
   - [x] Implement/validate DocTypes: `Subscription Plan`, `Feature Toggle`, `Module Activation`, `Tenant Branding`
   - Enhance `UserPermissionMixin` for company + department + functional checks with tests
-  - Build feature flag utilities + `/api/method/blkshp_core.get_feature_matrix`
+  - Build feature flag utilities + `/api/method/blkshp_core.get_feature_matrix` (read-only for tenants)
+  - Deliver BLKSHP-only admin tooling for plan + module management (Desk UI, automation scripts)
 - [ ] Products & Inventory alignment (`blkshp_ops`)
   - Import existing DocTypes; reconcile with ERPNext models (Products, Departments, Inventory Balance)
   - Ensure conversion utilities are in shared service with tests

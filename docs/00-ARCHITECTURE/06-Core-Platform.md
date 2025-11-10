@@ -35,6 +35,13 @@ Fixtures are managed via `hooks.fixtures` so `bench migrate` automatically loads
 2. **Feature Enforcement** – Downstream enforcement code (BLK-7/BLK-9) should reference `Feature Toggle` keys and module activations to calculate a tenant’s effective feature set.
 3. **Branding** – Use `Tenant Branding` to store per-tenant theming once provisioning workflows (BLK-12/BLK-33) assign plans to Press sites.
 
+## Operational Separation
+
+- **Tenant Experience:** Tenant users authenticate via the SPA and consume read/write APIs that respect the feature matrix derived from their assigned plan. They cannot self-manage plans, modules, or feature toggles.
+- **BLKSHP Operations:** Plan changes, module activations, and feature overrides are performed exclusively by BLKSHP staff using internal Desk tooling (BLK-10) and automation scripts (BLK-12/BLK-33).
+- **Request Flow:** Customers contact BLKSHP to request upgrades or feature adjustments. Operations staff apply changes in the admin backend, and the tenant-facing feature matrix updates automatically.
+- **Audit & Logging:** All administrative changes must be logged with operator identity and rationale so tenant-visible behaviour remains traceable.
+
 Refer to Linear issue **BLK-6** for implementation history and acceptance criteria. Run the fixture regression check with:
 
 ```bash
