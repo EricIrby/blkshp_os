@@ -60,7 +60,10 @@ class UserPermissionMixin:
 		if not refresh and hasattr(self, cache_key):
 			return getattr(self, cache_key)
 
-		context = get_subscription_context(company=company or self.get_company())
+		context = get_subscription_context(
+			company=company or self.get_company(),
+			use_cache=not refresh,
+		)
 		setattr(self, cache_key, context)
 		return context
 
