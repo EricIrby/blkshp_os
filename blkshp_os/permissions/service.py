@@ -19,6 +19,7 @@ PERMISSION_FLAGS: tuple[str, ...] = (
 )
 
 SYSTEM_ROLES_BYPASS: tuple[str, ...] = ("System Manager", "Administrator")
+SUBSCRIPTION_BYPASS_ROLES: tuple[str, ...] = SYSTEM_ROLES_BYPASS + ("BLKSHP Operations",)
 
 
 def get_permission_flags() -> tuple[str, ...]:
@@ -41,6 +42,16 @@ def _user_bypasses_department_permissions(user: str | None) -> bool:
 	return any(role in user_roles for role in SYSTEM_ROLES_BYPASS)
 
 
+def _user_bypasses_subscription_gates(user: str | None) -> bool:
+	"""Return True if the user should bypass subscription/module gating."""
+	if not user:
+		return False
+	if user == "Administrator":
+		return True
+	user_roles = set(frappe.get_roles(user))
+	return any(role in user_roles for role in SUBSCRIPTION_BYPASS_ROLES)
+
+
 def get_user_company(user: str | None) -> str | None:
 	"""Return the company associated with the provided user."""
 	if not user:
@@ -55,18 +66,20 @@ def get_user_company(user: str | None) -> str | None:
 def get_user_subscription_context(user: str | None, *, refresh: bool = False):
 	"""Return the subscription context for the supplied user."""
 	if not user:
-		return get_subscription_context(plan_code=None)
+		return get_subscription_context(plan_code=None, use_cache=not refresh)
 	user_doc = frappe.get_cached_doc("User", user)
 	get_context = getattr(user_doc, "get_subscription_context", None)
 	if callable(get_context):
 		return get_context(refresh=refresh)
-	return get_subscription_context(company=get_user_company(user))
+	return get_subscription_context(company=get_user_company(user), use_cache=not refresh)
 
 
 def user_has_module_access(user: str | None, module_key: str, *, refresh: bool = False) -> bool:
 	"""Return True when the user has access to the supplied module."""
 	if not user:
 		return False
+	if _user_bypasses_subscription_gates(user):
+		return True
 	user_doc = frappe.get_cached_doc("User", user)
 	check = getattr(user_doc, "is_module_enabled", None)
 	if callable(check):
@@ -81,6 +94,8 @@ def user_has_feature(user: str | None, feature_key: str, *, refresh: bool = Fals
 	"""Return True when the user has access to the supplied feature toggle."""
 	if not user:
 		return False
+	if _user_bypasses_subscription_gates(user):
+		return True
 	user_doc = frappe.get_cached_doc("User", user)
 	check = getattr(user_doc, "is_feature_enabled", None)
 	if callable(check):
