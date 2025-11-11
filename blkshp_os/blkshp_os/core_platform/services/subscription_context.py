@@ -69,17 +69,19 @@ def clear_subscription_context_cache() -> None:
 def resolve_plan_for_company(company: str | None) -> str | None:
 	"""Return the plan code assigned to the provided company (or the default plan)."""
 	if company:
-		branding_plan = frappe.db.get_value("Tenant Branding", {"company": company}, "plan")
+		branding_plan = frappe.db.get_value("Tenant Branding", company, "plan")
 		if branding_plan:
 			return branding_plan
 
-	default_plan = frappe.db.get_value(
+	default_plan_rows = frappe.get_all(
 		"Subscription Plan",
-		{"is_default": 1, "is_active": 1},
-		"name",
+		filters={"is_default": 1, "is_active": 1},
+		fields=["name"],
 		order_by="modified desc",
 	)
-	return default_plan
+	if default_plan_rows:
+		return default_plan_rows[0].name
+	return None
 
 
 def get_subscription_context(
@@ -150,10 +152,10 @@ def _load_plan_state(plan_code: str) -> SubscriptionPlanState | None:
 	if not frappe.db.exists("Subscription Plan", plan_code):
 		return None
 
-	row = frappe.db.get_value(
+	rows = frappe.get_all(
 		"Subscription Plan",
-		plan_code,
-		[
+		filters={"name": plan_code},
+		fields=[
 			"name",
 			"plan_code",
 			"plan_name",
@@ -164,11 +166,11 @@ def _load_plan_state(plan_code: str) -> SubscriptionPlanState | None:
 			"billing_currency",
 			"base_price",
 		],
-		as_dict=True,
 	)
-	if not row:
+	if not rows:
 		return None
 
+	row = rows[0]
 	return SubscriptionPlanState(
 		name=row.name,
 		plan_code=row.plan_code,
