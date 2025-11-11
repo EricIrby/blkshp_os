@@ -18,6 +18,140 @@ All API endpoints require authentication. Use Frappe's standard authentication m
 
 ---
 
+## Core Platform API
+
+### Get Feature Matrix
+
+Retrieve subscription plan metadata, module availability, and feature toggles for the authenticated tenant user. Feature administration remains a BLKSHP Operations responsibility and the response is read-only.
+
+**Endpoint:** `/api/method/blkshp_os.api.core_platform.get_feature_matrix`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `refresh` (int, optional): When set to `1`, bypasses cached plan data before building the matrix. Defaults to `0` (use cached data when available).
+
+**Response:**
+```json
+{
+  "plan_code": "FOUNDATION",
+  "plan": {
+    "code": "FOUNDATION",
+    "label": "Foundation Plan",
+    "is_active": true,
+    "is_default": true,
+    "billing_currency": "USD"
+  },
+  "modules": [
+    {
+      "key": "core",
+      "label": "Core",
+      "is_enabled": true,
+      "is_required": true,
+      "depends_on": [],
+      "feature_overrides": {},
+      "user_has_access": true
+    }
+  ],
+  "enabled_modules": ["core", "inventory"],
+  "user_accessible_modules": ["core", "inventory"],
+  "feature_states": {
+    "core.workspace.access": true
+  },
+  "user_feature_access": {
+    "core.workspace.access": true
+  },
+  "administration": {
+    "managed_by": "BLKSHP Operations",
+    "message": "Feature toggles are administered solely by BLKSHP Operations."
+  },
+  "generated_at": "2025-11-11 12:34:56.000000",
+  "user": {
+    "id": "matrix.user@example.com",
+    "company": "Matrix Test Company",
+    "roles": ["Employee"]
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X GET https://your-site.com/api/method/blkshp_os.api.core_platform.get_feature_matrix \
+  -H "Authorization: token api_key:api_secret"
+```
+
+---
+
+### Get Profile
+
+Return a read-only profile summary for the current user, including company assignment, department permissions, subscription snapshot, and permission catalog.
+
+**Endpoint:** `/api/method/blkshp_os.api.core_platform.get_profile`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `refresh` (int, optional): When set to `1`, bypasses cached plan data prior to assembling the profile. Defaults to `0`.
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "matrix.user@example.com",
+    "full_name": "Matrix User",
+    "email": "matrix.user@example.com",
+    "enabled": true,
+    "roles": ["Employee"]
+  },
+  "company": "Matrix Test Company",
+  "departments": [
+    {
+      "department": "MATRIX",
+      "can_read": 1,
+      "can_write": 0
+    }
+  ],
+  "permissions": {
+    "by_category": {
+      "inventory": [{"permission_code": "inventory.audit.run"}],
+      "system": []
+    },
+    "total": 12
+  },
+  "subscription": {
+    "plan_code": "FOUNDATION",
+    "plan": {
+      "code": "FOUNDATION",
+      "label": "Foundation Plan"
+    },
+    "modules": [
+      {
+        "key": "core",
+        "label": "Core",
+        "is_enabled": true,
+        "user_has_access": true
+      }
+    ],
+    "user_feature_access": {
+      "core.workspace.access": true
+    },
+    "administration": {
+      "managed_by": "BLKSHP Operations",
+      "message": "Feature toggles are administered solely by BLKSHP Operations."
+    }
+  },
+  "generated_at": "2025-11-11 12:34:56.000000"
+}
+```
+
+**Example:**
+```bash
+curl -X GET https://your-site.com/api/method/blkshp_os.api.core_platform.get_profile \
+  -H "Authorization: token api_key:api_secret"
+```
+
+---
+
 ## Department API
 
 ### Get Accessible Departments

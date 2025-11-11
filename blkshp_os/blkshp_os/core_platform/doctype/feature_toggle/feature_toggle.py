@@ -7,7 +7,10 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-from blkshp_os.core_platform.services import clear_subscription_context_cache
+from blkshp_os.core_platform.services import (
+	clear_feature_matrix_cache,
+	clear_subscription_context_cache,
+)
 
 _FEATURE_KEY_PATTERN = re.compile(r"^[a-z0-9_.-]+$")
 
@@ -21,9 +24,11 @@ class FeatureToggle(Document):
 
 	def on_update(self) -> None:
 		clear_subscription_context_cache()
+		clear_feature_matrix_cache()
 
 	def on_trash(self) -> None:
 		clear_subscription_context_cache()
+		clear_feature_matrix_cache()
 
 	def _normalize_feature_key(self) -> None:
 		if not self.feature_key:
