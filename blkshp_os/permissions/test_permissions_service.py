@@ -6,6 +6,7 @@ import json
 import frappe  # type: ignore[import]
 from frappe.tests.utils import FrappeTestCase  # type: ignore[import]
 
+from blkshp_os.core_platform.services import clear_subscription_context_cache
 from blkshp_os.permissions import service
 
 
@@ -18,7 +19,10 @@ class TestPermissionService(FrappeTestCase):
 		if not self.__class__._is_doctype_reloaded:
 			frappe.clear_cache(doctype="Department")
 			frappe.reload_doc("departments", "doctype", "department")
+			for doctype in ("feature_toggle", "subscription_plan", "module_activation", "tenant_branding"):
+				frappe.reload_doc("core_platform", "doctype", doctype)
 			self.__class__._is_doctype_reloaded = True
+		clear_subscription_context_cache()
 		self.company = self._ensure_company()
 		self.user = self._ensure_user("permission_service@example.com")
 		self.kitchen = self._create_department("KITCHEN", "Kitchen")
@@ -63,6 +67,36 @@ class TestPermissionService(FrappeTestCase):
 		departments = service.get_accessible_departments(self.user)
 		self.assertIn(self.kitchen.name, departments)
 		self.assertIn(self.bar.name, departments)
+
+	def test_get_user_company(self) -> None:
+		user_doc = frappe.get_doc("User", self.user)
+		user_doc.company = self.company
+		user_doc.save(ignore_permissions=True)
+		self.assertEqual(service.get_user_company(self.user), self.company)
+
+	def test_user_has_module_and_feature_access(self) -> None:
+		self._ensure_role("Employee")
+		user_doc = frappe.get_doc("User", self.user)
+		user_doc.company = self.company
+		user_doc.add_roles("Employee")
+		user_doc.save(ignore_permissions=True)
+
+		self._create_tenant_branding(self.company, "FOUNDATION")
+
+		self.assertTrue(service.user_has_module_access(self.user, "core"))
+		self.assertTrue(service.user_has_feature(self.user, "core.workspace.access"))
+		self.assertFalse(service.user_has_module_access(self.user, "nonexistent-module"))
+		self.assertFalse(service.user_has_feature(self.user, "nonexistent.feature"))
+
+	def test_operations_role_bypasses_feature_checks(self) -> None:
+		self._ensure_role("System Manager")
+		user_doc = frappe.get_doc("User", self.user)
+		user_doc.company = None
+		user_doc.add_roles("System Manager")
+		user_doc.save(ignore_permissions=True)
+
+		self.assertTrue(service.user_has_module_access(self.user, "imaginary-module"))
+		self.assertTrue(service.user_has_feature(self.user, "imaginary.feature"))
 
 	def _ensure_company(self, name: str = "Permissions Test Company") -> str:
 		existing = frappe.db.exists("Company", {"company_name": name})
@@ -124,5 +158,27 @@ class TestPermissionService(FrappeTestCase):
 			}
 		)
 		permission.insert(ignore_permissions=True)
+
+	def _create_tenant_branding(self, company: str, plan: str) -> None:
+		if frappe.db.exists("Tenant Branding", company):
+			doc = frappe.get_doc("Tenant Branding", company)
+			doc.plan = plan
+			doc.save(ignore_permissions=True)
+			return
+		doc = frappe.get_doc(
+			{
+				"doctype": "Tenant Branding",
+				"company": company,
+				"plan": plan,
+				"theme_name": "Default",
+			}
+		)
+		doc.insert(ignore_permissions=True)
+
+	def _ensure_role(self, role_name: str) -> None:
+		if frappe.db.exists("Role", role_name):
+			return
+		role = frappe.get_doc({"doctype": "Role", "role_name": role_name})
+		role.insert(ignore_permissions=True)
 
 

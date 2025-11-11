@@ -8,6 +8,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from blkshp_os.core_platform.services import clear_subscription_context_cache
+
 
 class ModuleActivation(Document):
 	"""Defines module availability and feature overrides for a subscription plan."""
@@ -83,3 +85,9 @@ class ModuleActivation(Document):
 				raise frappe.ValidationError(
 					_("Override for feature {0} must be a boolean or nested configuration." ).format(feature_key),
 				)
+
+	def on_update(self) -> None:
+		clear_subscription_context_cache()
+
+	def on_trash(self) -> None:
+		clear_subscription_context_cache()
