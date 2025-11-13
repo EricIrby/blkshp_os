@@ -154,6 +154,77 @@ bench --site <site> run-tests --app blkshp_os
 bench update --patch
 ```
 
+### 5.2 Site Provisioning
+
+**Audience:** BLKSHP Operations staff only
+
+The `scripts/bootstrap_site.py` script automates the creation and configuration of tenant sites for BLKSHP OS. This tool streamlines the provisioning process by handling site creation, app installation, subscription plan configuration, and initial setup in a single command.
+
+**Prerequisites:**
+- Active Frappe bench environment (for local provisioning)
+- BLKSHP Operations credentials
+- For Frappe Press: `FC_API_KEY` and `FC_API_SECRET` environment variables
+
+**Basic Usage:**
+
+```bash
+# Create a local site with FOUNDATION plan
+python scripts/bootstrap_site.py --site demo.local --plan FOUNDATION
+
+# Create site with custom admin password
+python scripts/bootstrap_site.py --site tenant1.local --plan FOUNDATION --admin-password secure123
+
+# Enable specific modules beyond the plan's defaults
+python scripts/bootstrap_site.py --site tenant1.local --plan FOUNDATION \
+    --enable-module inventory --enable-module procurement
+```
+
+**Available Options:**
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `--site` | Yes | Site name (e.g., `demo.local` or `tenant.frappe.cloud`) |
+| `--plan` | Yes | Subscription plan code (e.g., `FOUNDATION`, `PROFESSIONAL`) |
+| `--enable-module` | No | Enable specific module (can be specified multiple times) |
+| `--admin-password` | No | Administrator password (default: `admin`) |
+| `--press` | No | Provision on Frappe Press instead of local bench |
+| `--press-team` | No | Frappe Press team name (required if `--press` is used) |
+
+**What the Script Does:**
+
+1. **Site Creation**: Creates new Frappe site with specified name
+2. **App Installation**: Installs `blkshp_os` and required dependencies
+3. **Migrations**: Runs all database migrations to set up schema
+4. **Role Setup**: Creates and configures BLKSHP Operations role
+5. **Plan Configuration**: Applies subscription plan and validates plan exists
+6. **Module Overrides**: Enables additional modules if specified
+7. **Summary Report**: Provides next steps and access information
+
+**Frappe Press Integration:**
+
+Frappe Press provisioning is planned for Phase 2 but not yet implemented. When using `--press`, the script will display instructions for manual Press provisioning. Contact BLKSHP DevOps for Press deployment support.
+
+**Security Notes:**
+
+- This tool is restricted to BLKSHP Operations staff only
+- All provisioning actions are audit-logged
+- Clients cannot request direct provisioning; they must contact BLKSHP support
+- Default passwords should be changed immediately after provisioning
+
+**Troubleshooting:**
+
+```bash
+# Verify bench environment
+bench --version
+
+# Check if site already exists
+bench --site <site> version
+
+# Manually verify plan exists
+bench --site <site> console
+>>> frappe.get_all("Subscription Plan", pluck="plan_code")
+```
+
 ## 6. Branching & PR Conventions
 
 - Branch: `feature/blk-XX-description`
