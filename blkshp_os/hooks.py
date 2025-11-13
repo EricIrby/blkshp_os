@@ -300,3 +300,10 @@ doc_events = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
 
+# Subscription Enforcement Log Retention
+# ---------------------------------------
+# Automatically clear old subscription access logs after 90 days
+default_log_clearing_doctypes = {
+	"Subscription Access Log": 90  # days to retain logs
+}
+

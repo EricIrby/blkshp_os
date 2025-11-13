@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "autoname": "format:SAL-{timestamp}-{####}",
+ "creation": "2025-01-12 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "timestamp",
+  "user",
+  "access_type",
+  "access_key",
+  "action",
+  "column_break_1",
+  "bypass_reason",
+  "ip_address",
+  "section_break_2",
+  "context_data"
+ ],
+ "fields": [
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Timestamp",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "access_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Access Type",
+   "options": "Module\nFeature",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "access_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Access Key",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Action",
+   "options": "Denied\nBypass",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "bypass_reason",
+   "fieldtype": "Data",
+   "label": "Bypass Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "context_data",
+   "fieldtype": "Long Text",
+   "label": "Context Data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Context"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2025-01-12 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Core Platform",
+ "name": "Subscription Access Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 0
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "BLKSHP Operations",
+   "share": 1,
+   "write": 0
+  }
+ ],
+ "quick_entry": 0,
+ "sort_field": "timestamp",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
