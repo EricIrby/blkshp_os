@@ -40,6 +40,9 @@ env/
 *.sublime-project
 *.sublime-workspace
 
+# Claude Code - Local settings (user-specific)
+.claude/settings.local.json
+
 
 # Frappe/Bench Specific
 node_modules/
