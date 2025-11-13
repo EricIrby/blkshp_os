@@ -160,12 +160,15 @@ class RecipeBatch(Document):
 	def _convert_product_quantity(
 		self, product: str | None, quantity: float, unit: str | None
 	) -> float:
+		"""Convert product quantity to primary unit using centralized conversion service."""
+		from blkshp_os.products import conversion
+
 		if not product:
 			frappe.throw(_("Product is required for product ingredients."))
 
 		product_doc = frappe.get_doc("Product", product)
 		target_unit = unit or product_doc.primary_count_unit
-		return float(product_doc.convert_to_primary_unit(target_unit, quantity))
+		return float(conversion.convert_to_primary_unit(product, target_unit, quantity))
 
 	def _get_output_product_primary_unit(self, recipe) -> str:
 		if not recipe.output_product:

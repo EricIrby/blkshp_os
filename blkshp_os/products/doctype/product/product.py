@@ -3,29 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 
-VOLUME_TO_ML = {
-    "ml": 1,
-    "milliliter": 1,
-    "l": 1000,
-    "liter": 1000,
-    "litre": 1000,
-    "fl oz": 29.5735,
-    "fluid ounce": 29.5735,
-    "pint": 473.176,
-    "quart": 946.353,
-    "gallon": 3785.41,
-}
-
-WEIGHT_TO_G = {
-    "g": 1,
-    "gram": 1,
-    "kg": 1000,
-    "kilogram": 1000,
-    "oz": 28.3495,
-    "ounce": 28.3495,
-    "lb": 453.592,
-    "pound": 453.592,
-}
+from blkshp_os.products import conversion
 
 
 class Product(Document):
@@ -45,73 +23,20 @@ class Product(Document):
     # Public helpers
     # -------------------------------------------------------------------------
     def get_available_count_units(self):
-        units = set()
-        if self.primary_count_unit:
-            units.add(self.primary_count_unit.lower())
-
-        if self.volume_conversion_unit:
-            units.add(self.volume_conversion_unit.lower())
-            units.update(VOLUME_TO_ML.keys())
-
-        if self.weight_conversion_unit:
-            units.add(self.weight_conversion_unit.lower())
-            units.update(WEIGHT_TO_G.keys())
-
-        for row in self.purchase_units or []:
-            if row.purchase_unit:
-                units.add(row.purchase_unit.lower())
-
-        return sorted(units)
+        """Get all available count units for this product."""
+        return conversion.get_available_count_units(self)
 
     def convert_to_primary_unit(self, from_unit, quantity):
-        from_unit = (from_unit or "").lower()
-        if self.primary_count_unit and from_unit == self.primary_count_unit.lower():
-            return quantity
-
-        qty = self._convert_from_purchase_unit(from_unit, quantity)
-        if qty is not None:
-            return qty
-
-        qty = self._convert_from_volume_unit(from_unit, quantity)
-        if qty is not None:
-            return qty
-
-        qty = self._convert_from_weight_unit(from_unit, quantity)
-        if qty is not None:
-            return qty
-
-        frappe.throw(
-            _("Cannot convert from unit {0} for product {1}.").format(
-                from_unit or _("(empty)"), self.name
-            )
-        )
+        """Convert any unit to primary unit (hub conversion)."""
+        return conversion.convert_to_primary_unit(self, from_unit, quantity)
 
     def convert_from_primary_unit(self, to_unit, quantity):
-        to_unit = (to_unit or "").lower()
-        if self.primary_count_unit and to_unit == self.primary_count_unit.lower():
-            return quantity
-
-        qty = self._convert_to_purchase_unit(to_unit, quantity)
-        if qty is not None:
-            return qty
-
-        qty = self._convert_to_volume_unit(to_unit, quantity)
-        if qty is not None:
-            return qty
-
-        qty = self._convert_to_weight_unit(to_unit, quantity)
-        if qty is not None:
-            return qty
-
-        frappe.throw(
-            _("Cannot convert to unit {0} for product {1}.").format(
-                to_unit or _("(empty)"), self.name
-            )
-        )
+        """Convert from primary unit to any unit."""
+        return conversion.convert_from_primary_unit(self, to_unit, quantity)
 
     def convert_between_units(self, from_unit, to_unit, quantity):
-        primary_qty = self.convert_to_primary_unit(from_unit, quantity)
-        return self.convert_from_primary_unit(to_unit, primary_qty)
+        """Convert between any two units via primary unit (hub-and-spoke)."""
+        return conversion.convert_between_units(self, from_unit, to_unit, quantity)
 
     def get_departments(self, active_only=True):
         allocations = self.departments or []
@@ -203,85 +128,4 @@ class Product(Document):
         if self.is_generic and self.is_prep_item:
             frappe.throw(_("Product cannot be both generic and a prep item."))
 
-    def _convert_from_purchase_unit(self, from_unit, quantity):
-        for row in self.purchase_units or []:
-            if not row.purchase_unit:
-                continue
-            if row.purchase_unit.lower() == from_unit:
-                return quantity * row.conversion_to_primary_cu
-            if row.name and row.name.lower() == from_unit:
-                return quantity * row.conversion_to_primary_cu
-        return None
-
-    def _convert_from_volume_unit(self, from_unit, quantity):
-        if not self.volume_conversion_unit:
-            return None
-
-        base_unit = self.volume_conversion_unit.lower()
-        if from_unit == base_unit:
-            return quantity / self.volume_conversion_factor
-
-        qty_in_base = self._convert_standard_volume(quantity, from_unit, base_unit)
-        if qty_in_base is None:
-            return None
-        return qty_in_base / self.volume_conversion_factor
-
-    def _convert_from_weight_unit(self, from_unit, quantity):
-        if not self.weight_conversion_unit:
-            return None
-
-        base_unit = self.weight_conversion_unit.lower()
-        if from_unit == base_unit:
-            return quantity / self.weight_conversion_factor
-
-        qty_in_base = self._convert_standard_weight(quantity, from_unit, base_unit)
-        if qty_in_base is None:
-            return None
-        return qty_in_base / self.weight_conversion_factor
-
-    def _convert_to_purchase_unit(self, to_unit, quantity):
-        for row in self.purchase_units or []:
-            if not row.purchase_unit:
-                continue
-            if row.purchase_unit.lower() == to_unit:
-                return quantity / row.conversion_to_primary_cu
-            if row.name and row.name.lower() == to_unit:
-                return quantity / row.conversion_to_primary_cu
-        return None
-
-    def _convert_to_volume_unit(self, to_unit, quantity):
-        if not self.volume_conversion_unit:
-            return None
-
-        base_unit = self.volume_conversion_unit.lower()
-        if to_unit == base_unit:
-            return quantity * self.volume_conversion_factor
-
-        qty_in_base = quantity * self.volume_conversion_factor
-        converted = self._convert_standard_volume(qty_in_base, base_unit, to_unit)
-        return converted
-
-    def _convert_to_weight_unit(self, to_unit, quantity):
-        if not self.weight_conversion_unit:
-            return None
-
-        base_unit = self.weight_conversion_unit.lower()
-        if to_unit == base_unit:
-            return quantity * self.weight_conversion_factor
-
-        qty_in_base = quantity * self.weight_conversion_factor
-        converted = self._convert_standard_weight(qty_in_base, base_unit, to_unit)
-        return converted
-
-    def _convert_standard_volume(self, quantity, from_unit, to_unit):
-        if from_unit not in VOLUME_TO_ML or to_unit not in VOLUME_TO_ML:
-            return None
-        ml = quantity * VOLUME_TO_ML[from_unit]
-        return ml / VOLUME_TO_ML[to_unit]
-
-    def _convert_standard_weight(self, quantity, from_unit, to_unit):
-        if from_unit not in WEIGHT_TO_G or to_unit not in WEIGHT_TO_G:
-            return None
-        grams = quantity * WEIGHT_TO_G[from_unit]
-        return grams / WEIGHT_TO_G[to_unit]
 

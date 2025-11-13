@@ -65,14 +65,28 @@ def update_product(name: str, data: dict[str, Any] | str) -> dict[str, Any]:
 @frappe.whitelist()
 def convert_quantity(
 	product: str,
-	quantity: float,
+	quantity: float | str,
 	from_unit: str | None = None,
 	to_unit: str | None = None,
 ) -> dict[str, Any]:
-	"""Convert quantity for the provided product."""
+	"""Convert quantity between units using the centralized conversion service.
+
+	Args:
+		product: Product name or code
+		quantity: Quantity to convert
+		from_unit: Source unit (optional, defaults to primary unit)
+		to_unit: Target unit (optional, defaults to primary unit)
+
+	Returns:
+		Dictionary with conversion result including product, quantities, and units
+	"""
 	if not product:
 		frappe.throw(_("Product is required."))
+
 	quantity = flt(quantity)
+	if quantity < 0:
+		frappe.throw(_("Quantity cannot be negative."))
+
 	return product_service.convert_quantity(
 		product=product,
 		quantity=quantity,
@@ -82,9 +96,38 @@ def convert_quantity(
 
 
 @frappe.whitelist()
+def get_available_units(product: str) -> dict[str, Any]:
+	"""Get all available count units for a product.
+
+	Args:
+		product: Product name or code
+
+	Returns:
+		Dictionary with product name and list of available units
+	"""
+	from blkshp_os.products import conversion
+
+	if not product:
+		frappe.throw(_("Product is required."))
+
+	# Verify product exists and user has access
+	doc = frappe.get_doc("Product", product)
+	if not product_service.user_can_access_product(doc, permission_flag="can_read"):
+		frappe.throw(_("You do not have permission to view this product."), frappe.PermissionError)
+
+	units = conversion.get_available_count_units(product)
+
+	return {
+		"product": product,
+		"product_name": doc.product_name,
+		"primary_count_unit": doc.primary_count_unit,
+		"available_units": units,
+	}
+
+
+@frappe.whitelist()
 def get_purchase_units(product: str, vendor: str | None = None) -> list[dict[str, Any]]:
 	"""Return purchase units for a product."""
 	if not product:
 		frappe.throw(_("Product is required."))
 	return product_service.get_purchase_units(product, vendor=vendor)
-
