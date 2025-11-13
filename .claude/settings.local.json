@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/Eric/Development/blkshp_os log --oneline -20)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

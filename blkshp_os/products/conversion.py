@@ -58,32 +58,48 @@ def _normalize_unit(unit: str | None) -> str:
 
 
 def _load_product_data(product: str | ProductConversionData) -> ProductConversionData:
-	"""Load product data from name or return dict directly."""
+	"""Load product data from name or return dict directly.
+
+	Args:
+		product: Product name (str), Document object, or product data dict
+
+	Returns:
+		ProductConversionData dict with conversion fields
+
+	Raises:
+		ValueError: If product type is not supported
+	"""
 	if isinstance(product, dict):
 		return product
 
+	# Handle both string names and Document objects
 	if isinstance(product, str):
 		doc = frappe.get_doc("Product", product)
-		return {
-			"name": doc.name,
-			"primary_count_unit": doc.primary_count_unit or "",
-			"volume_conversion_unit": doc.volume_conversion_unit,
-			"volume_conversion_factor": doc.volume_conversion_factor,
-			"weight_conversion_unit": doc.weight_conversion_unit,
-			"weight_conversion_factor": doc.weight_conversion_factor,
-			"purchase_units": [
-				{
-					"purchase_unit": row.purchase_unit,
-					"conversion_to_primary_cu": row.conversion_to_primary_cu,
-					"name": row.name,
-				}
-				for row in doc.get("purchase_units", [])
-			]
-			if doc.get("purchase_units")
-			else None,
-		}
+	elif hasattr(product, "doctype") and getattr(product, "doctype", None) == "Product":
+		# It's a Product Document object
+		doc = product
+	else:
+		raise ValueError(_("Product must be a string (name), Document, or dict (data), got {0}").format(type(product)))
 
-	raise ValueError(_("Product must be a string (name) or dict (data), got {0}").format(type(product)))
+	# Extract data from Document
+	return {
+		"name": doc.name,
+		"primary_count_unit": doc.primary_count_unit or "",
+		"volume_conversion_unit": doc.volume_conversion_unit,
+		"volume_conversion_factor": doc.volume_conversion_factor,
+		"weight_conversion_unit": doc.weight_conversion_unit,
+		"weight_conversion_factor": doc.weight_conversion_factor,
+		"purchase_units": [
+			{
+				"purchase_unit": row.purchase_unit,
+				"conversion_to_primary_cu": row.conversion_to_primary_cu,
+				"name": row.name,
+			}
+			for row in doc.get("purchase_units", [])
+		]
+		if doc.get("purchase_units")
+		else None,
+	}
 
 
 def _convert_standard_volume(quantity: float, from_unit: str, to_unit: str) -> float | None:

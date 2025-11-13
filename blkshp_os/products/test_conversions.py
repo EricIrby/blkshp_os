@@ -240,6 +240,49 @@ class TestConversions(FrappeTestCase):
 		result = conversion.convert_from_primary_unit(product_data, "fl oz", 2.0)
 		self.assertAlmostEqual(result, 24.0, places=4)
 
+	def test_conversion_with_product_document(self) -> None:
+		"""Test conversion using Product Document object directly (BUG FIX TEST)."""
+		product_name = self._create_product(
+			"Document Test Product",
+			extra_fields={
+				"primary_count_unit": "each",
+				"volume_conversion_unit": "fl oz",
+				"volume_conversion_factor": 12.0,
+			},
+		)
+
+		# Load Product Document
+		product_doc = frappe.get_doc("Product", product_name)
+
+		# Test Document methods (these pass self as Document object)
+		result = product_doc.convert_to_primary_unit("fl oz", 24.0)
+		self.assertAlmostEqual(result, 2.0, places=4)
+
+		result = product_doc.convert_from_primary_unit("fl oz", 2.0)
+		self.assertAlmostEqual(result, 24.0, places=4)
+
+		result = product_doc.convert_between_units("fl oz", "each", 12.0)
+		self.assertAlmostEqual(result, 1.0, places=4)
+
+		# Test passing Document directly to conversion module
+		result = conversion.convert_to_primary_unit(product_doc, "fl oz", 24.0)
+		self.assertAlmostEqual(result, 2.0, places=4)
+
+		result = conversion.convert_from_primary_unit(product_doc, "fl oz", 2.0)
+		self.assertAlmostEqual(result, 24.0, places=4)
+
+		result = conversion.convert_between_units(product_doc, "fl oz", "each", 12.0)
+		self.assertAlmostEqual(result, 1.0, places=4)
+
+		# Test get_available_count_units with Document
+		units = product_doc.get_available_count_units()
+		self.assertIn("each", units)
+		self.assertIn("fl oz", units)
+
+		units = conversion.get_available_count_units(product_doc)
+		self.assertIn("each", units)
+		self.assertIn("fl oz", units)
+
 	# -------------------------------------------------------------------------
 	# Helpers
 	# -------------------------------------------------------------------------
