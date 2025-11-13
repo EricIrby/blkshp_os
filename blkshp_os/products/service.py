@@ -9,6 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 
 from blkshp_os.permissions.service import get_accessible_departments, has_department_permission
+from blkshp_os.products import conversion
 
 DEFAULT_LIST_FIELDS: list[str] = [
 	"name",
@@ -216,21 +217,21 @@ def convert_quantity(
 	to_unit: str | None = None,
 	user: str | None = None,
 ) -> dict[str, Any]:
-	"""Convert quantity using the product's conversion utilities."""
+	"""Convert quantity using the centralized conversion service."""
 	user = _get_user(user)
 	doc = frappe.get_doc("Product", product)
 	if not user_can_access_product(doc, user, permission_flag="can_read"):
 		frappe.throw(_("You do not have permission to view this product."), frappe.PermissionError)
 
 	if from_unit and to_unit:
-		result = doc.convert_between_units(from_unit, to_unit, quantity)
+		result = conversion.convert_between_units(product, from_unit, to_unit, quantity)
 	elif from_unit:
-		result = doc.convert_to_primary_unit(from_unit, quantity)
+		result = conversion.convert_to_primary_unit(product, from_unit, quantity)
 		to_unit = doc.primary_count_unit
 	else:
 		if not to_unit:
 			frappe.throw(_("Target unit is required when converting from primary unit."))
-		result = doc.convert_from_primary_unit(to_unit, quantity)
+		result = conversion.convert_from_primary_unit(product, to_unit, quantity)
 
 	return {
 		"product": product,

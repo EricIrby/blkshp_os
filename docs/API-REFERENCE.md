@@ -152,6 +152,102 @@ curl -X GET https://your-site.com/api/method/blkshp_os.api.core_platform.get_pro
 
 ---
 
+## Products API
+
+### Convert Quantity
+
+Convert quantity between units using the centralized conversion service. All conversions use the hub-and-spoke model where conversions flow through the product's primary count unit.
+
+**Endpoint:** `/api/method/blkshp_os.api.products.convert_quantity`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `product` (string, required): Product name or code
+- `quantity` (float, required): Quantity to convert
+- `from_unit` (string, optional): Source unit (defaults to primary unit if not provided)
+- `to_unit` (string, optional): Target unit (defaults to primary unit if not provided)
+
+**Response:**
+```json
+{
+  "product": "SODA-CAN",
+  "quantity": 1.0,
+  "from_unit": "gallon",
+  "to_unit": "each",
+  "converted_quantity": 10.666666666666666
+}
+```
+
+**Example:**
+```bash
+curl -X POST https://your-site.com/api/method/blkshp_os.api.products.convert_quantity \
+  -H "Authorization: token api_key:api_secret" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "product": "SODA-CAN",
+    "quantity": 1,
+    "from_unit": "gallon",
+    "to_unit": "each"
+  }'
+```
+
+**Notes:**
+- Conversions use the hub-and-spoke model: all conversions flow through the product's primary count unit
+- Supports purchase units, volume units, weight units, and standard unit conversions
+- Requires read permission for the product
+- Negative quantities are not allowed
+
+---
+
+### Get Available Units
+
+Get all available count units for a product, including primary unit, volume/weight units, purchase units, and standard conversions.
+
+**Endpoint:** `/api/method/blkshp_os.api.products.get_available_units`
+
+**Method:** `GET` or `POST`
+
+**Parameters:**
+- `product` (string, required): Product name or code
+
+**Response:**
+```json
+{
+  "product": "SODA-CAN",
+  "product_name": "Soda Can",
+  "primary_count_unit": "each",
+  "available_units": [
+    "case",
+    "each",
+    "fl oz",
+    "g",
+    "gallon",
+    "kg",
+    "l",
+    "lb",
+    "liter",
+    "ml",
+    "oz",
+    "pint",
+    "quart"
+  ]
+}
+```
+
+**Example:**
+```bash
+curl -X GET https://your-site.com/api/method/blkshp_os.api.products.get_available_units?product=SODA-CAN \
+  -H "Authorization: token api_key:api_secret"
+```
+
+**Notes:**
+- Returns all units that can be used for conversion with this product
+- Includes primary unit, product-specific units, purchase units, and standard conversions
+- Requires read permission for the product
+
+---
+
 ## Department API
 
 ### Get Accessible Departments
