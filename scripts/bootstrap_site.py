@@ -256,7 +256,7 @@ print("Administrator access configured")
         os.unlink(script_path)
 
 
-def print_completion_summary(site_name: str, plan_code: str, press: bool = False) -> None:
+def print_completion_summary(site_name: str, plan_code: str, admin_password: str = "admin", press: bool = False) -> None:
     """Print completion summary with next steps."""
     print_header("Provisioning Complete!")
 
@@ -273,7 +273,7 @@ def print_completion_summary(site_name: str, plan_code: str, press: bool = False
     else:
         print(f"  1. Start bench: bench start")
         print(f"  2. Access site at: http://{site_name}:8000")
-        print("  3. Login with: Administrator / admin")
+        print(f"  3. Login with: Administrator / {admin_password}")
         print("  4. Verify subscription plan in Desk")
 
     print(f"\n{Colors.BOLD}BLKSHP Operations Notes:{Colors.ENDC}")
@@ -312,7 +312,7 @@ def provision_local_site(args: argparse.Namespace) -> None:
         apply_subscription_plan(args.site, args.plan, args.enable_module)
 
         # Print summary
-        print_completion_summary(args.site, args.plan, press=False)
+        print_completion_summary(args.site, args.plan, args.admin_password, press=False)
 
     except Exception as e:
         print_error(f"Provisioning failed: {str(e)}")
