@@ -140,13 +140,17 @@ def apply_subscription_plan(site_name: str, plan_code: str, module_overrides: Op
     """Apply subscription plan and module overrides to the site."""
     print_header(f"Configuring Subscription Plan: {plan_code}")
 
+    # Safely escape plan_code for use in generated script
+    plan_code_repr = repr(plan_code)
+
     # Create a Python script to execute in Frappe context
     script = f"""
 import frappe
 
 def configure_plan():
     # This function runs in the Frappe context
-    print("Configuring subscription plan: {plan_code}")
+    plan_code = {plan_code_repr}
+    print(f"Configuring subscription plan: {{plan_code}}")
 
     # Get or create company (first company or create demo)
     company = frappe.db.get_value("Company", {{"is_group": 0}}, "name")
@@ -165,12 +169,12 @@ def configure_plan():
     print(f"Using company: {{company}}")
 
     # Verify plan exists
-    if not frappe.db.exists("Subscription Plan", {{"plan_code": "{plan_code}"}}):
-        print(f"ERROR: Subscription plan '{plan_code}' not found!")
+    if not frappe.db.exists("Subscription Plan", {{"plan_code": plan_code}}):
+        print(f"ERROR: Subscription plan '{{plan_code}}' not found!")
         print("Available plans:", frappe.get_all("Subscription Plan", pluck="plan_code"))
         return False
 
-    print(f"Plan '{plan_code}' verified")
+    print(f"Plan '{{plan_code}}' verified")
 
     # Apply module overrides if provided
     module_overrides = {json.dumps(module_overrides or [])}
