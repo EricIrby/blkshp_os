@@ -172,9 +172,10 @@ def require_module_access(
 			require_module_access("procurement", context={"doctype": self.doctype})
 	"""
 
-	def check_access(checked_user: str | None = None) -> None:
+	def check_access(checked_user: str | None = None, check_context: dict[str, Any] | None = None) -> None:
 		"""Perform the actual access check."""
 		checked_user = checked_user or user or frappe.session.user
+		check_context = check_context or context or {}
 
 		# Check if user bypasses subscription gates
 		if permission_service._user_bypasses_subscription_gates(checked_user):
@@ -189,7 +190,7 @@ def require_module_access(
 					user=checked_user,
 					access_type="Module",
 					access_key=module_key,
-					context=context,
+					context=check_context,
 					bypass_reason=bypass_reason,
 				)
 			return  # Access granted
@@ -206,7 +207,7 @@ def require_module_access(
 					user=checked_user,
 					access_type="Module",
 					access_key=module_key,
-					context=context,
+					context=check_context,
 				)
 
 			# Raise exception
@@ -232,20 +233,21 @@ def require_module_access(
 		@functools.wraps(func)
 		def wrapper(*args, **kwargs):
 			# Build context from function metadata
-			func_context = context or {}
+			func_context = context.copy() if context else {}
 			func_context.setdefault("function", func.__name__)
 			func_context.setdefault("module", func.__module__)
 
 			# Check access before executing function
-			check_access()
+			check_access(check_context=func_context)
 
 			# Execute original function
 			return func(*args, **kwargs)
 
 		return wrapper  # type: ignore
 
-	# If no function provided, execute check immediately (direct call)
-	if user is not None or context is not None:
+	# If user is provided, this is a direct call (not a decorator)
+	# Execute check immediately and return no-op decorator
+	if user is not None:
 		check_access()
 		return lambda f: f  # Return no-op decorator
 
@@ -291,9 +293,10 @@ def require_feature_access(
 			)
 	"""
 
-	def check_access(checked_user: str | None = None) -> None:
+	def check_access(checked_user: str | None = None, check_context: dict[str, Any] | None = None) -> None:
 		"""Perform the actual access check."""
 		checked_user = checked_user or user or frappe.session.user
+		check_context = check_context or context or {}
 
 		# Check if user bypasses subscription gates
 		if permission_service._user_bypasses_subscription_gates(checked_user):
@@ -308,7 +311,7 @@ def require_feature_access(
 					user=checked_user,
 					access_type="Feature",
 					access_key=feature_key,
-					context=context,
+					context=check_context,
 					bypass_reason=bypass_reason,
 				)
 			return  # Access granted
@@ -325,7 +328,7 @@ def require_feature_access(
 					user=checked_user,
 					access_type="Feature",
 					access_key=feature_key,
-					context=context,
+					context=check_context,
 				)
 
 			# Raise exception
@@ -350,20 +353,21 @@ def require_feature_access(
 		@functools.wraps(func)
 		def wrapper(*args, **kwargs):
 			# Build context from function metadata
-			func_context = context or {}
+			func_context = context.copy() if context else {}
 			func_context.setdefault("function", func.__name__)
 			func_context.setdefault("module", func.__module__)
 
 			# Check access before executing function
-			check_access()
+			check_access(check_context=func_context)
 
 			# Execute original function
 			return func(*args, **kwargs)
 
 		return wrapper  # type: ignore
 
-	# If no function provided, execute check immediately (direct call)
-	if user is not None or context is not None:
+	# If user is provided, this is a direct call (not a decorator)
+	# Execute check immediately and return no-op decorator
+	if user is not None:
 		check_access()
 		return lambda f: f  # Return no-op decorator
 
