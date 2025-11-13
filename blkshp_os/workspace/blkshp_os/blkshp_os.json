@@ -1,6 +1,6 @@
 {
 	"charts": [],
-	"content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h3\\\" style=\\\"\\\"><a href=\\\"https://blkshp.co\\\" target=\\\"_blank\\\">Open BLKSHP OS Web App</a></span>\",\"col\":12}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"paragraph\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Administration<br></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Department Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Permission Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"System Setup\",\"col\":4}}]",
+	"content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h3\\\" style=\\\"\\\"><a href=\\\"https://blkshp.co\\\" target=\\\"_blank\\\">Open BLKSHP OS Web App</a></span>\",\"col\":12}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"paragraph\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Administration<br></span>\",\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Subscription Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Department Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Permission Management\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"System Setup\",\"col\":4}}]",
 	"creation": "2025-11-08 00:00:00.000000",
 	"docstatus": 0,
 	"doctype": "Workspace",
@@ -10,6 +10,34 @@
 	"idx": 0,
 	"label": "BLKSHP OS",
 	"links": [
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Subscription Management",
+			"link_count": 2,
+			"onboard": 0,
+			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Subscription Plans",
+			"link_count": 0,
+			"link_to": "Subscription Plan",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Manage Tenants",
+			"link_count": 0,
+			"link_to": "subscription-management",
+			"link_type": "Page",
+			"onboard": 0,
+			"type": "Link"
+		},
 		{
 			"hidden": 0,
 			"is_query_report": 0,
