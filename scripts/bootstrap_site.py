@@ -99,16 +99,20 @@ def check_bench_environment() -> bool:
         return False
 
 
-def create_local_site(site_name: str, admin_password: str = "admin") -> None:
-    """Create a new site on local bench."""
+def create_local_site(site_name: str, admin_password: str = "admin") -> bool:
+    """Create a new site on local bench.
+
+    Returns:
+        True if a new site was created, False if site already exists.
+    """
     print_header(f"Creating Local Site: {site_name}")
 
     # Check if site already exists
     try:
         sites = run_command(["bench", "--site", site_name, "version"], capture_output=True, check=False)
         if sites:
-            print_warning(f"Site {site_name} already exists. Skipping creation.")
-            return
+            print_warning(f"Site {site_name} already exists. Skipping provisioning.")
+            return False
     except:
         pass
 
@@ -119,6 +123,7 @@ def create_local_site(site_name: str, admin_password: str = "admin") -> None:
         "--no-mariadb-socket"
     ])
     print_success(f"Site {site_name} created successfully")
+    return True
 
 
 def install_apps(site_name: str, apps: list[str]) -> None:
@@ -283,8 +288,11 @@ def provision_local_site(args: argparse.Namespace) -> None:
             print_error("Not in a Frappe bench environment. Please run from bench directory.")
             sys.exit(1)
 
-        # Create site
-        create_local_site(args.site, args.admin_password)
+        # Create site (returns False if site already exists)
+        site_created = create_local_site(args.site, args.admin_password)
+        if not site_created:
+            print_info("Site already exists. To reconfigure, use bench commands directly.")
+            return
 
         # Install apps (ERPNext must be installed before BLKSHP OS)
         required_apps = ["erpnext", "blkshp_os"]
