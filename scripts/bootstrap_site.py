@@ -193,7 +193,14 @@ configure_plan()
 
     try:
         print_info("Applying subscription configuration...")
-        run_command(["bench", "--site", site_name, "execute", script_path])
+        output = run_command(["bench", "--site", site_name, "execute", script_path], capture_output=True)
+
+        # Check if the script reported an error
+        if output and "ERROR:" in output:
+            print_error("Subscription plan configuration failed")
+            print(output)
+            raise RuntimeError(f"Failed to apply subscription plan '{plan_code}'")
+
         print_success("Subscription plan applied")
     finally:
         os.unlink(script_path)
@@ -279,8 +286,8 @@ def provision_local_site(args: argparse.Namespace) -> None:
         # Create site
         create_local_site(args.site, args.admin_password)
 
-        # Install apps
-        required_apps = ["blkshp_os"]  # Add erpnext, blkshp_ops, etc. as needed
+        # Install apps (ERPNext must be installed before BLKSHP OS)
+        required_apps = ["erpnext", "blkshp_os"]
         install_apps(args.site, required_apps)
 
         # Run migrations
