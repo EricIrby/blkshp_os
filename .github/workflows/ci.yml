@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install linting dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black ruff mypy
+
+      - name: Run Black (code formatting check)
+        run: |
+          black --check --diff blkshp_os/
+
+      - name: Run Ruff (linting)
+        run: |
+          ruff check blkshp_os/
+
+      - name: Run MyPy (type checking)
+        run: |
+          mypy blkshp_os/ --ignore-missing-imports --no-strict-optional
+        continue-on-error: true  # Don't fail on type errors initially
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            mariadb-client \
+            libmariadb-dev \
+            redis-server \
+            wkhtmltopdf
+
+      - name: Start MariaDB
+        run: |
+          sudo systemctl start mariadb.service
+
+      - name: Start Redis
+        run: |
+          sudo systemctl start redis-server
+
+      - name: Install Frappe Bench
+        run: |
+          pip install --upgrade pip
+          pip install frappe-bench
+
+      - name: Initialize Bench
+        run: |
+          bench init frappe-bench --frappe-branch version-15 --skip-redis-config-generation
+          cd frappe-bench
+
+      - name: Get BLKSHP OS App
+        run: |
+          cd frappe-bench
+          bench get-app ${{ github.workspace }}
+
+      - name: Create Test Site
+        run: |
+          cd frappe-bench
+          bench new-site test_site --mariadb-root-password root --admin-password admin --no-mariadb-socket
+          bench --site test_site install-app blkshp_os
+
+      - name: Run Tests
+        run: |
+          cd frappe-bench
+          bench --site test_site run-tests --app blkshp_os --coverage
+        env:
+          CI: true
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        if: matrix.python-version == '3.10'
+        with:
+          file: frappe-bench/sites/coverage.xml
+          fail_ci_if_error: false
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install security tools
+        run: |
+          pip install --upgrade pip
+          pip install bandit safety
+
+      - name: Run Bandit (security linter)
+        run: |
+          bandit -r blkshp_os/ -f json -o bandit-report.json
+        continue-on-error: true
+
+      - name: Run Safety (dependency checker)
+        run: |
+          safety check --json
+        continue-on-error: true
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
