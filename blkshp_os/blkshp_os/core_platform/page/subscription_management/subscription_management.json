@@ -1,0 +1,23 @@
+{
+ "creation": "2025-11-13 00:00:00.000000",
+ "doctype": "Page",
+ "icon": "octicon octicon-package",
+ "idx": 0,
+ "modified": "2025-11-13 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Core Platform",
+ "name": "subscription-management",
+ "owner": "Administrator",
+ "page_name": "Subscription Management",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "BLKSHP Operations"
+  }
+ ],
+ "standard": "Yes",
+ "system_page": 0,
+ "title": "Subscription Management"
+}
