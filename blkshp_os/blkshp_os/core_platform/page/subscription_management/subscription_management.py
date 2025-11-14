@@ -211,13 +211,16 @@ def toggle_module(
 	Args:
 		company: Company name
 		module_key: Module key to toggle
-		enabled: Whether to enable or disable
+		enabled: Whether to enable or disable (accepts bool, int, or string)
 		reason: Reason for the change (for audit log)
 
 	Returns:
 		Success message.
 	"""
 	frappe.only_for("BLKSHP Operations", "System Manager")
+
+	# Convert enabled to boolean (handles string "true"/"false" from JavaScript)
+	enabled = frappe.parse_json(enabled) if isinstance(enabled, str) else bool(enabled)
 
 	if not frappe.db.exists("Company", company):
 		frappe.throw(_("Company {0} does not exist").format(company))
@@ -228,16 +231,19 @@ def toggle_module(
 		frappe.throw(_("No subscription plan assigned to {0}").format(company))
 
 	# Check if module activation exists
-	activation_name = f"{plan_code}-{module_key}"
-	if not frappe.db.exists("Module Activation", {"plan": plan_code, "module_key": module_key}):
+	# Get the Module Activation document name
+	activation_name = frappe.db.get_value(
+		"Module Activation",
+		{"plan": plan_code, "module_key": module_key},
+		"name"
+	)
+	if not activation_name:
 		frappe.throw(
 			_("Module {0} not found in plan {1}").format(module_key, plan_code)
 		)
 
 	# Update module activation
-	activation_doc = frappe.get_doc(
-		"Module Activation", {"plan": plan_code, "module_key": module_key}
-	)
+	activation_doc = frappe.get_doc("Module Activation", activation_name)
 
 	# Check if module is required
 	if not enabled and activation_doc.is_required:
