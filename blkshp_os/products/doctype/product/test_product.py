@@ -8,7 +8,9 @@ from blkshp_os.products.doctype.product.product import VOLUME_TO_ML
 
 class TestProduct(FrappeTestCase):
     def test_purchase_and_volume_conversions(self):
-        existing_company = frappe.db.get_value("Company", {"company_name": "Test Company"}, "name")
+        existing_company = frappe.db.get_value(
+            "Company", {"company_name": "Test Company"}, "name"
+        )
         if existing_company:
             company = frappe.get_doc("Company", existing_company)
         else:
@@ -43,7 +45,8 @@ class TestProduct(FrappeTestCase):
 
         each_qty_from_volume = product.convert_to_primary_unit("gallon", 1)
         expected_each_from_volume = (
-            VOLUME_TO_ML["gallon"] / VOLUME_TO_ML[product.volume_conversion_unit.lower()]
+            VOLUME_TO_ML["gallon"]
+            / VOLUME_TO_ML[product.volume_conversion_unit.lower()]
         ) / product.volume_conversion_factor
         self.assertTrue(
             math.isclose(each_qty_from_volume, expected_each_from_volume, rel_tol=1e-6),
@@ -55,4 +58,3 @@ class TestProduct(FrappeTestCase):
             math.isclose(gallons, 1.0, rel_tol=1e-6),
             f"Expected ~1 gallon, got {gallons}",
         )
-

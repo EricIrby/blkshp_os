@@ -4,7 +4,6 @@ from frappe.model.document import Document
 
 
 class InventoryAuditCategory(Document):
-	"""Audit category row (product category in scope)."""
+    """Audit category row (product category in scope)."""
 
-	pass
-
+    pass

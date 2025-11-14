@@ -6,48 +6,58 @@ app_email = "blkshp-os@blkshp.co"
 app_license = "mit"
 
 fixtures = [
-	{
-		"dt": "Custom Field",
-		"filters": [
-			["name", "in", [
-				"User-department_permissions",
-				"User-is_team_account",
-				"Role-custom_permissions",
-				"Role-is_custom_role",
-				"Role-role_description"
-			]],
-		],
-	},
-	{
-		"dt": "Feature Toggle",
-		"filters": [["feature_key", "in", [
-			"core.workspace.access",
-			"products.bulk_operations",
-			"inventory.audit_workflows",
-			"procurement.ottimate_import",
-			"analytics.finance_dashboard"
-		]]],
-	},
-	{
-		"dt": "Subscription Plan",
-		"filters": [["plan_code", "in", ["FOUNDATION"]]],
-	},
-	{
-		"dt": "Module Activation",
-		"filters": [["plan", "in", ["FOUNDATION"]]],
-	},
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                [
+                    "User-department_permissions",
+                    "User-is_team_account",
+                    "Role-custom_permissions",
+                    "Role-is_custom_role",
+                    "Role-role_description",
+                ],
+            ],
+        ],
+    },
+    {
+        "dt": "Feature Toggle",
+        "filters": [
+            [
+                "feature_key",
+                "in",
+                [
+                    "core.workspace.access",
+                    "products.bulk_operations",
+                    "inventory.audit_workflows",
+                    "procurement.ottimate_import",
+                    "analytics.finance_dashboard",
+                ],
+            ]
+        ],
+    },
+    {
+        "dt": "Subscription Plan",
+        "filters": [["plan_code", "in", ["FOUNDATION"]]],
+    },
+    {
+        "dt": "Module Activation",
+        "filters": [["plan", "in", ["FOUNDATION"]]],
+    },
 ]
 
 # Permissions
 # -----------
 permission_query_conditions = {
-	"Department": "blkshp_os.permissions.query.department_permission_query",
+    "Department": "blkshp_os.permissions.query.department_permission_query",
 }
 
 # Extend DocType Class
 # ------------------------------
 extend_doctype_class = {
-	"User": "blkshp_os.permissions.user.UserPermissionMixin",
+    "User": "blkshp_os.permissions.user.UserPermissionMixin",
 }
 
 # Apps
@@ -88,10 +98,7 @@ extend_doctype_class = {
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {
-	"User": "public/js/user.js",
-	"Role": "public/js/role.js"
-}
+doctype_js = {"User": "public/js/user.js", "Role": "public/js/role.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -181,18 +188,18 @@ doctype_js = {
 # Hook on document methods and events
 
 doc_events = {
-	"Department Permission": {
-		"validate": "blkshp_os.permissions.doctype.department_permission.department_permission.run_department_permission_validation",
-	},
-	"User": {
-		"validate": "blkshp_os.permissions.doctype.department_permission.department_permission.validate_user_department_permissions",
-	},
-	"Role Permission": {
-		"validate": "blkshp_os.permissions.doctype.role_permission.role_permission.run_role_permission_validation",
-	},
-	"Role": {
-		"validate": "blkshp_os.permissions.doctype.role_permission.role_permission.validate_role_permissions",
-	},
+    "Department Permission": {
+        "validate": "blkshp_os.permissions.doctype.department_permission.department_permission.run_department_permission_validation",
+    },
+    "User": {
+        "validate": "blkshp_os.permissions.doctype.department_permission.department_permission.validate_user_department_permissions",
+    },
+    "Role Permission": {
+        "validate": "blkshp_os.permissions.doctype.role_permission.role_permission.run_role_permission_validation",
+    },
+    "Role": {
+        "validate": "blkshp_os.permissions.doctype.role_permission.role_permission.validate_role_permissions",
+    },
 }
 
 # Scheduled Tasks
@@ -303,7 +310,4 @@ doc_events = {
 # Subscription Enforcement Log Retention
 # ---------------------------------------
 # Automatically clear old subscription access logs after 90 days
-default_log_clearing_doctypes = {
-	"Subscription Access Log": 90  # days to retain logs
-}
-
+default_log_clearing_doctypes = {"Subscription Access Log": 90}  # days to retain logs

@@ -4,7 +4,6 @@ from frappe.model.document import Document
 
 
 class InventoryAuditStorageLocation(Document):
-	"""Audit storage location row."""
+    """Audit storage location row."""
 
-	pass
-
+    pass

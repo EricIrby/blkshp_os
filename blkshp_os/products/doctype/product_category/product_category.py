@@ -47,5 +47,6 @@ class ProductCategory(Document):
             if ancestor in visited:
                 frappe.throw(_("Detected circular hierarchy for Product Category."))
             visited.add(ancestor)
-            ancestor = frappe.db.get_value("Product Category", ancestor, "parent_category")
-
+            ancestor = frappe.db.get_value(
+                "Product Category", ancestor, "parent_category"
+            )

@@ -1,5 +1,3 @@
 """
 Recipe Batch DocType package.
 """
-
-

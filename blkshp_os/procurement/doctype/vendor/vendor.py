@@ -2,7 +2,6 @@ from frappe.model.document import Document
 
 
 class Vendor(Document):
-	"""Procurement vendor master."""
+    """Procurement vendor master."""
 
-	pass
-
+    pass

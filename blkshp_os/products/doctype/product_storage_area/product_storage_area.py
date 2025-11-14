@@ -5,4 +5,3 @@ class ProductStorageArea(Document):
     """Storage metadata per product."""
 
     pass
-

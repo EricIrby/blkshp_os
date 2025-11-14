@@ -1,5 +1,3 @@
 """
 Inventory Balance DocType package.
 """
-
-
