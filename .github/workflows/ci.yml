@@ -120,19 +120,15 @@ jobs:
             --admin-password admin \
             --force
         working-directory: ${{ github.workspace}}/frappe-bench
-        continue-on-error: true  # TODO: Fix app structure before enabling full tests
 
       - name: Install App
         run: |
           bench --site test_site install-app blkshp_os
         working-directory: ${{ github.workspace }}/frappe-bench
-        continue-on-error: true  # TODO: Fix app structure (modules in wrong location)
 
       - name: Run Tests
         run: |
-          echo "Tests skipped - app structure needs to be fixed first"
-          echo "Modules (departments, permissions, products, etc.) need to be moved to blkshp_os/blkshp_os/"
-          exit 0
+          bench --site test_site run-tests --app blkshp_os --coverage
         working-directory: ${{ github.workspace }}/frappe-bench
         env:
           CI: true

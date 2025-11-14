@@ -77,6 +77,59 @@ Phases are tracked in `docs/PROJECT-TIMELINE.md` and Linear milestones:
 - Feature gates checked server-side even if hidden in UI.
 - Export DocType changes using `bench export-fixtures` where applicable.
 
+#### 4.1.1 Frappe App Structure (CRITICAL)
+
+**⚠️ ALL modules MUST be created inside `blkshp_os/blkshp_os/`**
+
+Correct structure:
+```
+blkshp_os/                    # Repository root
+├── .github/                  # CI/CD workflows
+├── docs/                     # Documentation
+├── blkshp_os/                # Frappe app folder
+│   ├── __init__.py           # Required
+│   ├── hooks.py              # App configuration
+│   ├── modules.txt           # Module list
+│   ├── accounting/           # ✅ Domain module
+│   │   ├── __init__.py
+│   │   └── doctype/
+│   ├── core_platform/        # ✅ Domain module
+│   │   ├── __init__.py
+│   │   ├── doctype/
+│   │   └── page/
+│   ├── departments/          # ✅ Domain module
+│   ├── inventory/            # ✅ Domain module
+│   ├── permissions/          # ✅ Domain module
+│   ├── products/             # ✅ Domain module
+│   └── ...                   # All other modules
+├── config/                   # App config files (stays at root)
+├── fixtures/                 # Fixture data (stays at root)
+├── public/                   # Static files (stays at root)
+├── scripts/                  # Utility scripts (stays at root)
+└── templates/                # Jinja templates (stays at root)
+```
+
+**Why This Matters:**
+- Python requires modules to be inside the app package for imports to work
+- Frappe cannot import `blkshp_os.departments` if `departments/` is at the repository root
+- CI tests will fail with `ModuleNotFoundError` if structure is incorrect
+- App installation (`bench install-app`) will fail
+
+**When Creating New Modules:**
+1. **ALWAYS** create inside `blkshp_os/blkshp_os/<module_name>/`
+2. **ALWAYS** include `__init__.py` in the module folder
+3. **NEVER** create modules at the repository root (except config/fixtures/public/scripts/templates)
+
+**Example - Creating a new "Sales" module:**
+```bash
+# ✅ CORRECT
+mkdir -p blkshp_os/blkshp_os/sales/doctype
+touch blkshp_os/blkshp_os/sales/__init__.py
+
+# ❌ WRONG - Do not create at root
+mkdir -p blkshp_os/sales/doctype  # This will break imports!
+```
+
 ### 4.2 Frontend (Next.js)
 - Organize features under `frontend/src/modules/*` per domain.
 - Hydrate feature matrix & profile on login; guard routes using hooks.

@@ -1,0 +1,122 @@
+# BLKSHP OS Development Rules for Cursor AI
+
+## Frappe App Structure (CRITICAL - ALWAYS ENFORCE)
+
+### Module Location Rules
+**⚠️ ABSOLUTE RULE: ALL Frappe modules MUST be created inside `blkshp_os/blkshp_os/`**
+
+When creating new modules or DocTypes:
+1. ✅ ALWAYS create modules at: `blkshp_os/blkshp_os/<module_name>/`
+2. ✅ ALWAYS include `__init__.py` in every module folder
+3. ❌ NEVER create modules at repository root (except: config, fixtures, public, scripts, templates)
+
+### Correct Structure
+```
+blkshp_os/                      # Repository root
+├── blkshp_os/                  # Frappe app package (ALL modules go here)
+│   ├── __init__.py
+│   ├── hooks.py
+│   ├── modules.txt
+│   ├── <module_name>/          # ✅ Domain modules here
+│   │   ├── __init__.py         # ✅ Required
+│   │   └── doctype/
+│   └── ...
+├── config/                     # ✅ Stays at root
+├── fixtures/                   # ✅ Stays at root
+├── public/                     # ✅ Stays at root
+├── scripts/                    # ✅ Stays at root
+└── templates/                  # ✅ Stays at root
+```
+
+### Examples
+
+**✅ CORRECT - Creating a "Sales" module:**
+```bash
+mkdir -p blkshp_os/blkshp_os/sales/doctype
+touch blkshp_os/blkshp_os/sales/__init__.py
+```
+
+**❌ WRONG - Do NOT do this:**
+```bash
+mkdir -p blkshp_os/sales/doctype  # This breaks Python imports!
+```
+
+### Why This Matters
+- Python requires modules inside the app package for `import blkshp_os.module_name` to work
+- Frappe cannot load DocTypes from incorrectly placed modules
+- CI tests will fail with `ModuleNotFoundError`
+- App installation will fail
+
+## Code Quality Standards
+
+### Python (Backend)
+- Use type hints for all function parameters and return values
+- Follow PEP 8 style guide (enforced by Black and Ruff in CI)
+- No trailing whitespace on blank lines (Ruff W293)
+- Import order: stdlib → third-party → frappe → local
+- Use frappe.whitelist() decorator for all API methods
+- Always validate permissions with frappe.only_for() or has_permission()
+
+### Frappe Specific
+- Use frappe.get_doc() instead of direct SQL when possible
+- Always use parameterized queries (never string interpolation in SQL)
+- Check permissions in whitelisted methods
+- Use frappe.throw() for user-facing errors
+- Use frappe.log_error() for debugging/system errors
+- Export fixture changes after modifying core DocTypes
+
+### Security
+- Never trust user input - always validate and sanitize
+- Use frappe.form_dict safely (check if keys exist)
+- Prevent SQL injection: use parameterized queries
+- Prevent XSS: escape HTML output
+- Check department and company filters for multi-tenant data
+- Feature gates checked server-side even if hidden in UI
+
+### Testing
+- Write unit tests for all business logic
+- Test permission logic thoroughly
+- Include edge cases and error conditions
+- Use pytest for Python tests
+- CI must pass before merging
+
+### Documentation
+- Update docs/DEVELOPMENT-GUIDE.md for structural changes
+- Add docstrings to all functions and classes
+- Document API endpoints in docs/API-REFERENCE.md
+- Record decisions in docs/CONSOLIDATED_DECISION_LOG.md
+
+### Git Workflow
+- Branch naming: `feature/blk-XX-descriptive-name`
+- Commit messages: Start with issue ID (e.g., "BLK-37: Fix app structure")
+- Reference Linear issues in commits and PRs
+- Keep commits focused and atomic
+- Squash commits before merging if needed
+
+## Linear Integration
+- Move issues to "In Progress" when starting work
+- Keep issue status updated
+- Link commits to issues using issue ID
+- Update test plan in issue when testing
+
+## CI/CD
+- All checks must pass before merge:
+  - Linting (Black, Ruff, MyPy)
+  - Security scans (Bandit, Safety)
+  - Tests (when enabled)
+- Fix linting issues immediately
+- Don't commit with `--no-verify`
+
+## Frappe Best Practices
+- Use Frappe's built-in functions over custom implementations
+- Leverage hooks.py for extending behavior
+- Follow Frappe naming conventions (snake_case for fields, PascalCase for DocTypes)
+- Use Frappe's translation system (__()) for user-facing strings
+- Cache expensive operations appropriately
+- Use Frappe's background jobs for long-running tasks
+
+## When in Doubt
+- Check docs/DEVELOPMENT-GUIDE.md
+- Review existing code in the module
+- Ask in Linear issue comments
+- Test locally before pushing
