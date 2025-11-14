@@ -45,6 +45,30 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_frappe
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     strategy:
       matrix:
         python-version: ['3.10', '3.11']
@@ -62,30 +86,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            redis-server \
             wkhtmltopdf \
             git \
             build-essential \
             python3-dev \
             libmysqlclient-dev
-
-      - name: Start MySQL
-        run: |
-          sudo systemctl start mysql
-          # Wait for MySQL to be ready
-          until sudo mysqladmin ping --silent; do
-            echo 'waiting for mysql...'
-            sleep 1
-          done
-          # Configure root user for password authentication
-          sudo mysql -u root <<EOF
-          ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
-          FLUSH PRIVILEGES;
-          EOF
-
-      - name: Start Redis
-        run: |
-          sudo service redis-server start
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -109,7 +114,11 @@ jobs:
 
       - name: Create Test Site
         run: |
-          bench new-site test_site --db-root-password root --admin-password admin
+          bench new-site test_site \
+            --db-host 127.0.0.1 \
+            --db-root-password root \
+            --admin-password admin \
+            --force
           bench --site test_site install-app blkshp_os
         working-directory: ${{ github.workspace }}/frappe-bench
 
