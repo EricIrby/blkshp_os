@@ -4,7 +4,6 @@ from frappe.model.document import Document
 
 
 class RecipeIngredient(Document):
-	"""Ingredient row used in a recipe."""
+    """Ingredient row used in a recipe."""
 
-	pass
-
+    pass

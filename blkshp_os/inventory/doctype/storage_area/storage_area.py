@@ -2,7 +2,6 @@ from frappe.model.document import Document
 
 
 class StorageArea(Document):
-	"""Inventory storage metadata (Product + Department extensions)."""
+    """Inventory storage metadata (Product + Department extensions)."""
 
-	pass
-
+    pass

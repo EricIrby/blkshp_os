@@ -1,5 +1,3 @@
 """
 Recipe DocType package.
 """
-
-

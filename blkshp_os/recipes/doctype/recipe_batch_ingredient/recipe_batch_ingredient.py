@@ -4,7 +4,6 @@ from frappe.model.document import Document
 
 
 class RecipeBatchIngredient(Document):
-	"""Child table for recording actual ingredient usage within a recipe batch."""
+    """Child table for recording actual ingredient usage within a recipe batch."""
 
-	pass
-
+    pass

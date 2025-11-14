@@ -4,7 +4,6 @@ from frappe.model.document import Document
 
 
 class RecipeInheritedAllergen(Document):
-	"""Read-only allergen propagated from subrecipes."""
+    """Read-only allergen propagated from subrecipes."""
 
-	pass
-
+    pass

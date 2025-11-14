@@ -12,8 +12,7 @@ class ProductPurchaseUnit(Document):
     def _validate_conversion(self):
         if not self.conversion_to_primary_cu or self.conversion_to_primary_cu <= 0:
             frappe.throw(
-                _("Conversion to primary count unit must be greater than zero for purchase unit {0}.").format(
-                    self.purchase_unit or self.vendor or self.name
-                )
+                _(
+                    "Conversion to primary count unit must be greater than zero for purchase unit {0}."
+                ).format(self.purchase_unit or self.vendor or self.name)
             )
-

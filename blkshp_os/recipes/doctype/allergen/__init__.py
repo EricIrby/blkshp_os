@@ -1,5 +1,3 @@
 """
 Allergen DocType package.
 """
-
-

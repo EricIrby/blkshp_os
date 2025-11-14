@@ -1,2 +1,1 @@
 # Department Permission child DocType
-
