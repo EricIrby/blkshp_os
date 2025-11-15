@@ -88,6 +88,10 @@ class InventoryAudit(Document):
             if not department:
                 frappe.throw(_("Audit lines require a department."))
 
+            # Save inferred department back to line for use in generate_stock_ledger_entries()
+            if not line.department and department:
+                line.department = department
+
             quantity_primary = self._convert_line_quantity_to_primary(line)
             line.quantity_primary = quantity_primary
 
@@ -169,24 +173,33 @@ class InventoryAudit(Document):
             aggregated_variances[(product, department)] += variance
 
         # Create one Stock Ledger Entry per (product, department) with aggregated variance
-        for (product, department), total_variance in aggregated_variances.items():
-            # Skip if aggregated variance is zero
-            if total_variance == 0:
-                continue
+        # Use transaction to ensure atomicity - all entries are created or none are
+        entries_to_submit = []
 
-            # Create Stock Ledger Entry
-            entry = frappe.new_doc("Stock Ledger Entry")
-            entry.product = product
-            entry.department = department
-            entry.company = self.company
-            entry.actual_qty = total_variance  # Aggregated variance is the quantity change
-            entry.posting_date = self.audit_date or frappe.utils.today()
-            entry.posting_time = frappe.utils.nowtime()
-            entry.voucher_type = "Inventory Audit"
-            entry.voucher_no = self.name
+        try:
+            # First pass: create all entries (but don't submit yet)
+            for (product, department), total_variance in aggregated_variances.items():
+                # Skip if aggregated variance is zero
+                if total_variance == 0:
+                    continue
 
-            try:
+                # Create Stock Ledger Entry
+                entry = frappe.new_doc("Stock Ledger Entry")
+                entry.product = product
+                entry.department = department
+                entry.company = self.company
+                entry.actual_qty = total_variance  # Aggregated variance is the quantity change
+                entry.posting_date = self.audit_date or frappe.utils.today()
+                entry.posting_time = frappe.utils.nowtime()
+                entry.voucher_type = "Inventory Audit"
+                entry.voucher_no = self.name
+
                 entry.insert(ignore_permissions=True)
+                entries_to_submit.append((entry, product, department, total_variance))
+
+            # Second pass: submit all entries in a single transaction
+            # If any submission fails, the entire transaction rolls back
+            for entry, product, department, total_variance in entries_to_submit:
                 entry.submit()
                 created_entries.append(entry.name)
 
@@ -196,16 +209,16 @@ class InventoryAudit(Document):
                     ),
                     alert=True,
                 )
-            except Exception as e:
-                frappe.log_error(
-                    title=f"Stock Ledger Entry Creation Failed for {product}/{department}",
-                    message=str(e),
-                )
-                frappe.throw(
-                    _("Failed to create Stock Ledger Entry for {0}/{1}: {2}").format(
-                        product, department, str(e)
-                    )
-                )
+
+        except Exception as e:
+            # Log the error and rollback will happen automatically
+            frappe.log_error(
+                title="Stock Ledger Entry Creation Failed",
+                message=str(e),
+            )
+            frappe.throw(
+                _("Failed to generate Stock Ledger Entries: {0}").format(str(e))
+            )
 
         if created_entries:
             frappe.msgprint(

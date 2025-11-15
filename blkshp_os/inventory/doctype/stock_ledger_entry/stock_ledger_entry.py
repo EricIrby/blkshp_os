@@ -90,9 +90,11 @@ class StockLedgerEntry(Document):
 
         Validates that this entry's posting_datetime is not earlier than
         any existing entries for the same product/department combination.
+        Also validates against entries with the same posting_datetime using
+        creation timestamp as a secondary sort criterion.
         """
         if self.is_new():
-            # Check if there are any future entries
+            # Check if there are any future entries (strict datetime comparison)
             future_entries = frappe.db.count(
                 "Stock Ledger Entry",
                 filters={
@@ -111,6 +113,30 @@ class StockLedgerEntry(Document):
                         "Cannot create backdated entry. There are {0} future entries for {1} in {2}. "
                         "Backdated entries would corrupt the running balance."
                     ).format(future_entries, self.product, self.department)
+                )
+
+            # Also check for entries with the same posting_datetime
+            # In this case, the creation timestamp determines order
+            # Warn if there are existing entries with same posting_datetime
+            same_datetime_entries = frappe.db.count(
+                "Stock Ledger Entry",
+                filters={
+                    "product": self.product,
+                    "department": self.department,
+                    "company": self.company,
+                    "docstatus": 1,
+                    "is_cancelled": 0,
+                    "posting_datetime": self.posting_datetime,
+                },
+            )
+
+            if same_datetime_entries > 0:
+                frappe.msgprint(
+                    _(
+                        "Warning: {0} entries exist with the same posting datetime ({1}). "
+                        "Ordering will be determined by creation timestamp."
+                    ).format(same_datetime_entries, self.posting_datetime),
+                    indicator="orange",
                 )
 
     def validate_no_future_entries(self):
@@ -168,25 +194,33 @@ class StockLedgerEntry(Document):
         """
         Get the most recent qty_after_transaction for this product/department.
 
+        Uses database locking to prevent race conditions in concurrent submissions.
+
         Returns 0 if no previous entries exist.
         """
-        filters = {
-            "product": self.product,
-            "department": self.department,
-            "company": self.company,
-            "docstatus": 1,  # Only submitted entries
-            "is_cancelled": 0,  # Exclude cancelled entries
-            "posting_datetime": ["<", self.posting_datetime],
-        }
-
-        # Get the most recent entry before this one
-        # Secondary sort by creation to handle entries with same posting_datetime
-        previous_entry = frappe.get_all(
-            "Stock Ledger Entry",
-            filters=filters,
-            fields=["qty_after_transaction"],
-            order_by="posting_datetime desc, creation desc",
-            limit=1,
+        # Use FOR UPDATE locking to prevent race conditions
+        # This ensures that concurrent transactions read consistent balance values
+        previous_entry = frappe.db.sql(
+            """
+            SELECT qty_after_transaction
+            FROM `tabStock Ledger Entry`
+            WHERE product = %(product)s
+                AND department = %(department)s
+                AND company = %(company)s
+                AND docstatus = 1
+                AND is_cancelled = 0
+                AND posting_datetime < %(posting_datetime)s
+            ORDER BY posting_datetime DESC, creation DESC
+            LIMIT 1
+            FOR UPDATE
+            """,
+            {
+                "product": self.product,
+                "department": self.department,
+                "company": self.company,
+                "posting_datetime": self.posting_datetime,
+            },
+            as_dict=1,
         )
 
         if previous_entry:
