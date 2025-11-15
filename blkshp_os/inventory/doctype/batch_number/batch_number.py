@@ -32,13 +32,14 @@ class BatchNumber(Document):
 
             year = getdate(self.manufacturing_date or today()).year
 
-            # Use SQL to find the next sequence number atomically
-            # This reduces (but doesn't eliminate) race conditions
+            # Use SQL to find the next sequence number atomically with row locking
+            # FOR UPDATE prevents race conditions during batch ID generation
             result = frappe.db.sql(
                 """
                 SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(batch_id, '-', -1) AS UNSIGNED)), 0) + 1
                 FROM `tabBatch Number`
                 WHERE product = %s AND batch_id LIKE %s
+                FOR UPDATE
                 """,
                 (self.product, f"{product_code}-{year}-%"),
                 as_list=True
@@ -155,18 +156,8 @@ def update_batch_statuses():
         (today(),)
     )
 
-    # Get count of updated batches for logging
-    count = frappe.db.sql(
-        """
-        SELECT COUNT(*) as count
-        FROM `tabBatch Number`
-        WHERE status = 'Expired'
-          AND expiration_date < %s
-          AND modified >= %s
-        """,
-        (today(), frappe.utils.add_days(today(), -1)),
-        as_dict=True
-    )[0].count
+    # Get exact count of updated batches using ROW_COUNT()
+    count = frappe.db.sql("SELECT ROW_COUNT() as count", as_dict=True)[0].count
 
     if count:
         frappe.logger().info(f"Marked {count} batches as Expired")
@@ -174,7 +165,7 @@ def update_batch_statuses():
 
 # Query functions for batch management
 
-def get_batch_balance(batch_id):
+def get_batch_balance(batch_id: str | None) -> float:
     """
     Get current quantity for a specific batch.
 
@@ -190,7 +181,11 @@ def get_batch_balance(batch_id):
     return frappe.db.get_value("Batch Number", batch_id, "quantity") or 0
 
 
-def get_expiring_batches(department=None, company=None, within_days=30):
+def get_expiring_batches(
+    department: str | None = None,
+    company: str | None = None,
+    within_days: int = 30
+) -> list[dict]:
     """
     Get batches expiring within specified days.
 
@@ -209,9 +204,9 @@ def get_expiring_batches(department=None, company=None, within_days=30):
     }
 
     if department:
-        filters["department"] = department
+        filters["department"] = ["=", department]
     if company:
-        filters["company"] = company
+        filters["company"] = ["=", company]
 
     return frappe.get_all(
         "Batch Number",
@@ -229,7 +224,7 @@ def get_expiring_batches(department=None, company=None, within_days=30):
     )
 
 
-def get_available_batches(product, department, company):
+def get_available_batches(product: str, department: str, company: str) -> list[dict]:
     """
     Get available batches for a product/department (FIFO order).
 
@@ -247,10 +242,10 @@ def get_available_batches(product, department, company):
     return frappe.get_all(
         "Batch Number",
         filters={
-            "product": product,
-            "department": department,
-            "company": company,
-            "status": "Active",
+            "product": ["=", product],
+            "department": ["=", department],
+            "company": ["=", company],
+            "status": ["=", "Active"],
             "quantity": [">", 0]
         },
         fields=[
