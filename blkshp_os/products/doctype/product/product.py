@@ -172,7 +172,7 @@ class Product(Document):
             return
 
         # Validate shelf_life_in_days is positive if set
-        if self.shelf_life_in_days and self.shelf_life_in_days <= 0:
+        if self.shelf_life_in_days is not None and self.shelf_life_in_days <= 0:
             frappe.throw(_("Shelf Life must be greater than zero."))
 
         # Warn if batch tracking is enabled but no shelf life is set for perishable items
