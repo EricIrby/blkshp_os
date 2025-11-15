@@ -91,19 +91,23 @@ class StockLedgerEntry(Document):
         Validates that this entry's posting_datetime is not earlier than
         any existing entries for the same product/department combination.
         """
-        if self.is_new():
-            # Check if there are any future entries
-            future_entries = frappe.db.count(
-                "Stock Ledger Entry",
-                filters={
-                    "product": self.product,
-                    "department": self.department,
-                    "company": self.company,
-                    "docstatus": 1,
-                    "is_cancelled": 0,
-                    "posting_datetime": [">", self.posting_datetime],
-                },
-            )
+        # Only validate if this entry hasn't been submitted yet
+        # Check against all submitted entries (docstatus=1) excluding this one
+        if self.docstatus < 1:
+            filters = {
+                "product": self.product,
+                "department": self.department,
+                "company": self.company,
+                "docstatus": 1,
+                "is_cancelled": 0,
+                "posting_datetime": [">", self.posting_datetime],
+            }
+
+            # Exclude current entry if it exists in database
+            if self.name:
+                filters["name"] = ["!=", self.name]
+
+            future_entries = frappe.db.count("Stock Ledger Entry", filters=filters)
 
             if future_entries > 0:
                 frappe.throw(
