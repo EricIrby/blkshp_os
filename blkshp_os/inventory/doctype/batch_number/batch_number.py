@@ -27,28 +27,24 @@ class BatchNumber(Document):
         """
         if not self.batch_id:
             product_code = frappe.db.get_value("Product", self.product, "product_code")
+            if not product_code:
+                frappe.throw(_("Product {0} not found").format(self.product))
+
             year = getdate(self.manufacturing_date or today()).year
 
-            # Find next sequence number for this product and year
-            existing_batches = frappe.get_all(
-                "Batch Number",
-                filters={
-                    "product": self.product,
-                    "batch_id": ["like", f"{product_code}-{year}-%"]
-                },
-                pluck="batch_id"
+            # Use SQL to find the next sequence number atomically
+            # This reduces (but doesn't eliminate) race conditions
+            result = frappe.db.sql(
+                """
+                SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(batch_id, '-', -1) AS UNSIGNED)), 0) + 1
+                FROM `tabBatch Number`
+                WHERE product = %s AND batch_id LIKE %s
+                """,
+                (self.product, f"{product_code}-{year}-%"),
+                as_list=True
             )
 
-            # Extract sequence numbers and find max
-            sequence_numbers = []
-            for batch in existing_batches:
-                try:
-                    seq = int(batch.split("-")[-1])
-                    sequence_numbers.append(seq)
-                except (ValueError, IndexError):
-                    pass
-
-            next_seq = max(sequence_numbers, default=0) + 1
+            next_seq = result[0][0] if result else 1
             self.batch_id = f"{product_code}-{year}-{next_seq:04d}"
 
     def validate(self):
@@ -101,7 +97,16 @@ class BatchNumber(Document):
 
         This should be called whenever a Stock Ledger Entry is created
         or cancelled for this batch.
+
+        Note: This method relies on being called within a transaction context
+        (typically from Stock Ledger Entry submission lifecycle).
         """
+        # Lock the batch row to prevent concurrent quantity updates
+        frappe.db.sql(
+            "SELECT name FROM `tabBatch Number` WHERE name = %s FOR UPDATE",
+            (self.name,)
+        )
+
         total_qty = frappe.db.sql(
             """
             SELECT SUM(actual_qty) as total
@@ -184,8 +189,7 @@ def get_expiring_batches(department=None, company=None, within_days=30):
     """
     filters = {
         "status": ["in", ["Active"]],
-        "expiration_date": ["<=", add_days(today(), within_days)],
-        "expiration_date": [">=", today()],
+        "expiration_date": ["between", [today(), add_days(today(), within_days)]],
         "quantity": [">", 0]
     }
 
