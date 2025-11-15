@@ -27,17 +27,20 @@ class StockLedgerEntry(Document):
     def before_submit(self):
         """Calculate running balance and valuation before submission."""
         self.validate_product_and_department()
+        self.validate_batch()
         self.calculate_qty_after_transaction()
         # Valuation calculation will be added in BLK-44
 
     def on_submit(self):
-        """Update inventory balance after submission."""
+        """Update inventory balance and batch quantity after submission."""
         self.update_inventory_balance()
+        self.update_batch_quantity()
 
     def on_cancel(self):
-        """Mark as cancelled and update inventory balance."""
+        """Mark as cancelled and update inventory balance and batch quantity."""
         self.db_set("is_cancelled", 1)
         self.update_inventory_balance(reverse=True)
+        self.update_batch_quantity()
 
     def validate(self):
         """Validate the stock ledger entry."""
@@ -83,6 +86,46 @@ class StockLedgerEntry(Document):
 
         if not frappe.db.exists("Department", self.department):
             frappe.throw(_("Department {0} does not exist").format(self.department))
+
+    def validate_batch(self):
+        """
+        Validate batch number requirements.
+
+        If product.has_batch_no = 1, batch_number is required.
+        Also validates that batch matches product and department.
+        """
+        # Check if product requires batch tracking
+        has_batch = frappe.db.get_value("Product", self.product, "has_batch_no")
+
+        if has_batch and not self.batch_number:
+            frappe.throw(
+                _("Batch Number is required for Product {0}").format(self.product)
+            )
+
+        # If batch is provided, validate it matches product/department
+        if self.batch_number:
+            batch = frappe.get_doc("Batch Number", self.batch_number)
+
+            if batch.product != self.product:
+                frappe.throw(
+                    _("Batch {0} is for Product {1}, not {2}").format(
+                        self.batch_number, batch.product, self.product
+                    )
+                )
+
+            if batch.department != self.department:
+                frappe.throw(
+                    _("Batch {0} is for Department {1}, not {2}").format(
+                        self.batch_number, batch.department, self.department
+                    )
+                )
+
+            if batch.company != self.company:
+                frappe.throw(
+                    _("Batch {0} is for Company {1}, not {2}").format(
+                        self.batch_number, batch.company, self.company
+                    )
+                )
 
     def calculate_qty_after_transaction(self):
         """
@@ -171,6 +214,22 @@ class StockLedgerEntry(Document):
             balance_doc.last_audit_date = self.posting_date
 
         balance_doc.save(ignore_permissions=True)
+
+    def update_batch_quantity(self):
+        """
+        Update the Batch Number quantity from Stock Ledger Entries.
+
+        Recalculates the batch quantity by summing all Stock Ledger Entries
+        for this batch. Called on submit and cancel to keep batch quantities accurate.
+        """
+        if not self.batch_number:
+            return
+
+        # Get the batch document
+        batch = frappe.get_doc("Batch Number", self.batch_number)
+
+        # Recalculate quantity from ledger
+        batch.update_quantity_from_ledger()
 
 
 # Query functions for external use
@@ -315,6 +374,113 @@ def get_stock_movements(product, department, company, from_date, to_date):
             "qty_after_transaction",
             "valuation_rate",
             "stock_value",
+            "voucher_type",
+            "voucher_no",
+        ],
+        order_by="posting_datetime asc",
+    )
+
+
+# Batch-specific query functions
+
+def get_stock_balance_by_batch(product, department, company, batch_number=None, as_of_date=None):
+    """
+    Get stock balance for a specific batch.
+
+    Args:
+        product (str): Product name
+        department (str): Department name
+        company (str): Company name
+        batch_number (str, optional): Specific batch to query. If None, returns all batches.
+        as_of_date (datetime, optional): Date to calculate balance. Defaults to now.
+
+    Returns:
+        dict or float: If batch_number specified, returns float quantity.
+                      If batch_number is None, returns dict of {batch: quantity}
+    """
+    _validate_stock_query_params(product, department, company)
+
+    filters = {
+        "product": product,
+        "department": department,
+        "company": company,
+        "docstatus": 1,
+        "is_cancelled": 0,
+    }
+
+    if batch_number:
+        filters["batch_number"] = batch_number
+
+    if as_of_date:
+        filters["posting_datetime"] = ["<=", as_of_date]
+
+    # Get all entries and sum by batch
+    entries = frappe.get_all(
+        "Stock Ledger Entry",
+        filters=filters,
+        fields=["batch_number", "actual_qty"],
+        order_by="posting_datetime asc"
+    )
+
+    if batch_number:
+        # Return single batch quantity
+        return sum(e.actual_qty for e in entries if e.batch_number == batch_number)
+    else:
+        # Return dict of all batches with quantities
+        from collections import defaultdict
+        batch_qtys = defaultdict(float)
+        for entry in entries:
+            if entry.batch_number:
+                batch_qtys[entry.batch_number] += entry.actual_qty
+        return dict(batch_qtys)
+
+
+def get_batch_movements(batch_number, from_date=None, to_date=None):
+    """
+    Get all stock movements for a specific batch.
+
+    Args:
+        batch_number (str): Batch Number name
+        from_date (datetime, optional): Start date
+        to_date (datetime, optional): End date
+
+    Returns:
+        list: List of stock ledger entries for the batch
+    """
+    if not batch_number:
+        frappe.throw(_("Batch Number is required"))
+
+    if not frappe.db.exists("Batch Number", batch_number):
+        frappe.throw(_("Batch Number {0} does not exist").format(batch_number))
+
+    filters = {
+        "batch_number": batch_number,
+        "docstatus": 1,
+        "is_cancelled": 0,
+    }
+
+    if from_date and to_date:
+        from frappe.utils import get_datetime
+        if get_datetime(from_date) > get_datetime(to_date):
+            frappe.throw(_("From date cannot be after To date"))
+        filters["posting_datetime"] = ["between", [from_date, to_date]]
+    elif from_date:
+        filters["posting_datetime"] = [">=", from_date]
+    elif to_date:
+        filters["posting_datetime"] = ["<=", to_date]
+
+    return frappe.get_all(
+        "Stock Ledger Entry",
+        filters=filters,
+        fields=[
+            "name",
+            "posting_datetime",
+            "product",
+            "department",
+            "company",
+            "actual_qty",
+            "qty_after_transaction",
+            "valuation_rate",
             "voucher_type",
             "voucher_no",
         ],
