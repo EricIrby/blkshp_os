@@ -75,10 +75,6 @@ class InventoryAudit(Document):
                 )
             )
 
-        from blkshp_os.inventory.doctype.inventory_balance.inventory_balance import (
-            InventoryBalance,
-        )
-
         totals: dict[tuple[str, str], float] = defaultdict(float)
         unique_products: set[str] = set()
         total_value = 0.0
@@ -104,13 +100,12 @@ class InventoryAudit(Document):
             totals[(product, department)] += quantity_primary
             unique_products.add(product)
 
-        for (product, department), quantity in totals.items():
-            InventoryBalance.update_for(
-                product,
-                department,
-                self.company,
-                quantity=quantity,
-                last_audit_date=str(self.audit_date or ""),
+        # Generate Stock Ledger Entries for all variances
+        try:
+            self.generate_stock_ledger_entries()
+        except Exception as e:
+            frappe.throw(
+                _("Failed to generate Stock Ledger Entries: {0}").format(str(e))
             )
 
         self.total_products_counted = len(unique_products)
@@ -132,6 +127,80 @@ class InventoryAudit(Document):
             line.variance = variance
             variances[product] += variance
         return dict(variances)
+
+    def generate_stock_ledger_entries(self) -> list[str]:
+        """
+        Generate Stock Ledger Entries for all audit lines with variances.
+
+        Creates one Stock Ledger Entry per audit line that has a non-zero variance.
+        The Stock Ledger Entry will automatically update the Inventory Balance on submission.
+
+        Returns:
+            list[str]: Names of created Stock Ledger Entries
+        """
+        created_entries: list[str] = []
+
+        for idx, line in enumerate(self.audit_lines or [], start=1):
+            # Skip lines without variance
+            variance = getattr(line, "variance", None)
+            if variance is None or variance == 0:
+                continue
+
+            product = line.product
+            if not product:
+                continue
+
+            department = line.department or self._infer_department_for_line(line)
+            if not department:
+                continue
+
+            # Create Stock Ledger Entry
+            entry = frappe.new_doc("Stock Ledger Entry")
+            entry.product = product
+            entry.department = department
+            entry.company = self.company
+            entry.actual_qty = variance  # Variance is the quantity change
+            entry.posting_date = self.audit_date or frappe.utils.today()
+            entry.posting_time = frappe.utils.nowtime()
+            entry.voucher_type = "Inventory Audit"
+            entry.voucher_no = self.name
+            entry.voucher_detail_no = str(idx)  # Line index for reference
+
+            # Batch number support (if present on line)
+            if hasattr(line, "batch_number") and line.batch_number:
+                entry.batch_number = line.batch_number
+
+            try:
+                entry.insert(ignore_permissions=True)
+                entry.submit()
+                created_entries.append(entry.name)
+
+                frappe.msgprint(
+                    _("Created Stock Ledger Entry {0} for {1} (variance: {2})").format(
+                        entry.name, product, variance
+                    ),
+                    alert=True,
+                )
+            except Exception as e:
+                frappe.log_error(
+                    title=f"Stock Ledger Entry Creation Failed for {product}",
+                    message=str(e),
+                )
+                frappe.throw(
+                    _("Failed to create Stock Ledger Entry for {0}: {1}").format(
+                        product, str(e)
+                    )
+                )
+
+        if created_entries:
+            frappe.msgprint(
+                _("Successfully generated {0} Stock Ledger Entries").format(
+                    len(created_entries)
+                ),
+                indicator="green",
+            )
+
+        return created_entries
 
     # -------------------------------------------------------------------------
     # Helpers
