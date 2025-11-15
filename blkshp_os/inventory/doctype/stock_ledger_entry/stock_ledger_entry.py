@@ -66,7 +66,7 @@ class StockLedgerEntry(Document):
 
     def set_item_code_and_uom(self):
         """Set item_code and stock_uom from Product."""
-        if self.product and not self.item_code:
+        if self.product:
             product = frappe.get_doc("Product", self.product)
             self.item_code = product.product_code
             self.stock_uom = product.primary_count_unit
