@@ -68,45 +68,8 @@ reviews:
 chat:
   auto_reply: true
 
-# Knowledge base - specific to Frappe/ERPNext
-knowledge_base:
-  - "Frappe framework uses Python with specific patterns like frappe.get_doc(), frappe.db.sql(), and lifecycle hooks"
-  - "DocTypes are the core building blocks - combination of .json schema and .py controller"
-  - "Use frappe.throw() for user-facing errors, not raise Exception()"
-  - "Always use ignore_permissions=True carefully and document why"
-  - "Ledger entries should be immutable after submission (docstatus=1)"
-  - "Use SELECT FOR UPDATE for database locking in concurrent scenarios"
-  - "Type hints (from __future__ import annotations) are required for new code"
-  - "Follow Frappe naming conventions: snake_case for functions/variables, PascalCase for classes"
-
-# Review focus areas
-tone_instructions: |
-  Be constructive and educational. Focus on:
-
-  CRITICAL (Always flag):
-  - Security vulnerabilities (SQL injection, permission bypasses, XSS)
-  - Data corruption risks (race conditions, improper locking, calculation errors)
-  - Breaking changes to public APIs
-  - Missing error handling that could crash the system
-
-  HIGH (Flag when found):
-  - Performance issues (N+1 queries, missing indexes, inefficient algorithms)
-  - Incorrect Frappe framework usage
-  - Missing validation that could lead to bad data
-  - Type safety issues
-
-  MEDIUM (Suggest improvements):
-  - Code duplication
-  - Missing tests for new functionality
-  - Documentation gaps
-  - Style inconsistencies
-
-  LOW (Optional suggestions):
-  - Code organization improvements
-  - Naming improvements
-  - Comment clarity
-
-  Provide specific examples and suggest concrete fixes. Reference Frappe documentation when relevant.
+# Review focus areas (max 250 chars)
+tone_instructions: "Be constructive and educational. Prioritize security, data integrity, and Frappe framework best practices. Flag performance issues and suggest specific fixes with examples."
 
 # Early access features
 early_access: true
