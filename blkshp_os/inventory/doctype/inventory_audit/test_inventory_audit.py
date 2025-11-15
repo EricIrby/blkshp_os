@@ -169,6 +169,184 @@ class TestInventoryAudit(FrappeTestCase):
         self.assertAlmostEqual(audit.audit_lines[0].variance, 1.0)
         self.assertAlmostEqual(audit.audit_lines[1].variance, -2.0)
 
+    def test_close_audit_generates_stock_ledger_entries(self) -> None:
+        """Test that closing an audit generates Stock Ledger Entries for variances."""
+        # Create audit with variance
+        audit = frappe.get_doc(
+            {
+                "doctype": "Inventory Audit",
+                "audit_name": "Stock Ledger Integration Test",
+                "audit_date": "2025-11-15",
+                "company": self.company,
+                "status": "Review",
+                "audit_departments": [{"department": self.department_a}],
+                "audit_lines": [
+                    {
+                        "product": self.product,
+                        "department": self.department_a,
+                        "quantity": 15,
+                        "unit": "each",
+                        "expected_quantity": 10,  # Variance: +5
+                        "unit_cost": 2.5,
+                    },
+                ],
+            }
+        )
+        audit.insert(ignore_permissions=True)
+
+        # Close audit - should generate Stock Ledger Entry
+        audit.close_audit(user=self.audit_user)
+        audit.save(ignore_permissions=True)
+
+        # Verify Stock Ledger Entry was created
+        ledger_entries = frappe.get_all(
+            "Stock Ledger Entry",
+            filters={
+                "voucher_type": "Inventory Audit",
+                "voucher_no": audit.name,
+                "product": self.product,
+            },
+            fields=["name", "actual_qty", "qty_after_transaction", "voucher_detail_no"],
+        )
+
+        self.assertEqual(len(ledger_entries), 1)
+        entry = ledger_entries[0]
+        self.assertEqual(entry.actual_qty, 5)  # Variance
+        self.assertEqual(entry.qty_after_transaction, 5)  # New balance
+
+    def test_close_audit_with_multiple_variances(self) -> None:
+        """Test Stock Ledger Entry generation for multiple products with variances."""
+        product2 = self._ensure_product("Test Product 2", base_cost=3.0)
+
+        audit = frappe.get_doc(
+            {
+                "doctype": "Inventory Audit",
+                "audit_name": "Multiple Variances Test",
+                "audit_date": "2025-11-15",
+                "company": self.company,
+                "status": "Review",
+                "audit_departments": [{"department": self.department_a}],
+                "audit_lines": [
+                    {
+                        "product": self.product,
+                        "department": self.department_a,
+                        "quantity": 20,
+                        "unit": "each",
+                        "expected_quantity": 15,  # Variance: +5
+                        "unit_cost": 2.5,
+                    },
+                    {
+                        "product": product2,
+                        "department": self.department_a,
+                        "quantity": 8,
+                        "unit": "each",
+                        "expected_quantity": 10,  # Variance: -2
+                        "unit_cost": 3.0,
+                    },
+                ],
+            }
+        )
+        audit.insert(ignore_permissions=True)
+        audit.close_audit(user=self.audit_user)
+        audit.save(ignore_permissions=True)
+
+        # Verify two Stock Ledger Entries were created
+        ledger_entries = frappe.get_all(
+            "Stock Ledger Entry",
+            filters={
+                "voucher_type": "Inventory Audit",
+                "voucher_no": audit.name,
+            },
+            fields=["product", "actual_qty"],
+            order_by="product",
+        )
+
+        self.assertEqual(len(ledger_entries), 2)
+        self.assertEqual(ledger_entries[0].actual_qty, 5)  # Product 1 variance
+        self.assertEqual(ledger_entries[1].actual_qty, -2)  # Product 2 variance
+
+    def test_close_audit_skips_zero_variance(self) -> None:
+        """Test that Stock Ledger Entries are not created for zero variances."""
+        audit = frappe.get_doc(
+            {
+                "doctype": "Inventory Audit",
+                "audit_name": "Zero Variance Test",
+                "audit_date": "2025-11-15",
+                "company": self.company,
+                "status": "Review",
+                "audit_departments": [{"department": self.department_a}],
+                "audit_lines": [
+                    {
+                        "product": self.product,
+                        "department": self.department_a,
+                        "quantity": 10,
+                        "unit": "each",
+                        "expected_quantity": 10,  # No variance
+                        "unit_cost": 2.5,
+                    },
+                ],
+            }
+        )
+        audit.insert(ignore_permissions=True)
+        audit.close_audit(user=self.audit_user)
+        audit.save(ignore_permissions=True)
+
+        # Verify no Stock Ledger Entry was created
+        ledger_entries = frappe.get_all(
+            "Stock Ledger Entry",
+            filters={
+                "voucher_type": "Inventory Audit",
+                "voucher_no": audit.name,
+            },
+        )
+
+        self.assertEqual(len(ledger_entries), 0)
+
+    def test_inventory_balance_updated_from_stock_ledger(self) -> None:
+        """Test that Inventory Balance is updated via Stock Ledger Entry."""
+        # Set up initial balance
+        balance_name = f"{self.product}-{self.department_a}-{self.company}"
+        if frappe.db.exists("Inventory Balance", balance_name):
+            frappe.db.set_value("Inventory Balance", balance_name, "quantity", 10)
+        else:
+            balance_doc = frappe.get_doc({
+                "doctype": "Inventory Balance",
+                "product": self.product,
+                "department": self.department_a,
+                "company": self.company,
+                "quantity": 10,
+            })
+            balance_doc.insert(ignore_permissions=True)
+
+        # Create audit with variance
+        audit = frappe.get_doc(
+            {
+                "doctype": "Inventory Audit",
+                "audit_name": "Balance Update Test",
+                "audit_date": "2025-11-15",
+                "company": self.company,
+                "status": "Review",
+                "audit_departments": [{"department": self.department_a}],
+                "audit_lines": [
+                    {
+                        "product": self.product,
+                        "department": self.department_a,
+                        "quantity": 17,
+                        "unit": "each",
+                        "expected_quantity": 10,  # Variance: +7
+                        "unit_cost": 2.5,
+                    },
+                ],
+            }
+        )
+        audit.insert(ignore_permissions=True)
+        audit.close_audit(user=self.audit_user)
+        audit.save(ignore_permissions=True)
+
+        # Verify Inventory Balance was updated through Stock Ledger Entry
+        final_qty = frappe.db.get_value("Inventory Balance", balance_name, "quantity")
+        self.assertEqual(final_qty, 17)  # Should match qty_after_transaction
+
     def _ensure_company(self, name: str = "Inventory Audit Company") -> str:
         existing = frappe.db.exists("Company", {"company_name": name})
         if existing:
