@@ -73,7 +73,7 @@ class StockLedgerEntry(Document):
 
     def set_warehouse_from_department(self):
         """Set warehouse field to department name for ERPNext compatibility."""
-        if self.department and not self.warehouse:
+        if self.department:
             self.warehouse = self.department
 
     def validate_product_and_department(self):
@@ -220,23 +220,32 @@ class StockLedgerEntry(Document):
 
         # Use SELECT FOR UPDATE to lock the row during update
         # This prevents concurrent transactions from corrupting the balance
-        frappe.db.sql(
-            """
-            SELECT name FROM `tabInventory Balance`
-            WHERE name = %s
-            FOR UPDATE
-            """,
-            balance_name,
-        )
+        # For new records, wrap in try/except to handle race condition
+        try:
+            frappe.db.sql(
+                """
+                SELECT name FROM `tabInventory Balance`
+                WHERE name = %s
+                FOR UPDATE
+                """,
+                balance_name,
+            )
 
-        if frappe.db.exists("Inventory Balance", balance_name):
-            balance_doc = frappe.get_doc("Inventory Balance", balance_name)
-        else:
-            # Create new Inventory Balance if it doesn't exist
-            balance_doc = frappe.new_doc("Inventory Balance")
-            balance_doc.product = self.product
-            balance_doc.department = self.department
-            balance_doc.company = self.company
+            if frappe.db.exists("Inventory Balance", balance_name):
+                balance_doc = frappe.get_doc("Inventory Balance", balance_name)
+            else:
+                # Create new Inventory Balance if it doesn't exist
+                # Use insert() with ignore_if_duplicate to handle race condition
+                balance_doc = frappe.new_doc("Inventory Balance")
+                balance_doc.product = self.product
+                balance_doc.department = self.department
+                balance_doc.company = self.company
+        except Exception:
+            # If there's a race condition, reload the doc that was created by concurrent transaction
+            if frappe.db.exists("Inventory Balance", balance_name):
+                balance_doc = frappe.get_doc("Inventory Balance", balance_name)
+            else:
+                raise
 
         if reverse:
             # On cancellation, subtract the actual_qty
