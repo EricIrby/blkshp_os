@@ -60,9 +60,13 @@ class StockLedgerEntry(Document):
     def set_item_code_and_uom(self):
         """Set item_code and stock_uom from Product."""
         if self.product and not self.item_code:
-            product = frappe.get_doc("Product", self.product)
-            self.item_code = product.product_code
-            self.stock_uom = product.primary_count_unit
+            product_code, primary_unit = frappe.db.get_value(
+                "Product",
+                self.product,
+                ["product_code", "primary_count_unit"]
+            )
+            self.item_code = product_code
+            self.stock_uom = primary_unit
 
     def set_warehouse_from_department(self):
         """Set warehouse field to department name for ERPNext compatibility."""
