@@ -150,8 +150,14 @@ class InventoryAudit(Document):
             if not product:
                 continue
 
-            department = line.department or self._infer_department_for_line(line)
+            department = line.department
             if not department:
+                frappe.msgprint(
+                    _("Skipping line {0}: No department specified for product {1}").format(
+                        idx, product
+                    ),
+                    indicator="orange",
+                )
                 continue
 
             # Create Stock Ledger Entry

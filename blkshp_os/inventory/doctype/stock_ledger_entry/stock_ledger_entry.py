@@ -47,6 +47,11 @@ class StockLedgerEntry(Document):
                 _("Cannot modify Stock Ledger Entry after submission. Entry is immutable.")
             )
 
+        # Update computed fields on every save (in case department changes)
+        self.set_posting_datetime()
+        self.set_item_code_and_uom()
+        self.set_warehouse_from_department()
+
     def set_posting_datetime(self):
         """Combine posting_date and posting_time into posting_datetime."""
         if not self.posting_date:
@@ -106,11 +111,12 @@ class StockLedgerEntry(Document):
         }
 
         # Get the most recent entry before this one
+        # Secondary sort by creation to handle entries with same posting_datetime
         previous_entry = frappe.get_all(
             "Stock Ledger Entry",
             filters=filters,
             fields=["qty_after_transaction"],
-            order_by="posting_datetime desc",
+            order_by="posting_datetime desc, creation desc",
             limit=1,
         )
 
