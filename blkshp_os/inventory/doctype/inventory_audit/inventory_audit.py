@@ -132,13 +132,18 @@ class InventoryAudit(Document):
         """
         Generate Stock Ledger Entries for all audit lines with variances.
 
-        Creates one Stock Ledger Entry per audit line that has a non-zero variance.
-        The Stock Ledger Entry will automatically update the Inventory Balance on submission.
+        Aggregates variances by (product, department) to prevent balance corruption
+        when multiple lines exist for the same product/department combination.
+        Creates one Stock Ledger Entry per unique (product, department) pair.
 
         Returns:
             list[str]: Names of created Stock Ledger Entries
         """
         created_entries: list[str] = []
+
+        # Aggregate variances by (product, department)
+        # This prevents sequential entries from compounding incorrectly
+        aggregated_variances: dict[tuple[str, str], float] = defaultdict(float)
 
         for idx, line in enumerate(self.audit_lines or [], start=1):
             # Skip lines without variance
@@ -160,21 +165,25 @@ class InventoryAudit(Document):
                 )
                 continue
 
+            # Accumulate variance for this product/department
+            aggregated_variances[(product, department)] += variance
+
+        # Create one Stock Ledger Entry per (product, department) with aggregated variance
+        for (product, department), total_variance in aggregated_variances.items():
+            # Skip if aggregated variance is zero
+            if total_variance == 0:
+                continue
+
             # Create Stock Ledger Entry
             entry = frappe.new_doc("Stock Ledger Entry")
             entry.product = product
             entry.department = department
             entry.company = self.company
-            entry.actual_qty = variance  # Variance is the quantity change
+            entry.actual_qty = total_variance  # Aggregated variance is the quantity change
             entry.posting_date = self.audit_date or frappe.utils.today()
             entry.posting_time = frappe.utils.nowtime()
             entry.voucher_type = "Inventory Audit"
             entry.voucher_no = self.name
-            entry.voucher_detail_no = str(idx)  # Line index for reference
-
-            # Batch number support (if present on line)
-            if hasattr(line, "batch_number") and line.batch_number:
-                entry.batch_number = line.batch_number
 
             try:
                 entry.insert(ignore_permissions=True)
@@ -182,19 +191,19 @@ class InventoryAudit(Document):
                 created_entries.append(entry.name)
 
                 frappe.msgprint(
-                    _("Created Stock Ledger Entry {0} for {1} (variance: {2})").format(
-                        entry.name, product, variance
+                    _("Created Stock Ledger Entry {0} for {1}/{2} (variance: {3})").format(
+                        entry.name, product, department, total_variance
                     ),
                     alert=True,
                 )
             except Exception as e:
                 frappe.log_error(
-                    title=f"Stock Ledger Entry Creation Failed for {product}",
+                    title=f"Stock Ledger Entry Creation Failed for {product}/{department}",
                     message=str(e),
                 )
                 frappe.throw(
-                    _("Failed to create Stock Ledger Entry for {0}: {1}").format(
-                        product, str(e)
+                    _("Failed to create Stock Ledger Entry for {0}/{1}: {2}").format(
+                        product, department, str(e)
                     )
                 )
 
