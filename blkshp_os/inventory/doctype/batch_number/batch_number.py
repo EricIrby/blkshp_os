@@ -67,8 +67,13 @@ class BatchNumber(Document):
                 )
 
     def calculate_shelf_life(self):
-        """Calculate shelf life in days if both dates are provided."""
-        if self.manufacturing_date and self.expiration_date and not self.shelf_life_in_days:
+        """
+        Calculate shelf life in days if both dates are provided.
+
+        Always recalculates when dates change, since shelf_life_in_days
+        is read-only in the UI and should reflect the date range.
+        """
+        if self.manufacturing_date and self.expiration_date:
             mfg_date = getdate(self.manufacturing_date)
             exp_date = getdate(self.expiration_date)
             self.shelf_life_in_days = (exp_date - mfg_date).days

@@ -43,6 +43,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
+   "search_index": 1,
    "label": "Product",
    "options": "Product",
    "reqd": 1
@@ -52,6 +53,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
+   "search_index": 1,
    "label": "Department",
    "options": "Department",
    "reqd": 1
@@ -77,6 +79,7 @@
    "fieldname": "expiration_date",
    "fieldtype": "Date",
    "in_list_view": 1,
+   "search_index": 1,
    "label": "Expiration Date"
   },
   {
@@ -104,6 +107,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
+   "search_index": 1,
    "label": "Status",
    "options": "Active\nExpired\nConsumed",
    "default": "Active",
