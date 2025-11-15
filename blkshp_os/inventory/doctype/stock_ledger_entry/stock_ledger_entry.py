@@ -248,7 +248,7 @@ class StockLedgerEntry(Document):
         Uses database-level locking to prevent concurrent update race conditions.
 
         Args:
-            reverse (bool): If True, subtract instead of using the new balance (for cancellation)
+            reverse (bool): If True, recalculate balance from ledger (for cancellation)
         """
         balance_name = f"{self.product}-{self.department}-{self.company}"
 
@@ -273,8 +273,10 @@ class StockLedgerEntry(Document):
             balance_doc.company = self.company
 
         if reverse:
-            # On cancellation, subtract the actual_qty
-            balance_doc.quantity = (balance_doc.quantity or 0) - self.actual_qty
+            # On cancellation, recalculate balance from remaining ledger entries
+            # This ensures balance is always correct even after cancellations
+            recalculated_balance = self._recalculate_balance_from_ledger()
+            balance_doc.quantity = recalculated_balance
         else:
             # On submission, set to the calculated balance
             balance_doc.quantity = self.qty_after_transaction
@@ -286,6 +288,46 @@ class StockLedgerEntry(Document):
             balance_doc.last_audit_date = self.posting_date
 
         balance_doc.save(ignore_permissions=True)
+
+    def _recalculate_balance_from_ledger(self):
+        """
+        Recalculate the current balance from all non-cancelled ledger entries.
+
+        This is used during cancellation to ensure the balance is correct
+        after removing an entry from the ledger.
+
+        Returns:
+            float: Recalculated balance quantity
+        """
+        # Get the most recent non-cancelled entry
+        # This gives us the current balance after excluding cancelled entries
+        most_recent_entry = frappe.db.sql(
+            """
+            SELECT qty_after_transaction
+            FROM `tabStock Ledger Entry`
+            WHERE product = %(product)s
+                AND department = %(department)s
+                AND company = %(company)s
+                AND docstatus = 1
+                AND is_cancelled = 0
+                AND name != %(current_entry)s
+            ORDER BY posting_datetime DESC, creation DESC
+            LIMIT 1
+            """,
+            {
+                "product": self.product,
+                "department": self.department,
+                "company": self.company,
+                "current_entry": self.name,
+            },
+            as_dict=1,
+        )
+
+        if most_recent_entry:
+            return most_recent_entry[0].qty_after_transaction
+        else:
+            # No remaining entries, balance should be 0
+            return 0
 
 
 # Query functions for external use
