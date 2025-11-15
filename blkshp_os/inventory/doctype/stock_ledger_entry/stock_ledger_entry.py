@@ -246,6 +246,11 @@ class StockLedgerEntry(Document):
             balance_doc.quantity = self.qty_after_transaction
 
         balance_doc.last_updated = now_datetime()
+
+        # Update last_audit_date if this entry is from an Inventory Audit
+        if self.voucher_type == "Inventory Audit" and not reverse:
+            balance_doc.last_audit_date = self.posting_date
+
         balance_doc.save(ignore_permissions=True)
 
 
@@ -276,11 +281,12 @@ def get_stock_balance(product, department, company, as_of_date=None):
         filters["posting_datetime"] = ["<=", as_of_date]
 
     # Get the most recent entry
+    # Secondary sort by creation to handle entries with same posting_datetime
     entry = frappe.get_all(
         "Stock Ledger Entry",
         filters=filters,
         fields=["qty_after_transaction"],
-        order_by="posting_datetime desc",
+        order_by="posting_datetime desc, creation desc",
         limit=1,
     )
 
@@ -312,11 +318,12 @@ def get_stock_value(product, department, company, as_of_date=None):
         filters["posting_datetime"] = ["<=", as_of_date]
 
     # Get the most recent entry
+    # Secondary sort by creation to handle entries with same posting_datetime
     entry = frappe.get_all(
         "Stock Ledger Entry",
         filters=filters,
         fields=["stock_value"],
-        order_by="posting_datetime desc",
+        order_by="posting_datetime desc, creation desc",
         limit=1,
     )
 
