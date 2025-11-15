@@ -40,6 +40,9 @@
   "valuation_rate",
   "valuation_method",
   "default_incoming_rate",
+  "has_batch_no",
+  "batch_naming_series",
+  "shelf_life_in_days",
   "section_storage",
   "storage_areas",
   "bin_location",
@@ -249,6 +252,27 @@
    "label": "Default Incoming Rate",
    "precision": "2",
    "description": "Default cost per unit for purchases (optional)"
+  },
+  {
+   "default": "0",
+   "fieldname": "has_batch_no",
+   "fieldtype": "Check",
+   "label": "Has Batch Number",
+   "description": "Enable batch/lot number tracking for this product (recommended for Food/Beverage)"
+  },
+  {
+   "depends_on": "eval:doc.has_batch_no==1",
+   "fieldname": "batch_naming_series",
+   "fieldtype": "Data",
+   "label": "Batch Naming Series",
+   "description": "Optional custom naming pattern for batches (default: {product_code}-{YYYY}-{####})"
+  },
+  {
+   "depends_on": "eval:doc.has_batch_no==1",
+   "fieldname": "shelf_life_in_days",
+   "fieldtype": "Int",
+   "label": "Shelf Life (Days)",
+   "description": "Number of days from manufacturing to expiration (used for batch expiration calculation)"
   },
   {
    "fieldname": "section_storage",
