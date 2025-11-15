@@ -27,6 +27,7 @@ class StockLedgerEntry(Document):
     def before_submit(self):
         """Calculate running balance and valuation before submission."""
         self.validate_product_and_department()
+        self.validate_no_backdated_entries()
         self.calculate_qty_after_transaction()
         # Valuation calculation will be added in BLK-44
 
@@ -36,6 +37,7 @@ class StockLedgerEntry(Document):
 
     def on_cancel(self):
         """Mark as cancelled and update inventory balance."""
+        self.validate_no_future_entries()
         self.db_set("is_cancelled", 1)
         self.update_inventory_balance(reverse=True)
 
@@ -81,6 +83,73 @@ class StockLedgerEntry(Document):
 
         if not frappe.db.exists("Department", self.department):
             frappe.throw(_("Department {0} does not exist").format(self.department))
+
+    def validate_no_backdated_entries(self):
+        """
+        Prevent backdated entries that would corrupt the running balance.
+
+        Validates that this entry's posting_datetime is not earlier than
+        any existing entries for the same product/department combination.
+        """
+        if self.is_new():
+            # Check if there are any future entries
+            future_entries = frappe.db.count(
+                "Stock Ledger Entry",
+                filters={
+                    "product": self.product,
+                    "department": self.department,
+                    "company": self.company,
+                    "docstatus": 1,
+                    "is_cancelled": 0,
+                    "posting_datetime": [">", self.posting_datetime],
+                },
+            )
+
+            if future_entries > 0:
+                frappe.throw(
+                    _(
+                        "Cannot create backdated entry. There are {0} future entries for {1} in {2}. "
+                        "Backdated entries would corrupt the running balance."
+                    ).format(future_entries, self.product, self.department)
+                )
+
+    def validate_no_future_entries(self):
+        """
+        Prevent cancellation of entries when subsequent entries exist.
+
+        Validates that no entries exist with posting_datetime after this entry.
+        Canceling middle entries would leave subsequent balances incorrect.
+        """
+        future_entries = frappe.db.sql(
+            """
+            SELECT name, posting_datetime
+            FROM `tabStock Ledger Entry`
+            WHERE product = %(product)s
+                AND department = %(department)s
+                AND company = %(company)s
+                AND docstatus = 1
+                AND is_cancelled = 0
+                AND posting_datetime > %(posting_datetime)s
+            ORDER BY posting_datetime ASC
+            LIMIT 1
+            """,
+            {
+                "product": self.product,
+                "department": self.department,
+                "company": self.company,
+                "posting_datetime": self.posting_datetime,
+            },
+            as_dict=1,
+        )
+
+        if future_entries:
+            frappe.throw(
+                _(
+                    "Cannot cancel this entry. There are subsequent entries starting from {0}. "
+                    "Canceling this entry would corrupt running balances. "
+                    "Please cancel all subsequent entries first, or contact your system administrator."
+                ).format(future_entries[0].posting_datetime)
+            )
 
     def calculate_qty_after_transaction(self):
         """
@@ -142,10 +211,23 @@ class StockLedgerEntry(Document):
         """
         Update the Inventory Balance document with the new running balance.
 
+        Uses database-level locking to prevent concurrent update race conditions.
+
         Args:
             reverse (bool): If True, subtract instead of using the new balance (for cancellation)
         """
         balance_name = f"{self.product}-{self.department}-{self.company}"
+
+        # Use SELECT FOR UPDATE to lock the row during update
+        # This prevents concurrent transactions from corrupting the balance
+        frappe.db.sql(
+            """
+            SELECT name FROM `tabInventory Balance`
+            WHERE name = %s
+            FOR UPDATE
+            """,
+            balance_name,
+        )
 
         if frappe.db.exists("Inventory Balance", balance_name):
             balance_doc = frappe.get_doc("Inventory Balance", balance_name)
