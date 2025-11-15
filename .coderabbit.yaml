@@ -1,0 +1,115 @@
+# CodeRabbit Configuration for BLKSHP OS
+# Optimized for Frappe/ERPNext Python development
+
+# Language settings
+language: en-US
+
+# Review settings
+reviews:
+  # Request changes vs comment mode
+  request_changes_workflow: true
+
+  # High-level review settings
+  high_level_summary: true
+  poem: false  # Skip poem generation for professional reviews
+  review_status: true
+
+  # Collapse unchanged files in PR view
+  collapse_walkthrough: false
+
+  # Auto-review settings
+  auto_review:
+    enabled: true
+    drafts: false  # Don't auto-review draft PRs
+    base_branches:
+      - main
+      - develop
+
+  # Path-based instructions for different parts of the codebase
+  path_instructions:
+    - path: "blkshp_os/**/doctype/**/*.py"
+      instructions: |
+        This is a Frappe DocType controller. Review for:
+        - Proper use of Frappe lifecycle hooks (validate, before_insert, before_submit, on_submit, on_cancel)
+        - Database transaction safety and locking (SELECT FOR UPDATE when needed)
+        - Permission handling (ignore_permissions=True usage)
+        - Immutability patterns for ledger entries
+        - Proper error handling with frappe.throw()
+        - Type hints and documentation
+
+    - path: "blkshp_os/**/doctype/**/*.json"
+      instructions: |
+        This is a Frappe DocType schema. Review for:
+        - Proper field types and validations
+        - Required fields marked correctly
+        - Read-only fields for computed/auto-generated values
+        - Proper indexes for frequently queried fields
+        - Permissions aligned with business logic
+
+    - path: "**/test_*.py"
+      instructions: |
+        This is a test file. Review for:
+        - Comprehensive test coverage of edge cases
+        - Proper test isolation and cleanup
+        - Clear test naming and documentation
+        - Mock/fixture usage where appropriate
+        - Testing both success and failure scenarios
+
+    - path: "blkshp_os/**/migrations/*.py"
+      instructions: |
+        This is a data migration script. Review for:
+        - Idempotency (safe to run multiple times)
+        - Proper error handling and rollback
+        - Performance considerations for large datasets
+        - Data validation before migration
+        - Clear logging of migration progress
+
+# Chat settings
+chat:
+  auto_reply: true
+
+# Knowledge base - specific to Frappe/ERPNext
+knowledge_base:
+  - "Frappe framework uses Python with specific patterns like frappe.get_doc(), frappe.db.sql(), and lifecycle hooks"
+  - "DocTypes are the core building blocks - combination of .json schema and .py controller"
+  - "Use frappe.throw() for user-facing errors, not raise Exception()"
+  - "Always use ignore_permissions=True carefully and document why"
+  - "Ledger entries should be immutable after submission (docstatus=1)"
+  - "Use SELECT FOR UPDATE for database locking in concurrent scenarios"
+  - "Type hints (from __future__ import annotations) are required for new code"
+  - "Follow Frappe naming conventions: snake_case for functions/variables, PascalCase for classes"
+
+# Review focus areas
+tone_instructions: |
+  Be constructive and educational. Focus on:
+
+  CRITICAL (Always flag):
+  - Security vulnerabilities (SQL injection, permission bypasses, XSS)
+  - Data corruption risks (race conditions, improper locking, calculation errors)
+  - Breaking changes to public APIs
+  - Missing error handling that could crash the system
+
+  HIGH (Flag when found):
+  - Performance issues (N+1 queries, missing indexes, inefficient algorithms)
+  - Incorrect Frappe framework usage
+  - Missing validation that could lead to bad data
+  - Type safety issues
+
+  MEDIUM (Suggest improvements):
+  - Code duplication
+  - Missing tests for new functionality
+  - Documentation gaps
+  - Style inconsistencies
+
+  LOW (Optional suggestions):
+  - Code organization improvements
+  - Naming improvements
+  - Comment clarity
+
+  Provide specific examples and suggest concrete fixes. Reference Frappe documentation when relevant.
+
+# Early access features
+early_access: true
+
+# Enable learnings from past reviews
+enable_free_tier: true
