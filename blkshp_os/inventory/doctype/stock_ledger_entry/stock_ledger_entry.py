@@ -58,7 +58,11 @@ class StockLedgerEntry(Document):
         self.posting_datetime = posting_datetime
 
     def set_item_code_and_uom(self):
-        """Set item_code and stock_uom from Product."""
+        """
+        Populate the entry's item_code and stock_uom from the linked Product when appropriate.
+        
+        Sets item_code to the Product's product_code and stock_uom to the Product's primary_count_unit if this entry has a product specified and item_code is not already set.
+        """
         if self.product and not self.item_code:
             product_code, primary_unit = frappe.db.get_value(
                 "Product",
@@ -174,16 +178,15 @@ class StockLedgerEntry(Document):
 
 def get_stock_balance(product, department, company, as_of_date=None):
     """
-    Get stock balance for a product/department as of a specific date.
-
-    Args:
-        product (str): Product name
-        department (str): Department name
-        company (str): Company name
-        as_of_date (datetime, optional): Date to calculate balance. Defaults to now.
-
+    Return the stock quantity for a product in a department and company as of a given date.
+    
+    If `as_of_date` is provided, the result reflects the most recent submitted, non-cancelled ledger entry with `posting_datetime` <= `as_of_date`; otherwise it uses the latest submitted, non-cancelled entry. Returns 0 if no matching entries exist.
+    
+    Parameters:
+        as_of_date (datetime, optional): Cutoff datetime to calculate the balance; when omitted, the latest entry is used.
+    
     Returns:
-        float: Stock balance quantity
+        float: Stock balance quantity as of the specified date.
     """
     # Validate required parameters
     if not product:
@@ -226,16 +229,19 @@ def get_stock_balance(product, department, company, as_of_date=None):
 
 def get_stock_value(product, department, company, as_of_date=None):
     """
-    Get stock value for a product/department as of a specific date.
-
-    Args:
-        product (str): Product name
-        department (str): Department name
-        company (str): Company name
-        as_of_date (datetime, optional): Date to calculate value. Defaults to now.
-
+    Return the stock monetary value of a product in a department for a company as of a given datetime.
+    
+    Parameters:
+        product (str): Product identifier.
+        department (str): Department identifier.
+        company (str): Company identifier.
+        as_of_date (datetime, optional): Include ledger entries with posting_datetime <= this value. If omitted, uses the current time.
+    
     Returns:
-        float: Stock value in currency
+        float: Stock value in company currency; `0` when no matching ledger entry exists.
+    
+    Raises:
+        ValidationError: If `product`, `department`, or `company` is missing or does not exist.
     """
     # Validate required parameters
     if not product:
@@ -278,17 +284,25 @@ def get_stock_value(product, department, company, as_of_date=None):
 
 def get_stock_movements(product, department, company, from_date, to_date):
     """
-    Get all stock movements for a product/department in a date range.
-
-    Args:
-        product (str): Product name
-        department (str): Department name
-        company (str): Company name
-        from_date (datetime): Start date
-        to_date (datetime): End date
-
+    Return stock ledger entries for a product and department between two datetimes.
+    
+    Parameters:
+        product (str): Product identifier.
+        department (str): Department identifier.
+        company (str): Company identifier.
+        from_date (datetime): Start of the date/time range (inclusive).
+        to_date (datetime): End of the date/time range (inclusive).
+    
     Returns:
-        list: List of stock ledger entries
+        list[dict]: Ordered list of stock ledger entry records with keys:
+            - name (str)
+            - posting_datetime (datetime)
+            - actual_qty (float)
+            - qty_after_transaction (float)
+            - valuation_rate (float)
+            - stock_value (float)
+            - voucher_type (str)
+            - voucher_no (str)
     """
     # Validate required parameters
     if not product:
