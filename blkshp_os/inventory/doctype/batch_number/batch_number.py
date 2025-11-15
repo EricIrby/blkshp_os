@@ -136,25 +136,35 @@ def update_batch_statuses():
     Daily scheduled job to mark expired batches.
 
     Scans all Active batches and updates status to Expired if
-    expiration_date has passed.
+    expiration_date has passed. Uses bulk SQL UPDATE for performance
+    and atomicity.
     """
-    expired_batches = frappe.get_all(
-        "Batch Number",
-        filters={
-            "status": "Active",
-            "expiration_date": ["<", today()]
-        },
-        pluck="name"
+    # Use bulk SQL UPDATE instead of iterating through batches
+    frappe.db.sql(
+        """
+        UPDATE `tabBatch Number`
+        SET status = 'Expired'
+        WHERE status = 'Active'
+          AND expiration_date < %s
+        """,
+        (today(),)
     )
 
-    for batch_name in expired_batches:
-        batch = frappe.get_doc("Batch Number", batch_name)
-        batch.status = "Expired"
-        batch.db_set("status", "Expired")
-        frappe.db.commit()
+    # Get count of updated batches for logging
+    count = frappe.db.sql(
+        """
+        SELECT COUNT(*) as count
+        FROM `tabBatch Number`
+        WHERE status = 'Expired'
+          AND expiration_date < %s
+          AND modified >= %s
+        """,
+        (today(), frappe.utils.add_days(today(), -1)),
+        as_dict=True
+    )[0].count
 
-    if expired_batches:
-        frappe.logger().info(f"Marked {len(expired_batches)} batches as Expired")
+    if count:
+        frappe.logger().info(f"Marked {count} batches as Expired")
 
 
 # Query functions for batch management

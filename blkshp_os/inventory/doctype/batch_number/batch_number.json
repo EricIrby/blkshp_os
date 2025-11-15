@@ -83,7 +83,8 @@
    "fieldname": "shelf_life_in_days",
    "fieldtype": "Int",
    "label": "Shelf Life (Days)",
-   "description": "Number of days from manufacturing to expiration"
+   "read_only": 1,
+   "description": "Number of days from manufacturing to expiration (auto-calculated)"
   },
   {
    "fieldname": "section_break_quantity",
