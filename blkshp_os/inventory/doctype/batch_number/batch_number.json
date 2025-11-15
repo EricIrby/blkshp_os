@@ -1,0 +1,163 @@
+{
+ "actions": [],
+ "allow_copy": 0,
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "field:batch_id",
+ "creation": "2025-11-15 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "batch_details_section",
+  "batch_id",
+  "product",
+  "department",
+  "company",
+  "column_break_dates",
+  "manufacturing_date",
+  "expiration_date",
+  "shelf_life_in_days",
+  "section_break_quantity",
+  "quantity",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "batch_details_section",
+   "fieldtype": "Section Break",
+   "label": "Batch Details"
+  },
+  {
+   "fieldname": "batch_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Batch ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manufacturing_date",
+   "fieldtype": "Date",
+   "label": "Manufacturing Date"
+  },
+  {
+   "fieldname": "expiration_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Expiration Date"
+  },
+  {
+   "fieldname": "shelf_life_in_days",
+   "fieldtype": "Int",
+   "label": "Shelf Life (Days)",
+   "description": "Number of days from manufacturing to expiration"
+  },
+  {
+   "fieldname": "section_break_quantity",
+   "fieldtype": "Section Break",
+   "label": "Inventory"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity",
+   "precision": "3",
+   "read_only": 1,
+   "description": "Calculated from Stock Ledger Entries"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nExpired\nConsumed",
+   "default": "Active",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2025-11-15 01:00:00",
+ "modified_by": "Administrator",
+ "module": "Inventory",
+ "name": "Batch Number",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Inventory Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Inventory Auditor",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "expiration_date",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 0
+}
