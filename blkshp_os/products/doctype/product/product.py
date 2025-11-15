@@ -18,6 +18,8 @@ class Product(Document):
         self._validate_conversion_factors()
         self._ensure_default_department_in_allocations()
         self._validate_property_combinations()
+        self._validate_valuation_fields()
+        self._set_default_valuation_method()
 
     # -------------------------------------------------------------------------
     # Public helpers
@@ -133,3 +135,31 @@ class Product(Document):
     def _validate_property_combinations(self):
         if self.is_generic and self.is_prep_item:
             frappe.throw(_("Product cannot be both generic and a prep item."))
+
+    def _validate_valuation_fields(self):
+        """Validate valuation-related fields."""
+        # Validate valuation_rate is non-negative
+        if self.valuation_rate and self.valuation_rate < 0:
+            frappe.throw(_("Valuation Rate cannot be negative."))
+
+        # Validate default_incoming_rate is non-negative
+        if self.default_incoming_rate and self.default_incoming_rate < 0:
+            frappe.throw(_("Default Incoming Rate cannot be negative."))
+
+        # Warn if valuation method is Manual but no valuation_rate is set
+        if self.valuation_method == "Manual" and not self.valuation_rate:
+            frappe.msgprint(
+                _("Manual valuation method selected but no valuation rate set. "
+                  "Please set a valuation rate."),
+                indicator="orange",
+                alert=True
+            )
+
+    def _set_default_valuation_method(self):
+        """Set default valuation method if not specified."""
+        if not self.valuation_method:
+            self.valuation_method = "Moving Average"
+
+        # Initialize valuation_rate to 0 if not set
+        if self.valuation_rate is None:
+            self.valuation_rate = 0.0

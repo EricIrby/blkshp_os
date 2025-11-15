@@ -27,7 +27,6 @@ class StockLedgerEntry(Document):
     def before_submit(self):
         """Calculate running balance and valuation before submission."""
         self.validate_product_and_department()
-        self.validate_no_backdated_entries()
         self.calculate_qty_after_transaction()
         # Valuation calculation will be added in BLK-44
 
@@ -37,7 +36,6 @@ class StockLedgerEntry(Document):
 
     def on_cancel(self):
         """Mark as cancelled and update inventory balance."""
-        self.validate_no_future_entries()
         self.db_set("is_cancelled", 1)
         self.update_inventory_balance(reverse=True)
 
@@ -48,11 +46,6 @@ class StockLedgerEntry(Document):
             frappe.throw(
                 _("Cannot modify Stock Ledger Entry after submission. Entry is immutable.")
             )
-
-        # Update computed fields on every save (in case department changes)
-        self.set_posting_datetime()
-        self.set_item_code_and_uom()
-        self.set_warehouse_from_department()
 
     def set_posting_datetime(self):
         """Combine posting_date and posting_time into posting_datetime."""
@@ -84,99 +77,6 @@ class StockLedgerEntry(Document):
         if not frappe.db.exists("Department", self.department):
             frappe.throw(_("Department {0} does not exist").format(self.department))
 
-    def validate_no_backdated_entries(self):
-        """
-        Prevent backdated entries that would corrupt the running balance.
-
-        Validates that this entry's posting_datetime is not earlier than
-        any existing entries for the same product/department combination.
-        Also validates against entries with the same posting_datetime using
-        creation timestamp as a secondary sort criterion.
-        """
-        if self.is_new():
-            # Check if there are any future entries (strict datetime comparison)
-            future_entries = frappe.db.count(
-                "Stock Ledger Entry",
-                filters={
-                    "product": self.product,
-                    "department": self.department,
-                    "company": self.company,
-                    "docstatus": 1,
-                    "is_cancelled": 0,
-                    "posting_datetime": [">", self.posting_datetime],
-                },
-            )
-
-            if future_entries > 0:
-                frappe.throw(
-                    _(
-                        "Cannot create backdated entry. There are {0} future entries for {1} in {2}. "
-                        "Backdated entries would corrupt the running balance."
-                    ).format(future_entries, self.product, self.department)
-                )
-
-            # Also check for entries with the same posting_datetime
-            # In this case, the creation timestamp determines order
-            # Warn if there are existing entries with same posting_datetime
-            same_datetime_entries = frappe.db.count(
-                "Stock Ledger Entry",
-                filters={
-                    "product": self.product,
-                    "department": self.department,
-                    "company": self.company,
-                    "docstatus": 1,
-                    "is_cancelled": 0,
-                    "posting_datetime": self.posting_datetime,
-                },
-            )
-
-            if same_datetime_entries > 0:
-                frappe.msgprint(
-                    _(
-                        "Warning: {0} entries exist with the same posting datetime ({1}). "
-                        "Ordering will be determined by creation timestamp."
-                    ).format(same_datetime_entries, self.posting_datetime),
-                    indicator="orange",
-                )
-
-    def validate_no_future_entries(self):
-        """
-        Prevent cancellation of entries when subsequent entries exist.
-
-        Validates that no entries exist with posting_datetime after this entry.
-        Canceling middle entries would leave subsequent balances incorrect.
-        """
-        future_entries = frappe.db.sql(
-            """
-            SELECT name, posting_datetime
-            FROM `tabStock Ledger Entry`
-            WHERE product = %(product)s
-                AND department = %(department)s
-                AND company = %(company)s
-                AND docstatus = 1
-                AND is_cancelled = 0
-                AND posting_datetime > %(posting_datetime)s
-            ORDER BY posting_datetime ASC
-            LIMIT 1
-            """,
-            {
-                "product": self.product,
-                "department": self.department,
-                "company": self.company,
-                "posting_datetime": self.posting_datetime,
-            },
-            as_dict=1,
-        )
-
-        if future_entries:
-            frappe.throw(
-                _(
-                    "Cannot cancel this entry. There are subsequent entries starting from {0}. "
-                    "Canceling this entry would corrupt running balances. "
-                    "Please cancel all subsequent entries first, or contact your system administrator."
-                ).format(future_entries[0].posting_datetime)
-            )
-
     def calculate_qty_after_transaction(self):
         """
         Calculate running balance by getting the previous balance and adding actual_qty.
@@ -194,33 +94,24 @@ class StockLedgerEntry(Document):
         """
         Get the most recent qty_after_transaction for this product/department.
 
-        Uses database locking to prevent race conditions in concurrent submissions.
-
         Returns 0 if no previous entries exist.
         """
-        # Use FOR UPDATE locking to prevent race conditions
-        # This ensures that concurrent transactions read consistent balance values
-        previous_entry = frappe.db.sql(
-            """
-            SELECT qty_after_transaction
-            FROM `tabStock Ledger Entry`
-            WHERE product = %(product)s
-                AND department = %(department)s
-                AND company = %(company)s
-                AND docstatus = 1
-                AND is_cancelled = 0
-                AND posting_datetime < %(posting_datetime)s
-            ORDER BY posting_datetime DESC, creation DESC
-            LIMIT 1
-            FOR UPDATE
-            """,
-            {
-                "product": self.product,
-                "department": self.department,
-                "company": self.company,
-                "posting_datetime": self.posting_datetime,
-            },
-            as_dict=1,
+        filters = {
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
+            "docstatus": 1,  # Only submitted entries
+            "is_cancelled": 0,  # Exclude cancelled entries
+            "posting_datetime": ["<", self.posting_datetime],
+        }
+
+        # Get the most recent entry before this one
+        previous_entry = frappe.get_all(
+            "Stock Ledger Entry",
+            filters=filters,
+            fields=["qty_after_transaction"],
+            order_by="posting_datetime desc",
+            limit=1,
         )
 
         if previous_entry:
@@ -245,23 +136,10 @@ class StockLedgerEntry(Document):
         """
         Update the Inventory Balance document with the new running balance.
 
-        Uses database-level locking to prevent concurrent update race conditions.
-
         Args:
-            reverse (bool): If True, recalculate balance from ledger (for cancellation)
+            reverse (bool): If True, subtract instead of using the new balance (for cancellation)
         """
         balance_name = f"{self.product}-{self.department}-{self.company}"
-
-        # Use SELECT FOR UPDATE to lock the row during update
-        # This prevents concurrent transactions from corrupting the balance
-        frappe.db.sql(
-            """
-            SELECT name FROM `tabInventory Balance`
-            WHERE name = %s
-            FOR UPDATE
-            """,
-            balance_name,
-        )
 
         if frappe.db.exists("Inventory Balance", balance_name):
             balance_doc = frappe.get_doc("Inventory Balance", balance_name)
@@ -273,10 +151,8 @@ class StockLedgerEntry(Document):
             balance_doc.company = self.company
 
         if reverse:
-            # On cancellation, recalculate balance from remaining ledger entries
-            # This ensures balance is always correct even after cancellations
-            recalculated_balance = self._recalculate_balance_from_ledger()
-            balance_doc.quantity = recalculated_balance
+            # On cancellation, subtract the actual_qty
+            balance_doc.quantity = (balance_doc.quantity or 0) - self.actual_qty
         else:
             # On submission, set to the calculated balance
             balance_doc.quantity = self.qty_after_transaction
@@ -288,46 +164,6 @@ class StockLedgerEntry(Document):
             balance_doc.last_audit_date = self.posting_date
 
         balance_doc.save(ignore_permissions=True)
-
-    def _recalculate_balance_from_ledger(self):
-        """
-        Recalculate the current balance from all non-cancelled ledger entries.
-
-        This is used during cancellation to ensure the balance is correct
-        after removing an entry from the ledger.
-
-        Returns:
-            float: Recalculated balance quantity
-        """
-        # Get the most recent non-cancelled entry
-        # This gives us the current balance after excluding cancelled entries
-        most_recent_entry = frappe.db.sql(
-            """
-            SELECT qty_after_transaction
-            FROM `tabStock Ledger Entry`
-            WHERE product = %(product)s
-                AND department = %(department)s
-                AND company = %(company)s
-                AND docstatus = 1
-                AND is_cancelled = 0
-                AND name != %(current_entry)s
-            ORDER BY posting_datetime DESC, creation DESC
-            LIMIT 1
-            """,
-            {
-                "product": self.product,
-                "department": self.department,
-                "company": self.company,
-                "current_entry": self.name,
-            },
-            as_dict=1,
-        )
-
-        if most_recent_entry:
-            return most_recent_entry[0].qty_after_transaction
-        else:
-            # No remaining entries, balance should be 0
-            return 0
 
 
 # Query functions for external use
@@ -357,12 +193,11 @@ def get_stock_balance(product, department, company, as_of_date=None):
         filters["posting_datetime"] = ["<=", as_of_date]
 
     # Get the most recent entry
-    # Secondary sort by creation to handle entries with same posting_datetime
     entry = frappe.get_all(
         "Stock Ledger Entry",
         filters=filters,
         fields=["qty_after_transaction"],
-        order_by="posting_datetime desc, creation desc",
+        order_by="posting_datetime desc",
         limit=1,
     )
 
@@ -394,12 +229,11 @@ def get_stock_value(product, department, company, as_of_date=None):
         filters["posting_datetime"] = ["<=", as_of_date]
 
     # Get the most recent entry
-    # Secondary sort by creation to handle entries with same posting_datetime
     entry = frappe.get_all(
         "Stock Ledger Entry",
         filters=filters,
         fields=["stock_value"],
-        order_by="posting_datetime desc, creation desc",
+        order_by="posting_datetime desc",
         limit=1,
     )
 

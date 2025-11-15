@@ -36,6 +36,10 @@
   "is_prep_item",
   "linked_product",
   "substitute_items",
+  "section_valuation",
+  "valuation_rate",
+  "valuation_method",
+  "default_incoming_rate",
   "section_storage",
   "storage_areas",
   "bin_location",
@@ -217,6 +221,34 @@
    "fieldtype": "Table",
    "label": "Substitute Items",
    "options": "Product Substitute Item"
+  },
+  {
+   "fieldname": "section_valuation",
+   "fieldtype": "Section Break",
+   "label": "Valuation & Costing"
+  },
+  {
+   "default": "0.00",
+   "fieldname": "valuation_rate",
+   "fieldtype": "Currency",
+   "label": "Valuation Rate",
+   "precision": "2",
+   "description": "Current cost per unit for inventory valuation (auto-updated by Stock Ledger)"
+  },
+  {
+   "default": "Moving Average",
+   "fieldname": "valuation_method",
+   "fieldtype": "Select",
+   "label": "Valuation Method",
+   "options": "Moving Average\nFIFO\nManual",
+   "description": "Method for calculating inventory cost"
+  },
+  {
+   "fieldname": "default_incoming_rate",
+   "fieldtype": "Currency",
+   "label": "Default Incoming Rate",
+   "precision": "2",
+   "description": "Default cost per unit for purchases (optional)"
   },
   {
    "fieldname": "section_storage",

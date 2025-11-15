@@ -218,37 +218,6 @@
   }
  ],
  "index_web_pages_for_search": 0,
- "indexes": [
-  {
-   "fields": [
-    {
-     "fieldname": "product",
-     "options": "asc"
-    },
-    {
-     "fieldname": "department",
-     "options": "asc"
-    },
-    {
-     "fieldname": "company",
-     "options": "asc"
-    },
-    {
-     "fieldname": "posting_datetime",
-     "options": "desc"
-    },
-    {
-     "fieldname": "docstatus",
-     "options": "asc"
-    },
-    {
-     "fieldname": "is_cancelled",
-     "options": "asc"
-    }
-   ],
-   "index_name": "ledger_query_index"
-  }
- ],
  "is_submittable": 1,
  "links": [],
  "modified": "2025-11-15 01:00:00",
@@ -266,45 +235,6 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 0
-  },
-  {
-   "create": 1,
-   "delete": 0,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Inventory Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 0
-  },
-  {
-   "create": 0,
-   "delete": 0,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Inventory Auditor",
-   "share": 0,
-   "submit": 0,
-   "write": 0
-  },
-  {
-   "create": 1,
-   "delete": 0,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "BLKSHP Operations",
    "share": 1,
    "submit": 1,
    "write": 0
