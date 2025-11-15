@@ -158,6 +158,11 @@ class StockLedgerEntry(Document):
             balance_doc.quantity = self.qty_after_transaction
 
         balance_doc.last_updated = now_datetime()
+
+        # Update last_audit_date if this entry is from an Inventory Audit
+        if self.voucher_type == "Inventory Audit" and not reverse:
+            balance_doc.last_audit_date = self.posting_date
+
         balance_doc.save(ignore_permissions=True)
 
 

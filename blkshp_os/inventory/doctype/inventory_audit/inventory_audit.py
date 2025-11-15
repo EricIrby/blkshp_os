@@ -100,9 +100,9 @@ class InventoryAudit(Document):
             totals[(product, department)] += quantity_primary
             unique_products.add(product)
 
-        # Generate Stock Ledger Entries for all variances
+        # Generate Stock Ledger Entries using actual counted quantities vs current balances
         try:
-            self.generate_stock_ledger_entries()
+            self.generate_stock_ledger_entries(totals)
         except Exception as e:
             frappe.throw(
                 _("Failed to generate Stock Ledger Entries: {0}").format(str(e))
@@ -128,30 +128,36 @@ class InventoryAudit(Document):
             variances[product] += variance
         return dict(variances)
 
-    def generate_stock_ledger_entries(self) -> list[str]:
+    def generate_stock_ledger_entries(self, totals: dict[tuple[str, str], float]) -> list[str]:
         """
-        Generate Stock Ledger Entries for all audit lines with variances.
+        Generate Stock Ledger Entries based on counted quantities vs current balances.
 
-        Creates one Stock Ledger Entry per audit line that has a non-zero variance.
-        The Stock Ledger Entry will automatically update the Inventory Balance on submission.
+        Aggregates counted quantities by (product, department) and compares against
+        current inventory balances to determine the actual adjustment needed.
+        Creates one Stock Ledger Entry per unique (product, department) pair.
+
+        Args:
+            totals: Dict mapping (product, department) to total counted quantity
 
         Returns:
             list[str]: Names of created Stock Ledger Entries
         """
         created_entries: list[str] = []
 
-        for idx, line in enumerate(self.audit_lines or [], start=1):
-            # Skip lines without variance
-            variance = getattr(line, "variance", None)
-            if variance is None or variance == 0:
-                continue
+        # Create Stock Ledger Entry for each (product, department) with adjustment
+        for (product, department), counted_qty in totals.items():
+            # Get current inventory balance
+            from blkshp_os.inventory.doctype.stock_ledger_entry.stock_ledger_entry import (
+                get_stock_balance,
+            )
 
-            product = line.product
-            if not product:
-                continue
+            current_balance = get_stock_balance(product, department, self.company)
 
-            department = line.department or self._infer_department_for_line(line)
-            if not department:
+            # Calculate adjustment needed: counted - current_balance
+            adjustment = counted_qty - current_balance
+
+            # Skip if no adjustment needed
+            if adjustment == 0:
                 continue
 
             # Create Stock Ledger Entry
@@ -159,16 +165,11 @@ class InventoryAudit(Document):
             entry.product = product
             entry.department = department
             entry.company = self.company
-            entry.actual_qty = variance  # Variance is the quantity change
+            entry.actual_qty = adjustment  # Adjustment to bring balance to counted quantity
             entry.posting_date = self.audit_date or frappe.utils.today()
             entry.posting_time = frappe.utils.nowtime()
             entry.voucher_type = "Inventory Audit"
             entry.voucher_no = self.name
-            entry.voucher_detail_no = str(idx)  # Line index for reference
-
-            # Batch number support (if present on line)
-            if hasattr(line, "batch_number") and line.batch_number:
-                entry.batch_number = line.batch_number
 
             try:
                 entry.insert(ignore_permissions=True)
@@ -176,19 +177,19 @@ class InventoryAudit(Document):
                 created_entries.append(entry.name)
 
                 frappe.msgprint(
-                    _("Created Stock Ledger Entry {0} for {1} (variance: {2})").format(
-                        entry.name, product, variance
+                    _("Created Stock Ledger Entry {0} for {1}/{2} (counted: {3}, current: {4}, adjustment: {5})").format(
+                        entry.name, product, department, counted_qty, current_balance, adjustment
                     ),
                     alert=True,
                 )
             except Exception as e:
                 frappe.log_error(
-                    title=f"Stock Ledger Entry Creation Failed for {product}",
+                    title=f"Stock Ledger Entry Creation Failed for {product}/{department}",
                     message=str(e),
                 )
                 frappe.throw(
-                    _("Failed to create Stock Ledger Entry for {0}: {1}").format(
-                        product, str(e)
+                    _("Failed to create Stock Ledger Entry for {0}/{1}: {2}").format(
+                        product, department, str(e)
                     )
                 )
 
