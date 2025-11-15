@@ -60,11 +60,14 @@ class StockLedgerEntry(Document):
     def set_item_code_and_uom(self):
         """Set item_code and stock_uom from Product."""
         if self.product and not self.item_code:
-            product_code, primary_unit = frappe.db.get_value(
+            result = frappe.db.get_value(
                 "Product",
                 self.product,
                 ["product_code", "primary_count_unit"]
             )
+            if not result:
+                frappe.throw(_("Product {0} does not exist").format(self.product))
+            product_code, primary_unit = result
             self.item_code = product_code
             self.stock_uom = primary_unit
 
@@ -172,19 +175,8 @@ class StockLedgerEntry(Document):
 
 # Query functions for external use
 
-def get_stock_balance(product, department, company, as_of_date=None):
-    """
-    Get stock balance for a product/department as of a specific date.
-
-    Args:
-        product (str): Product name
-        department (str): Department name
-        company (str): Company name
-        as_of_date (datetime, optional): Date to calculate balance. Defaults to now.
-
-    Returns:
-        float: Stock balance quantity
-    """
+def _validate_stock_query_params(product, department, company):
+    """Validate common parameters for stock query functions."""
     # Validate required parameters
     if not product:
         frappe.throw(_("Product is required"))
@@ -200,6 +192,22 @@ def get_stock_balance(product, department, company, as_of_date=None):
         frappe.throw(_("Department {0} does not exist").format(department))
     if not frappe.db.exists("Company", company):
         frappe.throw(_("Company {0} does not exist").format(company))
+
+
+def get_stock_balance(product, department, company, as_of_date=None):
+    """
+    Get stock balance for a product/department as of a specific date.
+
+    Args:
+        product (str): Product name
+        department (str): Department name
+        company (str): Company name
+        as_of_date (datetime, optional): Date to calculate balance. Defaults to now.
+
+    Returns:
+        float: Stock balance quantity
+    """
+    _validate_stock_query_params(product, department, company)
 
     filters = {
         "product": product,
@@ -237,21 +245,7 @@ def get_stock_value(product, department, company, as_of_date=None):
     Returns:
         float: Stock value in currency
     """
-    # Validate required parameters
-    if not product:
-        frappe.throw(_("Product is required"))
-    if not department:
-        frappe.throw(_("Department is required"))
-    if not company:
-        frappe.throw(_("Company is required"))
-
-    # Validate entities exist
-    if not frappe.db.exists("Product", product):
-        frappe.throw(_("Product {0} does not exist").format(product))
-    if not frappe.db.exists("Department", department):
-        frappe.throw(_("Department {0} does not exist").format(department))
-    if not frappe.db.exists("Company", company):
-        frappe.throw(_("Company {0} does not exist").format(company))
+    _validate_stock_query_params(product, department, company)
 
     filters = {
         "product": product,
@@ -290,25 +284,17 @@ def get_stock_movements(product, department, company, from_date, to_date):
     Returns:
         list: List of stock ledger entries
     """
-    # Validate required parameters
-    if not product:
-        frappe.throw(_("Product is required"))
-    if not department:
-        frappe.throw(_("Department is required"))
-    if not company:
-        frappe.throw(_("Company is required"))
+    _validate_stock_query_params(product, department, company)
+
+    # Validate date parameters
     if not from_date:
         frappe.throw(_("From date is required"))
     if not to_date:
         frappe.throw(_("To date is required"))
 
-    # Validate entities exist
-    if not frappe.db.exists("Product", product):
-        frappe.throw(_("Product {0} does not exist").format(product))
-    if not frappe.db.exists("Department", department):
-        frappe.throw(_("Department {0} does not exist").format(department))
-    if not frappe.db.exists("Company", company):
-        frappe.throw(_("Company {0} does not exist").format(company))
+    # Validate date range
+    if get_datetime(from_date) > get_datetime(to_date):
+        frappe.throw(_("From date cannot be after To date"))
 
     filters = {
         "product": product,
