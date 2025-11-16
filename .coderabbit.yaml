@@ -69,10 +69,12 @@ chat:
   auto_reply: true
 
 # Review focus areas (max 250 chars)
-tone_instructions: "Be constructive and educational. Prioritize security, data integrity, and Frappe framework best practices. Flag performance issues and suggest specific fixes with examples."
+tone_instructions: "Be constructive. Focus on security, data integrity, and Frappe best practices. Suggest specific fixes with examples."
+
+# Knowledge base configuration
+knowledge_base:
+  enabled: true
+  auto_sync: true
 
 # Early access features
 early_access: true
-
-# Enable learnings from past reviews
-enable_free_tier: true
