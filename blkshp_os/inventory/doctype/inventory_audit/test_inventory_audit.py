@@ -211,8 +211,10 @@ class TestInventoryAudit(FrappeTestCase):
 
         self.assertEqual(len(ledger_entries), 1)
         entry = ledger_entries[0]
-        self.assertEqual(entry.actual_qty, 5)  # Variance
-        self.assertEqual(entry.qty_after_transaction, 5)  # New balance
+        # actual_qty is the adjustment from current balance (0) to counted qty (15)
+        self.assertEqual(entry.actual_qty, 15)
+        # qty_after_transaction is the final balance after adjustment
+        self.assertEqual(entry.qty_after_transaction, 15)
 
     def test_close_audit_with_multiple_variances(self) -> None:
         """Test Stock Ledger Entry generation for multiple products with variances."""
@@ -267,6 +269,20 @@ class TestInventoryAudit(FrappeTestCase):
 
     def test_close_audit_skips_zero_variance(self) -> None:
         """Test that Stock Ledger Entries are not created for zero variances."""
+        # Create initial inventory of 10 units
+        initial_entry = frappe.new_doc("Stock Ledger Entry")
+        initial_entry.product = self.product
+        initial_entry.department = self.department_a
+        initial_entry.company = self.company
+        initial_entry.actual_qty = 10
+        initial_entry.posting_date = "2025-11-01"
+        initial_entry.posting_time = "10:00:00"
+        initial_entry.voucher_type = "Stock Entry"
+        initial_entry.voucher_no = "INITIAL-001"
+        initial_entry.insert(ignore_permissions=True)
+        initial_entry.submit()
+
+        # Create audit with no variance (counted = current balance = 10)
         audit = frappe.get_doc(
             {
                 "doctype": "Inventory Audit",

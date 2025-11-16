@@ -23,10 +23,13 @@ class TestSubscriptionEnforcement(FrappeTestCase):
 
     def setUp(self):
         """Set up test fixtures."""
+        # Ensure we're running as Administrator
+        frappe.set_user("Administrator")
+
         # Clear any existing test users
         for user_email in ["tenant_user@test.com", "admin_user@test.com"]:
             if frappe.db.exists("User", user_email):
-                frappe.delete_doc("User", user_email, force=True)
+                frappe.delete_doc("User", user_email, force=True, ignore_permissions=True)
 
         # Create test tenant user
         self.tenant_user = frappe.get_doc(
@@ -62,10 +65,13 @@ class TestSubscriptionEnforcement(FrappeTestCase):
 
     def tearDown(self):
         """Clean up test data."""
+        # Ensure we're running as Administrator
+        frappe.set_user("Administrator")
+
         # Delete test users
         for user_email in ["tenant_user@test.com", "admin_user@test.com"]:
             if frappe.db.exists("User", user_email):
-                frappe.delete_doc("User", user_email, force=True)
+                frappe.delete_doc("User", user_email, force=True, ignore_permissions=True)
 
         # Clear access logs
         frappe.db.delete("Subscription Access Log")

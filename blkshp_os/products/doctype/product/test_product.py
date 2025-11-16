@@ -68,6 +68,8 @@ class TestProduct(FrappeTestCase):
         product.product_code = "TEST-VAL-001"
         product.company = company
         product.primary_count_unit = "each"
+        product.volume_conversion_unit = ""
+        product.weight_conversion_unit = ""
         product.insert(ignore_permissions=True)
 
         # Should default to Moving Average
@@ -99,6 +101,8 @@ class TestProduct(FrappeTestCase):
         product1.product_code = "TEST-VAL-MA"
         product1.company = company
         product1.primary_count_unit = "each"
+        product1.volume_conversion_unit = ""
+        product1.weight_conversion_unit = ""
         product1.valuation_method = "Moving Average"
         product1.valuation_rate = 5.50
         product1.insert(ignore_permissions=True)
@@ -112,6 +116,8 @@ class TestProduct(FrappeTestCase):
         product2.product_code = "TEST-VAL-FIFO"
         product2.company = company
         product2.primary_count_unit = "each"
+        product2.volume_conversion_unit = ""
+        product2.weight_conversion_unit = ""
         product2.valuation_method = "FIFO"
         product2.valuation_rate = 3.25
         product2.insert(ignore_permissions=True)
@@ -125,6 +131,8 @@ class TestProduct(FrappeTestCase):
         product3.product_code = "TEST-VAL-MANUAL"
         product3.company = company
         product3.primary_count_unit = "each"
+        product3.volume_conversion_unit = ""
+        product3.weight_conversion_unit = ""
         product3.valuation_method = "Manual"
         product3.valuation_rate = 10.00
         product3.insert(ignore_permissions=True)
@@ -141,6 +149,8 @@ class TestProduct(FrappeTestCase):
         product.product_code = "TEST-VAL-INCOMING"
         product.company = company
         product.primary_count_unit = "lb"
+        product.volume_conversion_unit = ""
+        product.weight_conversion_unit = ""
         product.default_incoming_rate = 2.75
         product.insert(ignore_permissions=True)
 
@@ -169,6 +179,8 @@ class TestProduct(FrappeTestCase):
         product.product_code = "TEST-NO-BATCH"
         product.company = company
         product.primary_count_unit = "each"
+        product.volume_conversion_unit = ""
+        product.weight_conversion_unit = ""
         product.insert(ignore_permissions=True)
 
         # Should default to 0 (disabled)
@@ -183,6 +195,8 @@ class TestProduct(FrappeTestCase):
         product.product_code = "TEST-BATCH-ENABLED"
         product.company = company
         product.primary_count_unit = "lb"
+        product.volume_conversion_unit = ""
+        product.weight_conversion_unit = ""
         product.product_type = "Food"
         product.has_batch_no = 1
         product.shelf_life_in_days = 30
@@ -230,6 +244,8 @@ class TestProduct(FrappeTestCase):
         product.product_code = "TEST-CUSTOM-BATCH"
         product.company = company
         product.primary_count_unit = "each"
+        product.volume_conversion_unit = ""
+        product.weight_conversion_unit = ""
         product.has_batch_no = 1
         product.batch_naming_series = "{product_code}-B-.####"
         product.shelf_life_in_days = 60
@@ -248,6 +264,8 @@ class TestProduct(FrappeTestCase):
         food_product.company = company
         food_product.product_type = "Food"
         food_product.primary_count_unit = "lb"
+        food_product.volume_conversion_unit = ""
+        food_product.weight_conversion_unit = ""
         food_product.has_batch_no = 1
         food_product.shelf_life_in_days = 14
         food_product.insert(ignore_permissions=True)
@@ -262,6 +280,8 @@ class TestProduct(FrappeTestCase):
         beverage_product.company = company
         beverage_product.product_type = "Beverage"
         beverage_product.primary_count_unit = "bottle"
+        beverage_product.volume_conversion_unit = ""
+        beverage_product.weight_conversion_unit = ""
         beverage_product.has_batch_no = 1
         beverage_product.shelf_life_in_days = 365
         beverage_product.insert(ignore_permissions=True)
@@ -276,6 +296,8 @@ class TestProduct(FrappeTestCase):
         supply_product.company = company
         supply_product.product_type = "Supply"
         supply_product.primary_count_unit = "each"
+        supply_product.volume_conversion_unit = ""
+        supply_product.weight_conversion_unit = ""
         supply_product.has_batch_no = 0
         supply_product.insert(ignore_permissions=True)
 

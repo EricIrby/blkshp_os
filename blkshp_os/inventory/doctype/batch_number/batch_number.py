@@ -45,7 +45,7 @@ class BatchNumber(Document):
                 as_list=True
             )
 
-            next_seq = result[0][0] if result else 1
+            next_seq = int(result[0][0]) if result else 1
             self.batch_id = f"{product_code}-{year}-{next_seq:04d}"
 
     def validate(self) -> None:

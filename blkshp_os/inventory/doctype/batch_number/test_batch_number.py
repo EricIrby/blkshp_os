@@ -13,30 +13,71 @@ class TestBatchNumber(FrappeTestCase):
 
     def setUp(self):
         """Set up test data before each test"""
-        # Create test product if it doesn't exist
-        if not frappe.db.exists("Product", "TEST-BATCH-PROD"):
-            product = frappe.get_doc({
-                "doctype": "Product",
-                "product_name": "Test Batch Product",
-                "product_code": "TEST-BATCH-PROD",
-                "company": "_Test Company",
-                "primary_count_unit": "Kg"
-            })
-            product.insert(ignore_permissions=True)
+        # Ensure test data exists
+        self.company = self._ensure_company()
+        self.product = self._ensure_product()
+        self.department = self._ensure_department()
 
-        # Create test department if it doesn't exist
-        if not frappe.db.exists("Department", "Test Batch Dept"):
-            dept = frappe.get_doc({
-                "doctype": "Department",
-                "department_name": "Test Batch Dept"
-            })
-            dept.insert(ignore_permissions=True)
+    def _ensure_company(self):
+        """Helper to get or create test company."""
+        existing_company = frappe.db.get_value(
+            "Company", {"company_name": "_Test Company"}, "name"
+        )
+        if existing_company:
+            return existing_company
+
+        company = frappe.get_doc({
+            "doctype": "Company",
+            "company_name": "_Test Company",
+            "company_code": "TEST",
+            "default_currency": "USD"
+        })
+        company.insert(ignore_permissions=True)
+        return company.name
+
+    def _ensure_product(self):
+        """Helper to get or create test product."""
+        existing_product = frappe.db.get_value("Product", "TEST-BATCH-PROD", "name")
+        if existing_product:
+            return existing_product
+
+        product = frappe.get_doc({
+            "doctype": "Product",
+            "product_name": "Test Batch Product",
+            "product_code": "TEST-BATCH-PROD",
+            "company": self.company,
+            "primary_count_unit": "kg",
+            "volume_conversion_unit": "",
+            "weight_conversion_unit": ""
+        })
+        product.insert(ignore_permissions=True)
+        return product.name
+
+    def _ensure_department(self):
+        """Helper to get or create test department."""
+        existing_dept = frappe.db.get_value(
+            "Department",
+            {"department_code": "TEST-DEPT", "company": self.company},
+            "name"
+        )
+        if existing_dept:
+            return existing_dept
+
+        dept = frappe.get_doc({
+            "doctype": "Department",
+            "department_name": "Test Batch Dept",
+            "department_code": "TEST-DEPT",
+            "department_type": "Food",
+            "company": self.company
+        })
+        dept.insert(ignore_permissions=True)
+        return dept.name
 
     def tearDown(self):
         """Clean up after each test"""
         # Delete test batches
         frappe.db.delete("Batch Number", {
-            "product": "TEST-BATCH-PROD"
+            "product": self.product
         })
         frappe.db.commit()
 
@@ -44,9 +85,9 @@ class TestBatchNumber(FrappeTestCase):
         """Test basic batch number creation"""
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today(),
             "expiration_date": add_days(today(), 30)
         })
@@ -62,9 +103,9 @@ class TestBatchNumber(FrappeTestCase):
         """Test automatic batch_id generation"""
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today()
         })
         batch.insert()
@@ -78,9 +119,9 @@ class TestBatchNumber(FrappeTestCase):
         """Test that expiration date must be after manufacturing date"""
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today(),
             "expiration_date": add_days(today(), -1)  # Invalid: before manufacturing
         })
@@ -93,9 +134,9 @@ class TestBatchNumber(FrappeTestCase):
         """Test automatic shelf life calculation"""
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today(),
             "expiration_date": add_days(today(), 45)
         })
@@ -107,9 +148,9 @@ class TestBatchNumber(FrappeTestCase):
         """Test that status updates to Expired when expiration date passes"""
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": add_days(today(), -60),
             "expiration_date": add_days(today(), -1)  # Expired yesterday
         })
@@ -121,9 +162,9 @@ class TestBatchNumber(FrappeTestCase):
         """Test that status updates to Consumed when quantity is zero"""
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today(),
             "expiration_date": add_days(today(), 30),
             "quantity": 0
@@ -138,9 +179,9 @@ class TestBatchNumber(FrappeTestCase):
 
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today(),
             "quantity": 100.5
         })
@@ -156,9 +197,9 @@ class TestBatchNumber(FrappeTestCase):
         # Create batch expiring in 15 days
         batch = frappe.get_doc({
             "doctype": "Batch Number",
-            "product": "TEST-BATCH-PROD",
-            "department": "Test Batch Dept",
-            "company": "_Test Company",
+            "product": self.product,
+            "department": self.department,
+            "company": self.company,
             "manufacturing_date": today(),
             "expiration_date": add_days(today(), 15),
             "quantity": 50
@@ -167,8 +208,8 @@ class TestBatchNumber(FrappeTestCase):
 
         # Query for batches expiring within 30 days
         expiring = get_expiring_batches(
-            department="Test Batch Dept",
-            company="_Test Company",
+            department=self.department,
+            company=self.company,
             within_days=30
         )
 
@@ -184,9 +225,9 @@ class TestBatchNumber(FrappeTestCase):
         for i in range(3):
             batch = frappe.get_doc({
                 "doctype": "Batch Number",
-                "product": "TEST-BATCH-PROD",
-                "department": "Test Batch Dept",
-                "company": "_Test Company",
+                "product": self.product,
+                "department": self.department,
+                "company": self.company,
                 "manufacturing_date": add_days(today(), -30 + (i * 10)),
                 "expiration_date": add_days(today(), 60),
                 "quantity": 100
@@ -195,9 +236,9 @@ class TestBatchNumber(FrappeTestCase):
 
         # Query available batches
         available = get_available_batches(
-            "TEST-BATCH-PROD",
-            "Test Batch Dept",
-            "_Test Company"
+            self.product,
+            self.department,
+            self.company
         )
 
         # Should return 3 batches in FIFO order (oldest first)

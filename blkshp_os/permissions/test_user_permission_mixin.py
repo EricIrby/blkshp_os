@@ -94,6 +94,7 @@ class TestUserPermissionMixinSubscription(FrappeTestCase):
             {
                 "doctype": "Company",
                 "company_name": company_name,
+                "company_code": abbr,
                 "abbr": abbr,
                 "default_currency": default_currency,
             }

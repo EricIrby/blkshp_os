@@ -17,6 +17,7 @@ class TestConversions(FrappeTestCase):
 
         self.company = self._ensure_company("Conversion Test Company")
         self.department = self._create_department("CONV-DEPT", "Conversion Department")
+        self.vendor = self._ensure_vendor("Test Vendor")
 
     def tearDown(self) -> None:
         frappe.set_user("Administrator")
@@ -100,7 +101,7 @@ class TestConversions(FrappeTestCase):
             {
                 "purchase_unit": "case",
                 "conversion_to_primary_cu": 24.0,
-                "vendor": None,
+                "vendor": self.vendor,
             },
         )
         product_doc.save(ignore_permissions=True)
@@ -182,6 +183,7 @@ class TestConversions(FrappeTestCase):
             {
                 "purchase_unit": "case",
                 "conversion_to_primary_cu": 24.0,
+                "vendor": self.vendor,
             },
         )
         product_doc.save(ignore_permissions=True)
@@ -319,6 +321,23 @@ class TestConversions(FrappeTestCase):
         )
         department.insert(ignore_permissions=True)
         return department
+
+    def _ensure_vendor(self, name: str) -> str:
+        """Ensure a test vendor exists."""
+        existing = frappe.db.get_value("Vendor", {"vendor_name": name})
+        if existing:
+            return existing
+
+        vendor = frappe.get_doc(
+            {
+                "doctype": "Vendor",
+                "vendor_name": name,
+                "vendor_code": name.upper().replace(" ", "-"),
+                "company": self.company,
+            }
+        )
+        vendor.insert(ignore_permissions=True)
+        return vendor.name
 
     def _create_product(
         self,
