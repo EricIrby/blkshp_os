@@ -159,21 +159,26 @@ def update_batch_statuses():
     a composite index on (status, expiration_date) via a migration script.
     Individual indexes on these fields are already in place.
     """
-    # Use bulk SQL UPDATE instead of iterating through batches
-    frappe.db.sql(
-        """
-        UPDATE `tabBatch Number`
-        SET status = 'Expired'
-        WHERE status = 'Active'
-          AND expiration_date < %s
-        """,
-        (today(),)
+    # Get count of batches to be updated (before the update for portability)
+    count = frappe.db.count(
+        "Batch Number",
+        filters={
+            "status": "Active",
+            "expiration_date": ["<", today()]
+        }
     )
 
-    # Get exact count of updated batches using ROW_COUNT()
-    count = frappe.db.sql("SELECT ROW_COUNT() as count", as_dict=True)[0].count
-
     if count:
+        # Use bulk SQL UPDATE instead of iterating through batches
+        frappe.db.sql(
+            """
+            UPDATE `tabBatch Number`
+            SET status = 'Expired'
+            WHERE status = 'Active'
+              AND expiration_date < %s
+            """,
+            (today(),)
+        )
         frappe.logger().info(f"Marked {count} batches as Expired")
 
 
