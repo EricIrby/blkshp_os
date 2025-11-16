@@ -160,6 +160,127 @@ class TestProduct(FrappeTestCase):
         with self.assertRaises(frappe.ValidationError):
             product.insert(ignore_permissions=True)
 
+    def test_batch_tracking_disabled_by_default(self):
+        """Test that batch tracking is disabled by default."""
+        company = self._ensure_company()
+
+        product = frappe.new_doc("Product")
+        product.product_name = "Test Non-Batch Product"
+        product.product_code = "TEST-NO-BATCH"
+        product.company = company
+        product.primary_count_unit = "each"
+        product.insert(ignore_permissions=True)
+
+        # Should default to 0 (disabled)
+        self.assertEqual(product.has_batch_no, 0)
+
+    def test_batch_tracking_enabled(self):
+        """Test enabling batch tracking on a product."""
+        company = self._ensure_company()
+
+        product = frappe.new_doc("Product")
+        product.product_name = "Test Batch Product"
+        product.product_code = "TEST-BATCH-ENABLED"
+        product.company = company
+        product.primary_count_unit = "lb"
+        product.product_type = "Food"
+        product.has_batch_no = 1
+        product.shelf_life_in_days = 30
+        product.insert(ignore_permissions=True)
+
+        self.assertEqual(product.has_batch_no, 1)
+        self.assertEqual(product.shelf_life_in_days, 30)
+
+    def test_shelf_life_validation_negative(self):
+        """Test that negative shelf life is rejected."""
+        company = self._ensure_company()
+
+        product = frappe.new_doc("Product")
+        product.product_name = "Test Negative Shelf Life"
+        product.product_code = "TEST-NEG-SHELF"
+        product.company = company
+        product.primary_count_unit = "each"
+        product.has_batch_no = 1
+        product.shelf_life_in_days = -10  # Invalid
+
+        with self.assertRaises(frappe.ValidationError):
+            product.insert(ignore_permissions=True)
+
+    def test_shelf_life_validation_zero(self):
+        """Test that zero shelf life is rejected."""
+        company = self._ensure_company()
+
+        product = frappe.new_doc("Product")
+        product.product_name = "Test Zero Shelf Life"
+        product.product_code = "TEST-ZERO-SHELF"
+        product.company = company
+        product.primary_count_unit = "each"
+        product.has_batch_no = 1
+        product.shelf_life_in_days = 0  # Invalid
+
+        with self.assertRaises(frappe.ValidationError):
+            product.insert(ignore_permissions=True)
+
+    def test_batch_naming_series(self):
+        """Test custom batch naming series."""
+        company = self._ensure_company()
+
+        product = frappe.new_doc("Product")
+        product.product_name = "Test Custom Batch Naming"
+        product.product_code = "TEST-CUSTOM-BATCH"
+        product.company = company
+        product.primary_count_unit = "each"
+        product.has_batch_no = 1
+        product.batch_naming_series = "{product_code}-B-.####"
+        product.shelf_life_in_days = 60
+        product.insert(ignore_permissions=True)
+
+        self.assertEqual(product.batch_naming_series, "{product_code}-B-.####")
+
+    def test_batch_tracking_different_product_types(self):
+        """Test batch tracking on different product types."""
+        company = self._ensure_company()
+
+        # Food product with batch tracking
+        food_product = frappe.new_doc("Product")
+        food_product.product_name = "Test Food Batch"
+        food_product.product_code = "TEST-FOOD-BATCH"
+        food_product.company = company
+        food_product.product_type = "Food"
+        food_product.primary_count_unit = "lb"
+        food_product.has_batch_no = 1
+        food_product.shelf_life_in_days = 14
+        food_product.insert(ignore_permissions=True)
+
+        self.assertEqual(food_product.has_batch_no, 1)
+        self.assertEqual(food_product.shelf_life_in_days, 14)
+
+        # Beverage product with batch tracking
+        beverage_product = frappe.new_doc("Product")
+        beverage_product.product_name = "Test Beverage Batch"
+        beverage_product.product_code = "TEST-BEV-BATCH"
+        beverage_product.company = company
+        beverage_product.product_type = "Beverage"
+        beverage_product.primary_count_unit = "bottle"
+        beverage_product.has_batch_no = 1
+        beverage_product.shelf_life_in_days = 365
+        beverage_product.insert(ignore_permissions=True)
+
+        self.assertEqual(beverage_product.has_batch_no, 1)
+        self.assertEqual(beverage_product.shelf_life_in_days, 365)
+
+        # Supply product without batch tracking
+        supply_product = frappe.new_doc("Product")
+        supply_product.product_name = "Test Supply No Batch"
+        supply_product.product_code = "TEST-SUPPLY-NO-BATCH"
+        supply_product.company = company
+        supply_product.product_type = "Supply"
+        supply_product.primary_count_unit = "each"
+        supply_product.has_batch_no = 0
+        supply_product.insert(ignore_permissions=True)
+
+        self.assertEqual(supply_product.has_batch_no, 0)
+
     def _ensure_company(self):
         """Helper to get or create test company."""
         existing_company = frappe.db.get_value(

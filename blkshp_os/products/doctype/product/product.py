@@ -20,6 +20,7 @@ class Product(Document):
         self._validate_property_combinations()
         self._validate_valuation_fields()
         self._set_default_valuation_method()
+        self._validate_batch_tracking()
 
     # -------------------------------------------------------------------------
     # Public helpers
@@ -163,3 +164,24 @@ class Product(Document):
         # Initialize valuation_rate to 0 if not set
         if self.valuation_rate is None:
             self.valuation_rate = 0.0
+
+    def _validate_batch_tracking(self):
+        """Validate batch tracking configuration."""
+        # If batch tracking is disabled, skip validation
+        if not self.has_batch_no:
+            return
+
+        # Validate shelf_life_in_days is positive if set
+        if self.shelf_life_in_days is not None and self.shelf_life_in_days <= 0:
+            frappe.throw(_("Shelf Life must be greater than zero."))
+
+        # Warn if batch tracking is enabled but no shelf life is set for perishable items
+        if not self.shelf_life_in_days and self.product_type in ["Food", "Beverage"]:
+            frappe.msgprint(
+                _("Shelf Life is recommended for {0} products with batch tracking enabled. "
+                  "Set the shelf life to enable automatic expiration date calculation for batches.").format(
+                    self.product_type
+                ),
+                indicator="orange",
+                alert=True
+            )
