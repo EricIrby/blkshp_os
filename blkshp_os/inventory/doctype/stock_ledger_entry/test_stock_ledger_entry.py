@@ -51,11 +51,15 @@ class TestStockLedgerEntry(unittest.TestCase):
             "product": "TEST-TOMATO",
             "department": "TEST-KITCHEN-TC"
         })
+        frappe.db.delete("Stock Ledger Entry", {
+            "product": "TEST-ONION",
+            "department": "TEST-KITCHEN-TC"
+        })
 
-        # Reset inventory balance
-        balance_name = "TEST-TOMATO-TEST-KITCHEN-TC-TC"
-        if frappe.db.exists("Inventory Balance", balance_name):
-            frappe.db.set_value("Inventory Balance", balance_name, "quantity", 0)
+        # Reset inventory balances
+        for balance_name in ["TEST-TOMATO-TEST-KITCHEN-TC-TC", "TEST-ONION-TEST-KITCHEN-TC-TC"]:
+            if frappe.db.exists("Inventory Balance", balance_name):
+                frappe.db.set_value("Inventory Balance", balance_name, "quantity", 0)
 
         frappe.db.commit()
 
@@ -129,7 +133,7 @@ class TestStockLedgerEntry(unittest.TestCase):
 
     def test_inventory_balance_update(self):
         """Test that Inventory Balance is updated after entry submission."""
-        balance_name = "TEST-TOMATO-Test Kitchen-Test Company"
+        balance_name = "TEST-TOMATO-TEST-KITCHEN-TC-TC"
 
         # Create and submit entry
         entry = self.create_test_entry(actual_qty=20)
@@ -165,7 +169,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         self.assertEqual(entry.is_cancelled, 1)
 
         # Check that balance was reversed
-        balance_name = "TEST-TOMATO-Test Kitchen-Test Company"
+        balance_name = "TEST-TOMATO-TEST-KITCHEN-TC-TC"
         balance_qty = frappe.db.get_value("Inventory Balance", balance_name, "quantity")
         self.assertEqual(balance_qty, 0)
 
@@ -325,7 +329,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
         entry.voucher_no = "TEST-AUDIT-BATCH-001"
-        entry.insert()
+        entry.insert(ignore_links=True)
 
         with self.assertRaises(frappe.ValidationError) as context:
             entry.submit()
@@ -381,7 +385,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
         entry.voucher_no = "TEST-AUDIT-BATCH-002"
-        entry.insert()
+        entry.insert(ignore_links=True)
 
         with self.assertRaises(frappe.ValidationError) as context:
             entry.submit()
@@ -418,21 +422,21 @@ class TestStockLedgerEntry(unittest.TestCase):
             dept.insert(ignore_permissions=True)
 
         # Create batch for Test Kitchen
-        if not frappe.db.exists("Batch Number", "TEST-BATCH-DEPT"):
-            batch = frappe.new_doc("Batch Number")
-            batch.product = "TEST-BATCH-PRODUCT"
-            batch.department = "TEST-KITCHEN-TC"
-            batch.company = "TC"
-            batch.manufacturing_date = frappe.utils.today()
-            batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
-            batch.insert()
+        batch = frappe.new_doc("Batch Number")
+        batch.product = "TEST-BATCH-PRODUCT"
+        batch.department = "TEST-KITCHEN-TC"
+        batch.company = "TC"
+        batch.manufacturing_date = frappe.utils.today()
+        batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
+        batch.insert()
+        batch_name = batch.name
 
         # Try to use batch with wrong department
         entry = frappe.new_doc("Stock Ledger Entry")
         entry.product = "TEST-BATCH-PRODUCT"
         entry.department = "BAR-TC"  # Wrong department
         entry.company = "TC"
-        entry.batch_number = "TEST-BATCH-DEPT"
+        entry.batch_number = batch_name
         entry.actual_qty = 10
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
@@ -445,7 +449,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         self.assertIn("Department", str(context.exception))
 
         # Cleanup
-        frappe.delete_doc("Batch Number", "TEST-BATCH-DEPT", force=True)
+        frappe.delete_doc("Batch Number", batch_name, force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
         frappe.delete_doc("Department", "BAR-TC", force=True)
 
@@ -473,21 +477,21 @@ class TestStockLedgerEntry(unittest.TestCase):
             company.insert(ignore_permissions=True)
 
         # Create batch for Test Company
-        if not frappe.db.exists("Batch Number", "TEST-BATCH-CO"):
-            batch = frappe.new_doc("Batch Number")
-            batch.product = "TEST-BATCH-PRODUCT"
-            batch.department = "TEST-KITCHEN-TC"
-            batch.company = "TC"
-            batch.manufacturing_date = frappe.utils.today()
-            batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
-            batch.insert()
+        batch = frappe.new_doc("Batch Number")
+        batch.product = "TEST-BATCH-PRODUCT"
+        batch.department = "TEST-KITCHEN-TC"
+        batch.company = "TC"
+        batch.manufacturing_date = frappe.utils.today()
+        batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
+        batch.insert()
+        batch_name = batch.name
 
         # Try to use batch with wrong company
         entry = frappe.new_doc("Stock Ledger Entry")
         entry.product = "TEST-BATCH-PRODUCT"
         entry.department = "TEST-KITCHEN-TC"
         entry.company = "TC2"  # Wrong company
-        entry.batch_number = "TEST-BATCH-CO"
+        entry.batch_number = batch_name
         entry.actual_qty = 10
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
@@ -500,7 +504,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         self.assertIn("Company", str(context.exception))
 
         # Cleanup
-        frappe.delete_doc("Batch Number", "TEST-BATCH-CO", force=True)
+        frappe.delete_doc("Batch Number", batch_name, force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
         frappe.delete_doc("Company", "TC2", force=True)
 
@@ -538,7 +542,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
         entry.voucher_no = "TEST-AUDIT-BATCH-003"
-        entry.insert()
+        entry.insert(ignore_links=True)
         entry.submit()
 
         # Check batch quantity was updated
@@ -584,7 +588,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
         entry.voucher_no = "TEST-AUDIT-BATCH-004"
-        entry.insert()
+        entry.insert(ignore_links=True)
         entry.submit()
 
         # Verify quantity after submit (before cancel)
@@ -647,7 +651,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry1.posting_date = frappe.utils.today()
         entry1.voucher_type = "Inventory Audit"
         entry1.voucher_no = "TEST-AUDIT-BATCH-005"
-        entry1.insert()
+        entry1.insert(ignore_links=True)
         entry1.submit()
 
         entry2 = frappe.new_doc("Stock Ledger Entry")
@@ -659,7 +663,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry2.posting_date = frappe.utils.today()
         entry2.voucher_type = "Inventory Audit"
         entry2.voucher_no = "TEST-AUDIT-BATCH-006"
-        entry2.insert()
+        entry2.insert(ignore_links=True)
         entry2.submit()
 
         # Test single batch query
@@ -690,16 +694,17 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry3.posting_date = frappe.utils.add_days(frappe.utils.today(), 2)
         entry3.voucher_type = "Inventory Audit"
         entry3.voucher_no = "TEST-AUDIT-BATCH-006A"
-        entry3.insert()
+        entry3.insert(ignore_links=True)
         entry3.submit()
 
         # Query as of today (should be 10, not including entry3)
+        # Use end of day to include all entries posted today
         balance_as_of_today = get_stock_balance_by_batch(
             "TEST-BATCH-PRODUCT",
             "TEST-KITCHEN-TC",
             "TC",
             batch_number=batch1.name,
-            as_of_date=get_datetime(frappe.utils.today())
+            as_of_date=get_datetime(frappe.utils.today() + " 23:59:59")
         )
         self.assertEqual(balance_as_of_today, 10)
 
@@ -759,7 +764,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry1.posting_time = "10:00:00"
         entry1.voucher_type = "Inventory Audit"
         entry1.voucher_no = "TEST-AUDIT-BATCH-007"
-        entry1.insert()
+        entry1.insert(ignore_links=True)
         entry1.submit()
 
         entry2 = frappe.new_doc("Stock Ledger Entry")
@@ -772,7 +777,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry2.posting_time = "10:00:00"
         entry2.voucher_type = "Inventory Audit"
         entry2.voucher_no = "TEST-AUDIT-BATCH-008"
-        entry2.insert()
+        entry2.insert(ignore_links=True)
         entry2.submit()
 
         # Get all movements

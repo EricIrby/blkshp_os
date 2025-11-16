@@ -143,6 +143,14 @@ class TestPermissionService(FrappeTestCase):
         return email
 
     def _create_department(self, code: str, name: str) -> frappe.Document:
+        # Check if department already exists
+        existing = frappe.db.exists(
+            "Department", {"department_code": code, "company": self.company}
+        )
+        if existing:
+            return frappe.get_doc("Department", existing)
+
+        # Create new department if doesn't exist
         department = frappe.get_doc(
             {
                 "doctype": "Department",

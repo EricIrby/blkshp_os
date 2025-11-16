@@ -77,11 +77,17 @@ class TestProductService(FrappeTestCase):
     # Helpers
     # -------------------------------------------------------------------------
     def _ensure_company(self, name: str) -> str:
+        # Check by name first
         existing = frappe.db.get_value("Company", {"company_name": name})
         if existing:
             return existing
 
+        # Generate code and check if it already exists
         code = "".join(part[0] for part in name.split() if part).upper()[:8] or "COMP"
+        existing_by_code = frappe.db.get_value("Company", {"company_code": code})
+        if existing_by_code:
+            return existing_by_code
+
         company = frappe.get_doc(
             {
                 "doctype": "Company",
@@ -109,6 +115,14 @@ class TestProductService(FrappeTestCase):
         return email
 
     def _create_department(self, code: str, name: str) -> frappe.Document:
+        # Check if department already exists
+        existing = frappe.db.exists(
+            "Department", {"department_code": code, "company": self.company}
+        )
+        if existing:
+            return frappe.get_doc("Department", existing)
+
+        # Create new department if doesn't exist
         department = frappe.get_doc(
             {
                 "doctype": "Department",
