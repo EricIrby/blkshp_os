@@ -1,0 +1,216 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2025-11-16 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "settlement_date",
+  "status",
+  "column_break_details",
+  "source_company",
+  "target_company",
+  "section_break_amount",
+  "settlement_amount",
+  "settlement_currency",
+  "column_break_amount",
+  "reference_number",
+  "payment_method",
+  "section_break_description",
+  "description",
+  "notes",
+  "section_break_approval",
+  "submitted_by",
+  "submitted_at",
+  "section_break_accounting",
+  "source_je",
+  "target_je"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SETTLE-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "settlement_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Settlement Date",
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nSettled\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Source Company (Paying)",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "target_company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Target Company (Receiving)",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_amount",
+   "fieldtype": "Section Break",
+   "label": "Settlement Amount"
+  },
+  {
+   "fieldname": "settlement_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Settlement Amount",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "settlement_currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_amount",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_number",
+   "fieldtype": "Data",
+   "label": "Reference Number"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Payment Method",
+   "options": "\nBank Transfer\nCheck\nACH\nWire\nCash\nOther"
+  },
+  {
+   "fieldname": "section_break_description",
+   "fieldtype": "Section Break",
+   "label": "Description"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Internal Notes"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_approval",
+   "fieldtype": "Section Break",
+   "label": "Approval Details"
+  },
+  {
+   "fieldname": "submitted_by",
+   "fieldtype": "Link",
+   "label": "Submitted By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "submitted_at",
+   "fieldtype": "Datetime",
+   "label": "Submitted At",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_accounting",
+   "fieldtype": "Section Break",
+   "label": "Accounting Entries"
+  },
+  {
+   "fieldname": "source_je",
+   "fieldtype": "Link",
+   "label": "Source Company Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "target_je",
+   "fieldtype": "Link",
+   "label": "Target Company Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-16 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Accounting",
+ "name": "Intercompany Settlement",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guest"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "source_company",
+ "track_changes": 1
+}
