@@ -1,6 +1,7 @@
 [
   {
     "doctype": "Subscription Plan",
+    "name": "FOUNDATION",
     "plan_name": "Foundation",
     "plan_code": "FOUNDATION",
     "is_default": 1,

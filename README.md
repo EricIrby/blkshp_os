@@ -23,9 +23,19 @@ BLKSHP OS is a comprehensive business operating system for hospitality companies
 
 ## Quick Start
 
+### Prerequisites
+
+- Frappe Bench environment (v15+)
+- Python 3.10+
+- Node.js 18+
+- MariaDB/PostgreSQL
+
 ### Installation
 
+**Note:** BLKSHP OS is developed within a Frappe Bench environment. If you don't have a bench set up, follow the [Frappe Bench installation guide](https://frappeframework.com/docs/user/en/installation) first.
+
 ```bash
+# Navigate to your bench directory
 cd /path/to/frappe-bench
 
 # Get the app
@@ -108,17 +118,25 @@ bench start
 
 ## Development
 
-### Prerequisites
+### Development Environment
 
-- Python 3.10+
-- Node.js 18+
-- Frappe Framework v15+
-- MariaDB/PostgreSQL
+BLKSHP OS is developed within a **Frappe Bench environment**. The repository structure is:
+
+```
+frappe-bench/                    # Bench root directory
+├── apps/
+│   └── blkshp_os/              # This repository (app code)
+├── sites/                       # Site directories
+├── env/                         # Python virtual environment
+└── config/                      # Configuration files
+```
+
+When developing, you'll work in the `apps/blkshp_os/` directory, and all bench commands work from there.
 
 ### Setup for Development
 
 ```bash
-# Navigate to bench
+# Navigate to your bench
 cd /path/to/frappe-bench
 
 # Install app on site
@@ -133,6 +151,22 @@ bench build --app blkshp_os
 # Run tests
 bench --site mysite.local run-tests --app blkshp_os
 ```
+
+### Development Workflow
+
+The recommended workflow for developing BLKSHP OS:
+
+1. **Make changes** in the app code (`apps/blkshp_os/`)
+2. **Build and deploy** to your local bench:
+   ```bash
+   bench build --app blkshp_os
+   bench --site mysite.local migrate
+   bench --site mysite.local clear-cache
+   ```
+3. **Test locally** in the browser and with automated tests
+4. **Commit** only after tests pass and functionality is verified
+
+See the [Development Guide](docs/DEVELOPMENT-GUIDE.md) for detailed workflow and best practices.
 
 ### Code Quality
 

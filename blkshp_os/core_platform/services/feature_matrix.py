@@ -9,8 +9,9 @@ from typing import Any
 import frappe
 from frappe.utils import now
 
-from blkshp_os.permissions import roles as role_service
-from blkshp_os.permissions import service as permission_service
+# Lazy imports to avoid circular dependency
+# from blkshp_os.permissions import roles as role_service
+# from blkshp_os.permissions import service as permission_service
 
 from .subscription_context import (
     ModuleActivationState,
@@ -149,6 +150,8 @@ def _evaluate_module_access(
     user: str, modules: list[dict[str, Any]], refresh: bool
 ) -> dict[str, bool]:
     """Return a mapping of module key to access flag for the user."""
+    from blkshp_os.permissions import service as permission_service
+
     access_map: dict[str, bool] = {}
     for module in modules:
         key = module["key"]
@@ -164,6 +167,8 @@ def _evaluate_feature_access(
     refresh: bool,
 ) -> dict[str, bool]:
     """Return a mapping of feature key to access flag for the user."""
+    from blkshp_os.permissions import service as permission_service
+
     access_map: dict[str, bool] = {}
     for feature_key in registry.keys():
         access_map[feature_key] = permission_service.user_has_feature(
@@ -179,6 +184,8 @@ def get_feature_matrix_for_user(
     refresh: bool = False,
 ) -> dict[str, Any]:
     """Return the feature matrix augmented with user-specific access flags."""
+    from blkshp_os.permissions import service as permission_service
+
     if not user:
         user = frappe.session.user
 
@@ -206,6 +213,8 @@ def get_feature_matrix_for_user(
 
 def _summarize_permissions(user: str) -> dict[str, Any]:
     """Return a permissions summary for the provided user."""
+    from blkshp_os.permissions import roles as role_service
+
     by_category = role_service.get_permissions_by_category(user)
     total_permissions = sum(len(entries) for entries in by_category.values())
     return {
@@ -221,6 +230,8 @@ def get_user_profile(
     refresh: bool = False,
 ) -> dict[str, Any]:
     """Return a read-only profile summary for the tenant user."""
+    from blkshp_os.permissions import service as permission_service
+
     if not user:
         user = frappe.session.user
 

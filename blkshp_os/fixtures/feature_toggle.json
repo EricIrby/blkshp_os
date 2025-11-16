@@ -1,6 +1,7 @@
 [
   {
     "doctype": "Feature Toggle",
+    "name": "core.workspace.access",
     "feature_name": "Workspace Access",
     "feature_key": "core.workspace.access",
     "category": "Core",
@@ -10,6 +11,7 @@
   },
   {
     "doctype": "Feature Toggle",
+    "name": "products.bulk_operations",
     "feature_name": "Bulk Product Operations",
     "feature_key": "products.bulk_operations",
     "category": "Products",
@@ -19,6 +21,7 @@
   },
   {
     "doctype": "Feature Toggle",
+    "name": "inventory.audit_workflows",
     "feature_name": "Inventory Audit Workflows",
     "feature_key": "inventory.audit_workflows",
     "category": "Inventory",
@@ -28,6 +31,7 @@
   },
   {
     "doctype": "Feature Toggle",
+    "name": "procurement.ottimate_import",
     "feature_name": "Ottimate Receiving Import",
     "feature_key": "procurement.ottimate_import",
     "category": "Procurement",
@@ -37,6 +41,7 @@
   },
   {
     "doctype": "Feature Toggle",
+    "name": "analytics.finance_dashboard",
     "feature_name": "Finance Analytics Dashboard",
     "feature_key": "analytics.finance_dashboard",
     "category": "Analytics",

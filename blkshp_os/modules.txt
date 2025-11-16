@@ -1,4 +1,5 @@
 BLKSHP OS
+Core Platform
 Departments
 Products
 Inventory

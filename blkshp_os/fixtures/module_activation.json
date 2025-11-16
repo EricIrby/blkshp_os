@@ -1,6 +1,7 @@
 [
   {
     "doctype": "Module Activation",
+    "name": "FOUNDATION-core",
     "plan": "FOUNDATION",
     "module_key": "core",
     "module_label": "Core Platform",
@@ -12,6 +13,7 @@
   },
   {
     "doctype": "Module Activation",
+    "name": "FOUNDATION-products",
     "plan": "FOUNDATION",
     "module_key": "products",
     "module_label": "Products",
@@ -23,6 +25,7 @@
   },
   {
     "doctype": "Module Activation",
+    "name": "FOUNDATION-inventory",
     "plan": "FOUNDATION",
     "module_key": "inventory",
     "module_label": "Inventory",
@@ -34,6 +37,7 @@
   },
   {
     "doctype": "Module Activation",
+    "name": "FOUNDATION-procurement",
     "plan": "FOUNDATION",
     "module_key": "procurement",
     "module_label": "Procurement",
@@ -45,6 +49,7 @@
   },
   {
     "doctype": "Module Activation",
+    "name": "FOUNDATION-analytics",
     "plan": "FOUNDATION",
     "module_key": "analytics",
     "module_label": "Analytics",

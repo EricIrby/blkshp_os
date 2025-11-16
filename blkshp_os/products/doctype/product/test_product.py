@@ -3,7 +3,7 @@ import math
 import frappe
 from frappe.tests.utils import FrappeTestCase
 
-from blkshp_os.products.doctype.product.product import VOLUME_TO_ML
+from blkshp_os.products.conversion import VOLUME_TO_ML
 
 
 class TestProduct(FrappeTestCase):

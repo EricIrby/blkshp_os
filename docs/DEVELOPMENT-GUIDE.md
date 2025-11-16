@@ -1,23 +1,56 @@
 # BLKSHP OS Development Guide
 
-_Last updated: 2025-11-10_
+_Last updated: 2025-11-15_
 
 This guide provides the day-to-day workflow, tooling expectations, and references required to work on the consolidated BLKSHP OS codebase.
 
-## 1. Quick Start Checklist
+## 1. Bench Environment Structure
 
-1. **Clone bench & apps** – see `docs/README.md` for installation details.
-2. **Install dependencies** – ensure Python 3.10+, Node 18 LTS, Yarn/NPM as preferred.
-3. **Install app** – follow the bench app installation order (see section 1.1 below).
+BLKSHP OS is developed within a **Frappe Bench environment**. Understanding this structure is essential for effective development:
+
+```
+BLKSHP-DEV/                          # Bench root (two directories up from app)
+├── apps/
+│   ├── frappe/                      # Frappe Framework
+│   ├── erpnext/                     # ERPNext (optional but recommended)
+│   └── blkshp_os/                   # BLKSHP OS app (current working directory)
+│       ├── blkshp_os/               # Python package
+│       ├── docs/                    # Documentation
+│       ├── fixtures/                # Fixtures
+│       └── scripts/                 # Utility scripts
+├── sites/
+│   ├── common_site_config.json      # Shared site configuration
+│   └── [site-name]/                 # Individual site directories
+│       ├── site_config.json         # Site-specific config
+│       └── private/                 # Site private files
+├── env/                             # Python virtual environment
+│   └── bin/
+│       ├── python                   # Python interpreter
+│       └── bench                    # Bench CLI
+├── config/                          # Supervisor/nginx configs
+└── logs/                            # Application logs
+```
+
+**Key Paths:**
+- **Current working directory:** `/Users/Eric/Development/BLKSHP/BLKSHP-DEV/apps/blkshp_os` (app code)
+- **Bench root:** `../../` from current directory
+- **Bench commands:** Available from any directory (uses bench context)
+- **Virtual environment:** `../../env/bin/python`
+
+## 2. Quick Start Checklist
+
+1. **Verify bench environment** – ensure you're in the bench directory structure.
+2. **Install dependencies** – ensure Python 3.10+, Node 18 LTS are available in the bench.
+3. **Install app on site** – follow the bench app installation order (see section 2.1 below).
 4. **Sync documentation** – review:
    - `docs/CONSOLIDATED_DECISION_LOG.md`
    - `docs/PROJECT-TIMELINE.md`
    - Relevant domain docs under `docs/`
 5. **Connect to Linear** – issues live in the [BLKSHP Linear workspace](https://linear.app/blkshp/). Link Cursor → Linear for in-editor access.
 6. **Create feature branch** – use Linear issue identifier, e.g. `feature/blk-17-inventory-audit-api`.
-7. **Run local bench** – `bench start` (backend) + `npm run dev` (frontend once scaffolded).
+7. **Test locally in bench** – deploy and test changes before committing (see section 4).
 
-### 1.1 Bench App Installation Order
+### 2.1 Bench App Installation Order
 
 When setting up a new bench or site, install apps in the following order:
 
@@ -39,7 +72,7 @@ bench --site mysite.local install-app blkshp_os
 - Always install ERPNext before BLKSHP OS to ensure core DocTypes exist
 - The app is compatible with ERPNext v15 and Frappe v15+
 
-## 2. Tooling & Workflow
+## 3. Tooling & Workflow
 
 | Area | Tooling | Notes |
 | --- | --- | --- |
@@ -49,16 +82,29 @@ bench --site mysite.local install-app blkshp_os
 | Bench | ERPNext v15 / Frappe Press | Local bench for dev; Press per-tenant scripts in Phase 2. |
 | Frontend | Next.js, TypeScript, Tailwind | Repo under `frontend/` (Phase 1 scaffolding). |
 
-### Standard Flow
+### Standard Development Workflow
+
+The development workflow leverages the local Frappe Bench environment for testing and validation before committing changes:
 
 1. **Pick issue from Linear** (move to `To Do`).
-2. **Create branch** named with issue ID.
-3. **Develop & test** (see section 4).
-4. **Open Draft PR** – Linear moves issue to `In Progress` automatically.
-5. **Request review** – final PR moves issue to `In Review`.
-6. **Merge** – Linear marks issue `Done`; delete branch when ready.
+2. **Create feature branch** named with issue ID (e.g., `feature/blk-XX-description`).
+3. **Develop changes** in the app codebase (`apps/blkshp_os/`).
+4. **Deploy to local bench** (see section 5 for detailed workflow):
+   - Build assets: `bench build --app blkshp_os`
+   - Run migrations: `bench --site [site] migrate`
+   - Clear cache: `bench --site [site] clear-cache`
+5. **Test locally**:
+   - Manual testing in bench UI
+   - Run unit tests: `bench --site [site] run-tests --app blkshp_os`
+   - Verify functionality matches requirements
+6. **Commit changes** once tests pass and functionality is verified.
+7. **Open Draft PR** – Linear moves issue to `In Progress` automatically.
+8. **Request review** – final PR moves issue to `In Review`.
+9. **Merge** – Linear marks issue `Done`; delete branch when ready.
 
-## 3. Phase Overview
+**Key Principle:** Always test changes in the local bench environment before committing to ensure code quality and catch issues early.
+
+## 4. Phase Overview
 
 Phases are tracked in `docs/PROJECT-TIMELINE.md` and Linear milestones:
 
@@ -68,41 +114,164 @@ Phases are tracked in `docs/PROJECT-TIMELINE.md` and Linear milestones:
 - **Phase 3 – Demo & Feedback**: Staging deployment, scripted demo walkthroughs.
 - **Phase 4 – Hardening**: Security, observability, documentation refresh.
 
-## 4. Development Standards
+## 5. Local Bench Development Workflow
 
-### 4.1 Backend (Frappe/ERPNext)
+Since the app is now developed within a Frappe Bench environment, you can deploy and test changes locally before committing to GitHub. This workflow ensures code quality and catches issues early.
+
+### 5.1 Typical Development Cycle
+
+```bash
+# 1. Make code changes in apps/blkshp_os/
+# (edit DocTypes, Python files, JS files, etc.)
+
+# 2. Build assets (if you changed JS/CSS/client scripts)
+bench build --app blkshp_os
+
+# 3. Run database migrations (if you changed DocType schemas)
+bench --site [your-site] migrate
+
+# 4. Clear cache to ensure changes are reflected
+bench --site [your-site] clear-cache
+
+# 5. Restart bench (if you changed server-side Python)
+bench restart
+
+# 6. Test in browser
+# Navigate to http://localhost:8000 and test your changes
+
+# 7. Run automated tests
+bench --site [your-site] run-tests --app blkshp_os
+
+# 8. If tests pass and functionality works, commit your changes
+git add .
+git commit -m "BLK-XX: Description of changes"
+```
+
+### 5.2 Common Bench Commands for Development
+
+| Command | Purpose | When to Use |
+| --- | --- | --- |
+| `bench build --app blkshp_os` | Compile JS/CSS assets | After changing client scripts, CSS, or JS files |
+| `bench --site [site] migrate` | Run database migrations | After changing DocType schemas or adding fixtures |
+| `bench --site [site] clear-cache` | Clear server cache | After changing Python code, hooks, or configuration |
+| `bench restart` | Restart Frappe processes | After changing Python code (alternative to clear-cache) |
+| `bench --site [site] run-tests --app blkshp_os` | Run all app tests | Before committing changes |
+| `bench --site [site] console` | Python console with Frappe context | For debugging and testing code snippets |
+| `bench --site [site] mariadb` | Access database directly | For debugging database issues |
+| `bench --site [site] export-fixtures` | Export fixtures to JSON | After changing Custom Fields or other fixtures |
+
+### 5.3 Testing Workflow
+
+**Unit Tests:**
+```bash
+# Run all tests for the app
+bench --site [site] run-tests --app blkshp_os
+
+# Run tests for specific module
+bench --site [site] run-tests --app blkshp_os --module blkshp_os.departments
+
+# Run specific test file
+bench --site [site] run-tests --app blkshp_os --module blkshp_os.departments.doctype.department.test_department
+```
+
+**Manual Testing:**
+1. Start bench: `bench start`
+2. Navigate to `http://localhost:8000`
+3. Log in with your test credentials
+4. Test the functionality manually
+5. Verify all edge cases and error handling
+
+**Integration Testing:**
+- Test critical workflows end-to-end
+- Verify permissions and access control
+- Test department-based filtering
+- Verify intercompany transactions (if applicable)
+
+### 5.4 Working from the App Directory
+
+Since your current working directory is the app (`apps/blkshp_os/`), bench commands work from anywhere:
+
+```bash
+# Bench commands work from the app directory
+pwd
+# /Users/Eric/Development/BLKSHP/BLKSHP-DEV/apps/blkshp_os
+
+# No need to navigate to bench root
+bench --site [site] migrate
+bench build --app blkshp_os
+```
+
+Bench automatically detects it's within a bench directory structure and executes commands in the correct context.
+
+### 5.5 Debugging Tips
+
+**View Logs:**
+```bash
+# Tail all bench logs
+bench --site [site] logs
+
+# View specific log file
+tail -f ../../logs/bench.log
+```
+
+**Enable Developer Mode:**
+```bash
+bench --site [site] set-config developer_mode 1
+bench --site [site] clear-cache
+```
+
+Developer mode enables:
+- More detailed error messages
+- Automatic reloading on code changes
+- Access to developer tools in UI
+
+**Python Debugging:**
+```python
+# Add to your Python code for breakpoints
+import frappe
+frappe.log_error("Debug message", "Debug Title")
+
+# Or use print statements (visible in bench console)
+print(f"Debug: {variable}")
+```
+
+## 6. Development Standards
+
+### 6.1 Backend (Frappe/ERPNext)
 - Follow domain folder structure (`blkshp_core`, `blkshp_ops`, `blkshp_finance`).
 - Use shared utilities (permissions mixin, feature toggles, conversion services).
 - Always enforce department + company filters; no raw SQL without guards.
 - Feature gates checked server-side even if hidden in UI.
 - Export DocType changes using `bench export-fixtures` where applicable.
+- **Test in local bench before committing** - ensure migrations run and tests pass.
 
-### 4.2 Frontend (Next.js)
+### 6.2 Frontend (Next.js)
 - Organize features under `frontend/src/modules/*` per domain.
 - Hydrate feature matrix & profile on login; guard routes using hooks.
 - Use React Query for all API calls; handle error and loading states.
 - Maintain TypeScript types in `frontend/src/types`. Generate from OpenAPI if available.
 
-### 4.3 Testing
-- Backend unit tests via `bench run-tests --app <app>`.
+### 6.3 Testing
+- **Always test in local bench environment before committing** (see section 5.3).
+- Backend unit tests via `bench --site [site] run-tests --app blkshp_os`.
 - Integration tests for critical workflows (inventory audits, intercompany settlements).
 - Frontend unit tests (Vitest) and E2E (Playwright) for MVP flows.
 - CI pipelines (`.github/workflows/`) must run lint + tests before merge.
 
-### 4.4 Documentation
+### 6.4 Documentation
 - Update the relevant domain README/implementation summary for changes.
 - Add new endpoints to `docs/API-REFERENCE.md`.
 - Record significant decisions in `docs/CONSOLIDATED_DECISION_LOG.md` via PR note.
 - Keep `docs/PROJECT-TIMELINE.md` progress boxes accurate as milestones complete.
 
-## 5. Deployment & Environments
+## 7. Deployment & Environments
 
 - **Local Bench:** default for development & testing.
 - **Staging Press Site:** provisioned per Phase 3 using automation in `scripts/bootstrap_site.py` and Press tools.
 - **Production Press Sites:** one Press site per customer, configured via Module Activation + Subscription Plan DocTypes.
 - **Frontend Deployments:** Vercel recommended; Press static hosting supported if needed.
 
-### 5.1 ERPNext v15 & Frappe Press Compatibility
+### 7.1 ERPNext v15 & Frappe Press Compatibility
 
 **Compatibility Status:** ✅ Fully compatible with ERPNext v15 and Frappe Press
 
@@ -154,7 +323,7 @@ bench --site <site> run-tests --app blkshp_os
 bench update --patch
 ```
 
-### 5.2 Site Provisioning
+### 7.2 Site Provisioning
 
 **Audience:** BLKSHP Operations staff only
 
@@ -225,30 +394,45 @@ bench --site <site> console
 >>> frappe.get_all("Subscription Plan", pluck="plan_code")
 ```
 
-## 6. Branching & PR Conventions
+## 8. Branching & PR Conventions
 
 - Branch: `feature/blk-XX-description`
 - Commit: `BLK-XX: Summary of change`
 - PR title: `BLK-XX: <short description>`
 - PR template should include checklist for tests, docs, feature flags.
+- **Before creating PR:** Ensure all tests pass in local bench and changes are tested.
 
-## 7. Essential Commands
+## 9. Essential Commands
+
+All commands can be run from the app directory (`apps/blkshp_os/`) as bench detects the environment context.
 
 ```bash
-# Run migrations/tests for specific app
-bench --site <site> migrate
-bench --site <site> run-tests --app blkshp_core
+# Development cycle (from apps/blkshp_os/ directory)
+bench build --app blkshp_os          # Build JS/CSS assets
+bench --site <site> migrate          # Run database migrations
+bench --site <site> clear-cache      # Clear cache after Python changes
+bench restart                        # Restart bench processes
 
-# Export fixtures after DocType updates
-bench --site <site> export-fixtures
+# Testing
+bench --site <site> run-tests --app blkshp_os                    # Run all tests
+bench --site <site> run-tests --app blkshp_os --module <module>  # Run specific module tests
 
-# Frontend
+# Fixtures
+bench --site <site> export-fixtures  # Export fixtures after DocType updates
+
+# Debugging
+bench --site <site> console          # Python console with Frappe context
+bench --site <site> logs             # View application logs
+
+# Frontend (when scaffolded)
 cd frontend
 npm install
 npm run dev
 ```
 
-## 8. Support & References
+**Note:** All bench commands work from the app directory - no need to navigate to bench root.
+
+## 10. Support & References
 
 - **Decision Log:** `docs/CONSOLIDATED_DECISION_LOG.md`
 - **Project Timeline:** `docs/PROJECT-TIMELINE.md`
@@ -256,7 +440,7 @@ npm run dev
 - **Testing Guide:** `docs/TESTING-GUIDE.md`
 - **Linear Projects:** `Core Platform`, `Operations (blkshp_ops)`, `Finance`, `Frontend Application`
 
-## 9. Onboarding Notes
+## 11. Onboarding Notes
 
 - Review `AGENT-INSTRUCTIONS.md` if using AI-assisted development.
 - Load context package via `docs/AGENT-CONTEXT-PACKAGE.md` for automated tooling.
