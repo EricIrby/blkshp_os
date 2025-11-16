@@ -425,6 +425,7 @@ def enforce_module_access_for_doctype(doc, method=None, module_key: str | None =
     # Enforce module access
     require_module_access(
         module_key=module_key,
+        user=frappe.session.user,  # Force immediate execution
         context={
             "doctype": doc.doctype,
             "name": doc.name,
@@ -466,6 +467,7 @@ def enforce_feature_access_for_doctype(
     # Enforce feature access
     require_feature_access(
         feature_key=feature_key,
+        user=frappe.session.user,  # Force immediate execution
         context={
             "doctype": doc.doctype,
             "name": doc.name,

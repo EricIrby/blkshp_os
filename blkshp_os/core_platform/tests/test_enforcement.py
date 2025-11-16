@@ -228,9 +228,9 @@ class TestSubscriptionEnforcement(FrappeTestCase):
         mock_doc.name = "TEST-SE-001"
 
         with patch(
-            "blkshp_os.permissions.service.user_has_module_access"
+            "blkshp_os.core_platform.enforcement.permission_service.user_has_module_access"
         ) as mock_access, patch(
-            "blkshp_os.permissions.service._user_bypasses_subscription_gates"
+            "blkshp_os.core_platform.enforcement.permission_service._user_bypasses_subscription_gates"
         ) as mock_bypass:
             frappe.set_user(self.tenant_user.email)
             mock_bypass.return_value = False
@@ -261,8 +261,8 @@ class TestSubscriptionEnforcement(FrappeTestCase):
         mock_doc.doctype = "Stock Reconciliation"
         mock_doc.name = "TEST-SR-001"
 
-        with patch("blkshp_os.permissions.service.user_has_feature") as mock_access, patch(
-            "blkshp_os.permissions.service._user_bypasses_subscription_gates"
+        with patch("blkshp_os.core_platform.enforcement.permission_service.user_has_feature") as mock_access, patch(
+            "blkshp_os.core_platform.enforcement.permission_service._user_bypasses_subscription_gates"
         ) as mock_bypass:
             frappe.set_user(self.tenant_user.email)
             mock_bypass.return_value = False

@@ -76,9 +76,9 @@ class TestPermissionService(FrappeTestCase):
         self.assertIn(self.bar.name, departments)
 
     def test_get_user_company(self) -> None:
-        user_doc = frappe.get_doc("User", self.user)
-        user_doc.company = self.company
-        user_doc.save(ignore_permissions=True)
+        # Create department permission so user has an accessible department
+        self._create_department_permission(self.kitchen.name, can_read=1)
+        # The get_company method will find the company from the accessible department
         self.assertEqual(service.get_user_company(self.user), self.company)
 
     def test_user_has_module_and_feature_access(self) -> None:
