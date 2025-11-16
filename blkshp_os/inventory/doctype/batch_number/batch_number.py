@@ -18,7 +18,7 @@ class BatchNumber(Document):
     expiration dates.
     """
 
-    def autoname(self):
+    def autoname(self) -> None:
         """
         Auto-generate batch_id if not provided.
 
@@ -48,18 +48,18 @@ class BatchNumber(Document):
             next_seq = result[0][0] if result else 1
             self.batch_id = f"{product_code}-{year}-{next_seq:04d}"
 
-    def validate(self):
+    def validate(self) -> None:
         """Validate batch data before saving."""
         self.validate_dates()
         self.calculate_shelf_life()
         self.update_status()
 
-    def before_save(self):
+    def before_save(self) -> None:
         """Set default values before saving."""
         if not self.status:
             self.status = "Active"
 
-    def validate_dates(self):
+    def validate_dates(self) -> None:
         """Ensure expiration date is after manufacturing date."""
         if self.manufacturing_date and self.expiration_date:
             if getdate(self.expiration_date) <= getdate(self.manufacturing_date):
@@ -67,7 +67,7 @@ class BatchNumber(Document):
                     _("Expiration date must be after manufacturing date")
                 )
 
-    def calculate_shelf_life(self):
+    def calculate_shelf_life(self) -> None:
         """
         Calculate shelf life in days if both dates are provided.
 
@@ -79,7 +79,7 @@ class BatchNumber(Document):
             exp_date = getdate(self.expiration_date)
             self.shelf_life_in_days = (exp_date - mfg_date).days
 
-    def update_status(self):
+    def update_status(self) -> None:
         """
         Auto-update status based on expiration date and quantity.
 
@@ -97,7 +97,7 @@ class BatchNumber(Document):
         else:
             self.status = "Active"
 
-    def update_quantity_from_ledger(self):
+    def update_quantity_from_ledger(self) -> None:
         """
         Recalculate quantity from Stock Ledger Entries.
 
