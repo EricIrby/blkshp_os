@@ -283,6 +283,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Onions"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.insert()
 
         # Create entries for different products
@@ -309,6 +311,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -341,6 +345,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -361,6 +367,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Wrong Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -394,15 +402,20 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
         # Create second department
-        if not frappe.db.exists("Department", "Test Bar"):
+        if not frappe.db.exists("Department", {"department_code": "BAR", "company": "TC"}):
             dept = frappe.new_doc("Department")
             dept.department_name = "Test Bar"
+            dept.department_code = "BAR"
+            dept.department_type = "Other"
             dept.company = "TC"
-            dept.insert()
+            dept.is_active = 1
+            dept.insert(ignore_permissions=True)
 
         # Create batch for Test Kitchen
         if not frappe.db.exists("Batch Number", "TEST-BATCH-DEPT"):
@@ -417,14 +430,14 @@ class TestStockLedgerEntry(unittest.TestCase):
         # Try to use batch with wrong department
         entry = frappe.new_doc("Stock Ledger Entry")
         entry.product = "TEST-BATCH-PRODUCT"
-        entry.department = "Test Bar"  # Wrong department
+        entry.department = "BAR-TC"  # Wrong department
         entry.company = "TC"
         entry.batch_number = "TEST-BATCH-DEPT"
         entry.actual_qty = 10
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
         entry.voucher_no = "TEST-AUDIT-DEPT-001"
-        entry.insert()
+        entry.insert(ignore_links=True)
 
         with self.assertRaises(frappe.ValidationError) as context:
             entry.submit()
@@ -434,7 +447,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         # Cleanup
         frappe.delete_doc("Batch Number", "TEST-BATCH-DEPT", force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
-        frappe.delete_doc("Department", "Test Bar", force=True)
+        frappe.delete_doc("Department", "BAR-TC", force=True)
 
     def test_batch_company_mismatch(self):
         """Test that batch company must match entry company."""
@@ -445,15 +458,19 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
         # Create second company
-        if not frappe.db.exists("Company", "Test Company 2"):
+        if not frappe.db.exists("Company", "TC2"):
             company = frappe.new_doc("Company")
             company.company_name = "Test Company 2"
+            company.company_code = "TC2"
+            company.abbr = "TC2"
             company.default_currency = "USD"
-            company.insert()
+            company.insert(ignore_permissions=True)
 
         # Create batch for Test Company
         if not frappe.db.exists("Batch Number", "TEST-BATCH-CO"):
@@ -469,13 +486,13 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry = frappe.new_doc("Stock Ledger Entry")
         entry.product = "TEST-BATCH-PRODUCT"
         entry.department = "TEST-KITCHEN-TC"
-        entry.company = "Test Company 2"  # Wrong company
+        entry.company = "TC2"  # Wrong company
         entry.batch_number = "TEST-BATCH-CO"
         entry.actual_qty = 10
         entry.posting_date = frappe.utils.today()
         entry.voucher_type = "Inventory Audit"
         entry.voucher_no = "TEST-AUDIT-CO-001"
-        entry.insert()
+        entry.insert(ignore_links=True)
 
         with self.assertRaises(frappe.ValidationError) as context:
             entry.submit()
@@ -485,7 +502,7 @@ class TestStockLedgerEntry(unittest.TestCase):
         # Cleanup
         frappe.delete_doc("Batch Number", "TEST-BATCH-CO", force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
-        frappe.delete_doc("Company", "Test Company 2", force=True)
+        frappe.delete_doc("Company", "TC2", force=True)
 
     def test_batch_quantity_update_on_submit(self):
         """Test that batch quantity is updated when entry is submitted."""
@@ -496,6 +513,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -540,6 +559,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -594,6 +615,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -711,6 +734,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
@@ -794,6 +819,8 @@ class TestStockLedgerEntry(unittest.TestCase):
             product.product_name = "Test Batch Product"
             product.company = "TC"
             product.primary_count_unit = "lb"
+            product.volume_conversion_unit = ""
+            product.weight_conversion_unit = ""
             product.has_batch_no = 1
             product.insert()
 
