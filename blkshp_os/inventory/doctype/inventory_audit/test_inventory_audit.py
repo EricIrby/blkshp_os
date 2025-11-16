@@ -264,23 +264,36 @@ class TestInventoryAudit(FrappeTestCase):
         )
 
         self.assertEqual(len(ledger_entries), 2)
-        self.assertEqual(ledger_entries[0].actual_qty, 5)  # Product 1 variance
-        self.assertEqual(ledger_entries[1].actual_qty, -2)  # Product 2 variance
+        # actual_qty is adjustment from current balance (0) to counted qty
+        self.assertEqual(ledger_entries[0].actual_qty, 20)  # Product 1: counted 20 - current 0
+        self.assertEqual(ledger_entries[1].actual_qty, 8)  # Product 2: counted 8 - current 0
 
     def test_close_audit_skips_zero_variance(self) -> None:
         """Test that Stock Ledger Entries are not created for zero variances."""
-        # Create initial inventory of 10 units
-        initial_entry = frappe.new_doc("Stock Ledger Entry")
-        initial_entry.product = self.product
-        initial_entry.department = self.department_a
-        initial_entry.company = self.company
-        initial_entry.actual_qty = 10
-        initial_entry.posting_date = "2025-11-01"
-        initial_entry.posting_time = "10:00:00"
-        initial_entry.voucher_type = "Stock Entry"
-        initial_entry.voucher_no = "INITIAL-001"
-        initial_entry.insert(ignore_permissions=True)
-        initial_entry.submit()
+        # Create initial inventory of 10 units via an initial audit
+        initial_audit = frappe.get_doc(
+            {
+                "doctype": "Inventory Audit",
+                "audit_name": "Initial Inventory Setup",
+                "audit_date": "2025-11-01",
+                "company": self.company,
+                "status": "Review",
+                "audit_departments": [{"department": self.department_a}],
+                "audit_lines": [
+                    {
+                        "product": self.product,
+                        "department": self.department_a,
+                        "quantity": 10,
+                        "unit": "each",
+                        "expected_quantity": 0,  # Starting from zero
+                        "unit_cost": 2.5,
+                    },
+                ],
+            }
+        )
+        initial_audit.insert(ignore_permissions=True)
+        initial_audit.close_audit(user=self.audit_user)
+        initial_audit.save(ignore_permissions=True)
 
         # Create audit with no variance (counted = current balance = 10)
         audit = frappe.get_doc(
@@ -320,19 +333,32 @@ class TestInventoryAudit(FrappeTestCase):
 
     def test_inventory_balance_updated_from_stock_ledger(self) -> None:
         """Test that Inventory Balance is updated via Stock Ledger Entry."""
-        # Set up initial balance
-        balance_name = f"{self.product}-{self.department_a}-{self.company}"
-        if frappe.db.exists("Inventory Balance", balance_name):
-            frappe.db.set_value("Inventory Balance", balance_name, "quantity", 10)
-        else:
-            balance_doc = frappe.get_doc({
-                "doctype": "Inventory Balance",
-                "product": self.product,
-                "department": self.department_a,
+        # Set up initial balance of 10 via an initial audit
+        initial_audit = frappe.get_doc(
+            {
+                "doctype": "Inventory Audit",
+                "audit_name": "Initial Balance Setup",
+                "audit_date": "2025-11-01",
                 "company": self.company,
-                "quantity": 10,
-            })
-            balance_doc.insert(ignore_permissions=True)
+                "status": "Review",
+                "audit_departments": [{"department": self.department_a}],
+                "audit_lines": [
+                    {
+                        "product": self.product,
+                        "department": self.department_a,
+                        "quantity": 10,
+                        "unit": "each",
+                        "expected_quantity": 0,  # Starting from zero
+                        "unit_cost": 2.5,
+                    },
+                ],
+            }
+        )
+        initial_audit.insert(ignore_permissions=True)
+        initial_audit.close_audit(user=self.audit_user)
+        initial_audit.save(ignore_permissions=True)
+
+        balance_name = f"{self.product}-{self.department_a}-{self.company}"
 
         # Create audit with variance
         audit = frappe.get_doc(
