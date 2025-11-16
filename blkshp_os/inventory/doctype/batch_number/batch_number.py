@@ -86,14 +86,18 @@ class BatchNumber(Document):
         - Expired: expiration_date has passed
         - Consumed: quantity is 0 or negative
         - Active: otherwise
+
+        Note: Manual Expired/Consumed status overrides are preserved unless
+        self.flags.force_status_recalc is set.
         """
+        # Preserve manual Expired/Consumed overrides unless forced
+        if self.status in ("Expired", "Consumed") and not self.flags.get("force_status_recalc"):
+            return
+
         if self.expiration_date and getdate(self.expiration_date) < getdate(today()):
             self.status = "Expired"
         elif self.quantity is not None and self.quantity <= 0:
             self.status = "Consumed"
-        elif self.status == "Expired" or self.status == "Consumed":
-            # Don't automatically revert to Active - manual override needed
-            pass
         else:
             self.status = "Active"
 
@@ -106,6 +110,11 @@ class BatchNumber(Document):
 
         Note: This method relies on being called within a transaction context
         (typically from Stock Ledger Entry submission lifecycle).
+
+        Performance: For optimal performance as ledger volume grows, ensure
+        Stock Ledger Entry has an index covering:
+        (batch_number, product, department, company, docstatus, is_cancelled)
+        This will be addressed in BLK-47.
         """
         # Lock the batch row to prevent concurrent quantity updates
         frappe.db.sql(
@@ -131,7 +140,8 @@ class BatchNumber(Document):
         self.quantity = total_qty[0].total if total_qty and total_qty[0].total else 0
         self.db_set("quantity", self.quantity, update_modified=False)
 
-        # Update status based on new quantity
+        # Update status based on new quantity (force recalculation)
+        self.flags.force_status_recalc = True
         self.update_status()
         self.db_set("status", self.status, update_modified=False)
 
@@ -144,6 +154,10 @@ def update_batch_statuses():
     Scans all Active batches and updates status to Expired if
     expiration_date has passed. Uses bulk SQL UPDATE for performance
     and atomicity.
+
+    Performance: For optimal performance as data grows, consider adding
+    a composite index on (status, expiration_date) via a migration script.
+    Individual indexes on these fields are already in place.
     """
     # Use bulk SQL UPDATE instead of iterating through batches
     frappe.db.sql(
@@ -165,20 +179,20 @@ def update_batch_statuses():
 
 # Query functions for batch management
 
-def get_batch_balance(batch_id: str | None) -> float:
+def get_batch_balance(batch_name: str | None) -> float:
     """
     Get current quantity for a specific batch.
 
     Args:
-        batch_id (str): Batch Number name
+        batch_name (str): Batch Number document name (usually same as batch_id field)
 
     Returns:
         float: Current batch quantity
     """
-    if not batch_id:
+    if not batch_name:
         return 0
 
-    return frappe.db.get_value("Batch Number", batch_id, "quantity") or 0
+    return frappe.db.get_value("Batch Number", batch_name, "quantity") or 0
 
 
 def get_expiring_batches(
