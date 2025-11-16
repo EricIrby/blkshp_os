@@ -322,7 +322,8 @@ class TestStockLedgerEntry(unittest.TestCase):
 
         self.assertIn("Batch Number is required", str(context.exception))
 
-        # Cleanup
+        # Cleanup - delete orphaned SLE
+        frappe.db.delete("Stock Ledger Entry", {"product": "TEST-BATCH-PRODUCT"})
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
 
     def test_batch_matching_validation(self):
@@ -377,6 +378,108 @@ class TestStockLedgerEntry(unittest.TestCase):
         frappe.delete_doc("Batch Number", "TEST-BATCH-001", force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
         frappe.delete_doc("Product", "TEST-WRONG-PRODUCT", force=True)
+
+    def test_batch_department_mismatch(self):
+        """Test that batch department must match entry department."""
+        # Create batch-tracked product
+        if not frappe.db.exists("Product", "TEST-BATCH-PRODUCT"):
+            product = frappe.new_doc("Product")
+            product.product_code = "TEST-BATCH-PRODUCT"
+            product.product_name = "Test Batch Product"
+            product.company = "Test Company"
+            product.primary_count_unit = "lb"
+            product.has_batch_no = 1
+            product.insert()
+
+        # Create second department
+        if not frappe.db.exists("Department", "Test Bar"):
+            dept = frappe.new_doc("Department")
+            dept.department_name = "Test Bar"
+            dept.company = "Test Company"
+            dept.insert()
+
+        # Create batch for Test Kitchen
+        if not frappe.db.exists("Batch Number", "TEST-BATCH-DEPT"):
+            batch = frappe.new_doc("Batch Number")
+            batch.product = "TEST-BATCH-PRODUCT"
+            batch.department = "Test Kitchen"
+            batch.company = "Test Company"
+            batch.manufacturing_date = frappe.utils.today()
+            batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
+            batch.insert()
+
+        # Try to use batch with wrong department
+        entry = frappe.new_doc("Stock Ledger Entry")
+        entry.product = "TEST-BATCH-PRODUCT"
+        entry.department = "Test Bar"  # Wrong department
+        entry.company = "Test Company"
+        entry.batch_number = "TEST-BATCH-DEPT"
+        entry.actual_qty = 10
+        entry.posting_date = frappe.utils.today()
+        entry.voucher_type = "Inventory Audit"
+        entry.voucher_no = "TEST-AUDIT-DEPT-001"
+        entry.insert()
+
+        with self.assertRaises(frappe.ValidationError) as context:
+            entry.submit()
+
+        self.assertIn("Department", str(context.exception))
+
+        # Cleanup
+        frappe.delete_doc("Batch Number", "TEST-BATCH-DEPT", force=True)
+        frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
+        frappe.delete_doc("Department", "Test Bar", force=True)
+
+    def test_batch_company_mismatch(self):
+        """Test that batch company must match entry company."""
+        # Create batch-tracked product
+        if not frappe.db.exists("Product", "TEST-BATCH-PRODUCT"):
+            product = frappe.new_doc("Product")
+            product.product_code = "TEST-BATCH-PRODUCT"
+            product.product_name = "Test Batch Product"
+            product.company = "Test Company"
+            product.primary_count_unit = "lb"
+            product.has_batch_no = 1
+            product.insert()
+
+        # Create second company
+        if not frappe.db.exists("Company", "Test Company 2"):
+            company = frappe.new_doc("Company")
+            company.company_name = "Test Company 2"
+            company.default_currency = "USD"
+            company.insert()
+
+        # Create batch for Test Company
+        if not frappe.db.exists("Batch Number", "TEST-BATCH-CO"):
+            batch = frappe.new_doc("Batch Number")
+            batch.product = "TEST-BATCH-PRODUCT"
+            batch.department = "Test Kitchen"
+            batch.company = "Test Company"
+            batch.manufacturing_date = frappe.utils.today()
+            batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
+            batch.insert()
+
+        # Try to use batch with wrong company
+        entry = frappe.new_doc("Stock Ledger Entry")
+        entry.product = "TEST-BATCH-PRODUCT"
+        entry.department = "Test Kitchen"
+        entry.company = "Test Company 2"  # Wrong company
+        entry.batch_number = "TEST-BATCH-CO"
+        entry.actual_qty = 10
+        entry.posting_date = frappe.utils.today()
+        entry.voucher_type = "Inventory Audit"
+        entry.voucher_no = "TEST-AUDIT-CO-001"
+        entry.insert()
+
+        with self.assertRaises(frappe.ValidationError) as context:
+            entry.submit()
+
+        self.assertIn("Company", str(context.exception))
+
+        # Cleanup
+        frappe.delete_doc("Batch Number", "TEST-BATCH-CO", force=True)
+        frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
+        frappe.delete_doc("Company", "Test Company 2", force=True)
 
     def test_batch_quantity_update_on_submit(self):
         """Test that batch quantity is updated when entry is submitted."""
@@ -456,6 +559,10 @@ class TestStockLedgerEntry(unittest.TestCase):
         entry.voucher_no = "TEST-AUDIT-BATCH-004"
         entry.insert()
         entry.submit()
+
+        # Verify quantity after submit (before cancel)
+        batch.reload()
+        self.assertEqual(batch.quantity, 10)
 
         # Cancel entry
         entry.cancel()
@@ -544,9 +651,43 @@ class TestStockLedgerEntry(unittest.TestCase):
         self.assertEqual(all_batches[batch1.name], 10)
         self.assertEqual(all_batches[batch2.name], 5)
 
+        # Test as_of_date filtering - create entry with different date
+        entry3 = frappe.new_doc("Stock Ledger Entry")
+        entry3.product = "TEST-BATCH-PRODUCT"
+        entry3.department = "Test Kitchen"
+        entry3.company = "Test Company"
+        entry3.batch_number = batch1.name
+        entry3.actual_qty = 5
+        entry3.posting_date = frappe.utils.add_days(frappe.utils.today(), 2)
+        entry3.voucher_type = "Inventory Audit"
+        entry3.voucher_no = "TEST-AUDIT-BATCH-006A"
+        entry3.insert()
+        entry3.submit()
+
+        # Query as of today (should be 10, not including entry3)
+        balance_as_of_today = get_stock_balance_by_batch(
+            "TEST-BATCH-PRODUCT",
+            "Test Kitchen",
+            "Test Company",
+            batch_number=batch1.name,
+            as_of_date=get_datetime(frappe.utils.today())
+        )
+        self.assertEqual(balance_as_of_today, 10)
+
+        # Query as of future date (should be 15, including entry3)
+        balance_future = get_stock_balance_by_batch(
+            "TEST-BATCH-PRODUCT",
+            "Test Kitchen",
+            "Test Company",
+            batch_number=batch1.name,
+            as_of_date=get_datetime(frappe.utils.add_days(frappe.utils.today(), 3))
+        )
+        self.assertEqual(balance_future, 15)
+
         # Cleanup
         entry1.cancel()
         entry2.cancel()
+        entry3.cancel()
         frappe.delete_doc("Batch Number", batch1.name, force=True)
         frappe.delete_doc("Batch Number", batch2.name, force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
@@ -621,6 +762,53 @@ class TestStockLedgerEntry(unittest.TestCase):
         # Cleanup
         entry1.cancel()
         entry2.cancel()
+        frappe.delete_doc("Batch Number", batch.name, force=True)
+        frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
+
+    def test_get_batch_movements_error_cases(self):
+        """Test error handling in get_batch_movements."""
+        from blkshp_os.inventory.doctype.stock_ledger_entry.stock_ledger_entry import (
+            get_batch_movements,
+        )
+
+        # Test missing batch_number
+        with self.assertRaises(frappe.ValidationError) as context:
+            get_batch_movements(None)
+        self.assertIn("Batch Number is required", str(context.exception))
+
+        # Test non-existent batch
+        with self.assertRaises(frappe.ValidationError) as context:
+            get_batch_movements("NON-EXISTENT-BATCH")
+        self.assertIn("does not exist", str(context.exception))
+
+        # Create a test batch for date range validation
+        if not frappe.db.exists("Product", "TEST-BATCH-PRODUCT"):
+            product = frappe.new_doc("Product")
+            product.product_code = "TEST-BATCH-PRODUCT"
+            product.product_name = "Test Batch Product"
+            product.company = "Test Company"
+            product.primary_count_unit = "lb"
+            product.has_batch_no = 1
+            product.insert()
+
+        batch = frappe.new_doc("Batch Number")
+        batch.product = "TEST-BATCH-PRODUCT"
+        batch.department = "Test Kitchen"
+        batch.company = "Test Company"
+        batch.manufacturing_date = frappe.utils.today()
+        batch.expiration_date = frappe.utils.add_days(frappe.utils.today(), 30)
+        batch.insert()
+
+        # Test invalid date range (from_date > to_date)
+        with self.assertRaises(frappe.ValidationError) as context:
+            get_batch_movements(
+                batch.name,
+                from_date=get_datetime("2025-11-20"),
+                to_date=get_datetime("2025-11-10")
+            )
+        self.assertIn("From date cannot be after To date", str(context.exception))
+
+        # Cleanup
         frappe.delete_doc("Batch Number", batch.name, force=True)
         frappe.delete_doc("Product", "TEST-BATCH-PRODUCT", force=True)
 

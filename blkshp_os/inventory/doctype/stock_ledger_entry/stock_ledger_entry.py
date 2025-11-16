@@ -414,25 +414,20 @@ def get_stock_balance_by_batch(product, department, company, batch_number=None, 
     if as_of_date:
         filters["posting_datetime"] = ["<=", as_of_date]
 
-    # Get all entries and sum by batch
+    # Use SQL aggregation for better performance
     entries = frappe.get_all(
         "Stock Ledger Entry",
         filters=filters,
-        fields=["batch_number", "actual_qty"],
-        order_by="posting_datetime asc"
+        fields=["batch_number", "SUM(actual_qty) as qty"],
+        group_by="batch_number"
     )
 
     if batch_number:
         # Return single batch quantity
-        return sum(e.actual_qty for e in entries if e.batch_number == batch_number)
+        return entries[0].qty if entries else 0
     else:
         # Return dict of all batches with quantities
-        from collections import defaultdict
-        batch_qtys = defaultdict(float)
-        for entry in entries:
-            if entry.batch_number:
-                batch_qtys[entry.batch_number] += entry.actual_qty
-        return dict(batch_qtys)
+        return {e.batch_number: e.qty for e in entries if e.batch_number}
 
 
 def get_batch_movements(batch_number, from_date=None, to_date=None):
@@ -460,7 +455,6 @@ def get_batch_movements(batch_number, from_date=None, to_date=None):
     }
 
     if from_date and to_date:
-        from frappe.utils import get_datetime
         if get_datetime(from_date) > get_datetime(to_date):
             frappe.throw(_("From date cannot be after To date"))
         filters["posting_datetime"] = ["between", [from_date, to_date]]
