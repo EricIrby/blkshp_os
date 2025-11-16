@@ -14,9 +14,19 @@
 			"hidden": 0,
 			"is_query_report": 0,
 			"label": "Subscription Management",
-			"link_count": 2,
+			"link_count": 5,
 			"onboard": 0,
 			"type": "Card Break"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Manage Tenants",
+			"link_count": 0,
+			"link_to": "subscription-management",
+			"link_type": "Page",
+			"onboard": 0,
+			"type": "Link"
 		},
 		{
 			"hidden": 0,
@@ -31,10 +41,30 @@
 		{
 			"hidden": 0,
 			"is_query_report": 0,
-			"label": "Manage Tenants",
+			"label": "Feature Toggles",
 			"link_count": 0,
-			"link_to": "subscription-management",
-			"link_type": "Page",
+			"link_to": "Feature Toggle",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Module Activations",
+			"link_count": 0,
+			"link_to": "Module Activation",
+			"link_type": "DocType",
+			"onboard": 0,
+			"type": "Link"
+		},
+		{
+			"hidden": 0,
+			"is_query_report": 0,
+			"label": "Subscription Logs",
+			"link_count": 0,
+			"link_to": "Subscription Access Log",
+			"link_type": "DocType",
 			"onboard": 0,
 			"type": "Link"
 		},
@@ -113,7 +143,7 @@
 			"type": "Link"
 		}
 	],
-	"modified": "2025-11-08 00:00:00.000000",
+	"modified": "2025-11-16 00:00:00.000000",
 	"modified_by": "Administrator",
 	"module": "BLKSHP OS",
 	"name": "BLKSHP OS",
