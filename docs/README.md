@@ -1,852 +1,315 @@
-# BLKSHP OS Documentation
+# The Pass - Company Management Platform
 
-**Complete documentation for BLKSHP OS - A unified inventory management and cost control platform for hospitality operations.**
+**Multi-entity hospitality company management and accounting automation**
 
-**Version:** 0.0.1  
-**Architecture:** Frappe Desk-Only Application  
-**Last Updated:** November 8, 2025
-
----
-
-## 📚 Quick Navigation
-
-- [What is BLKSHP OS?](#what-is-blkshp-os)
-- [Quick Start](#quick-start)
-- [First-Time Setup](#first-time-setup)
-- [Architecture Overview](#architecture-overview)
-- [Development Guide](#development-guide)
-- [Documentation Structure](#documentation-structure)
-- [Key Concepts](#key-concepts)
+**Product Name:** The Pass
+**Current Focus:** Company Management MVP
+**Timeline:** 1 month to demo (Nov 16 - Dec 16, 2025)
+**Last Updated:** November 16, 2025
 
 ---
 
-## What is BLKSHP OS?
+## 🎯 What is The Pass?
 
-BLKSHP OS is a **unified inventory management and cost control platform** built on Frappe Framework for hospitality companies (restaurants, bars, catering operations).
+The Pass is a **multi-entity management platform** for hospitality management companies operating multiple properties/entities. It provides company/entity management, relationship tracking, task automation, and financial oversight for management company leadership and accounting teams.
 
-### Key Differentiators
+### Current Priority: Company Management MVP
 
-**Unified Platform (Not Separate Platforms):**
-- Single system for all product types (food, beverage, supplies, equipment)
-- Department-based segmentation instead of separate applications
-- One Product Master for everything
-- Unified inventory tracking and reporting
+**Goal:** Working demo for internal leadership by December 14-16, 2025
 
-**Department-Based Architecture:**
-- Products can belong to multiple departments
-- Users have department-specific access
-- Inventory tracked per Product + Department
-- Permissions are department-aware
-- Reports filterable by department
+**Target Users:**
+- Multi-entity management company leadership
+- Accounting and finance teams
 
-**2D Inventory Model:**
-- Inventory tracked by **Product + Department** only
-- Storage locations are metadata for organization (not separate inventory buckets)
-- Simplifies inventory calculations while maintaining visibility
-
-**Hub-and-Spoke Unit Conversion:**
-- All quantities stored in product's primary count unit
-- Conversions calculated on-the-fly for display/entry
-- Consistent, reliable unit handling across all domains
+**Core Features (MVP):**
+1. **Company/Entity Directory & Management** - Centralized company information
+2. **Company Relationships** - Banks, Tax Entities, Insurance, Loans, Key Employees
+3. **Automated Task Management** - Recurring tasks (daily/weekly/monthly/quarterly/annual)
+4. **Review Period Tracking** - Month-end close workflow and progress
+5. **Project Tracking** - Accounting projects and milestones
+6. **Accounting Dashboard** - KPIs, alerts, and insights for leadership
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-### 🚀 Get Started in 5 Minutes
+### For Development
 
 **Prerequisites:**
 - Frappe Bench installed
 - A test site created
 - Terminal access
 
-### Option 1: Automated Setup (Recommended)
-
+**Setup:**
 ```bash
 cd /path/to/frappe-bench
 
-# Step 1: Install the app (if first time)
+# Install the app
 bench --site mysite.local install-app blkshp_os
-
-# Step 2: Run the automated setup script
-cd apps/blkshp_os
-./scripts/test.sh mysite.local
-
-# Step 3: Set passwords for test users (optional)
-cd /path/to/frappe-bench
-bench --site mysite.local set-password buyer@test.com
-bench --site mysite.local set-password inventory@test.com
-bench --site mysite.local set-password manager@test.com
-
-# Step 4: Start the server
-bench start
-```
-
-### Option 2: Manual Setup
-
-```bash
-cd /path/to/frappe-bench
-
-# Step 1: Install the app (if first time)
-bench --site mysite.local install-app blkshp_os
-
-# Step 2: Run migrations
-bench --site mysite.local migrate
-
-# Step 3: Clear cache and build
-bench --site mysite.local clear-cache
-bench build --app blkshp_os
-
-# Step 4: Create test data (optional)
-bench --site mysite.local execute blkshp_os.scripts.setup_test_data.setup_all
-
-# Step 5: Start the server
-bench start
-```
-
-### Access Your Site
-
-1. Open: `http://localhost:8000`
-2. Log in as **Administrator**
-3. Find the **BLKSHP OS** workspace tile in Desk
-4. Start exploring!
-
-### Quick Tests
-
-**Test 1: View Departments**
-- Go to: **Home → Departments → Department**
-- You should see: Kitchen, Bar, Catering, Office, Prep Kitchen
-
-**Test 2: Check Permissions**
-- Open browser console (F12)
-- Run:
-
-```javascript
-frappe.call({
-    method: 'blkshp_os.api.roles.get_available_permissions',
-    callback: function(r) {
-        console.log('Total Permissions:', r.message.length);
-    }
-});
-```
-
-**Expected:** 70+ permissions
-
----
-
-## First-Time Setup
-
-### 📦 Initial Installation Guide
-
-If this is your **first time** installing BLKSHP OS, follow these steps carefully.
-
-### Step 1: Verify App is in Bench
-
-```bash
-cd /path/to/frappe-bench
-ls apps/
-
-# You should see:
-# - frappe
-# - blkshp_os
-# - (other apps)
-```
-
-### Step 2: Check Your Sites
-
-```bash
-# List all sites
-ls sites/
-
-# Common site names:
-# - site1.local
-# - localhost
-# - mysite.local
-```
-
-### Step 3: Install the App
-
-**⚠️ MOST IMPORTANT STEP:**
-
-```bash
-# Install the app on your site
-bench --site mysite.local install-app blkshp_os
-```
-
-This command:
-- ✅ Installs the app on the site
-- ✅ Creates all DocTypes (Department, etc.)
-- ✅ Loads fixtures (custom fields)
-- ✅ Sets up database schema
-
-### Step 4: Verify Installation
-
-```bash
-# Check installed apps
-bench --site mysite.local list-apps
-
-# Expected output:
-# frappe
-# blkshp_os
-```
-
-### Step 5: Create Test Data (Recommended)
-
-```bash
-bench --site mysite.local execute blkshp_os.scripts.setup_test_data.setup_all
-```
-
-This creates:
-- ✅ Test Restaurant company
-- ✅ 5 departments (Kitchen, Bar, Catering, Office, Prep Kitchen)
-- ✅ 3 test users with different roles
-- ✅ Standard roles with permissions
-
-### Step 6: Set Passwords
-
-```bash
-bench --site mysite.local set-password buyer@test.com
-bench --site mysite.local set-password inventory@test.com
-bench --site mysite.local set-password manager@test.com
-```
-
-### Step 7: Start Server
-
-```bash
-bench start
-```
-
-Keep this terminal open - it needs to stay running.
-
-### Step 8: Access and Test
-
-1. Open: `http://localhost:8000`
-2. Log in as Administrator
-3. Go to: **Home → Departments → Department**
-4. Verify test departments are created
-
-### Common Installation Mistakes
-
-**❌ Running commands before install-app:**
-```bash
-# WRONG - app not installed yet
-bench --site mysite execute blkshp_os.scripts.setup_test_data.setup_all
-```
-
-**✅ Correct order:**
-```bash
-# RIGHT - install first
-bench --site mysite install-app blkshp_os
-# Then run other commands
-bench --site mysite execute blkshp_os.scripts.setup_test_data.setup_all
-```
-
-**❌ Using wrong site name:**
-```bash
-# Check actual site name first
-ls sites/
-# Then use correct name
-bench --site [correct-site-name] install-app blkshp_os
-```
-
----
-
-## Architecture Overview
-
-### Frappe Desk-Only Application
-
-BLKSHP OS is a **traditional Frappe Desk application** - not a separate frontend SPA.
-
-**Why Desk-Only:**
-- ✅ Business operations focus (back-office)
-- ✅ Faster development using Frappe's built-in UI
-- ✅ Proven approach (ERPNext, HRMS, etc.)
-- ✅ Can add separate frontend later if needed
-
-**Key Architecture Components:**
-
-### Application Structure
-
-```
-blkshp_os/
-├── blkshp_os/                    # Main Python package
-│   ├── api/                      # Whitelisted API endpoints
-│   ├── departments/              # Departments domain
-│   │   └── doctype/
-│   ├── permissions/              # Permissions domain
-│   │   └── doctype/
-│   ├── products/                 # Products domain (future)
-│   ├── inventory/                # Inventory domain (future)
-│   ├── procurement/              # Procurement domain (future)
-│   ├── [other domains]/          # Additional domains
-│   ├── config/                   # Desk configuration
-│   ├── public/                   # Static assets (JS, CSS)
-│   ├── scripts/                  # Utility scripts
-│   ├── blkshp_os/                # Workspace module
-│   │   └── workspace/
-│   └── hooks.py                  # App configuration
-├── docs/                         # Documentation
-├── fixtures/                     # Fixtures (custom fields, roles)
-├── scripts/                      # Standalone scripts
-└── pyproject.toml                # Python project config
-```
-
-### Domain-Based Organization
-
-**Implemented Domains:**
-- ✅ **Departments** - Department management and segmentation
-- ✅ **Permissions** - User management, roles, and permissions
-
-**Planned Domains:**
-- ⏳ **Products** - Unified product/item management
-- ⏳ **Inventory** - Inventory tracking and audits
-- ⏳ **Procurement** - Vendors, orders, invoices
-- ⏳ **Recipes** - Recipe management and costing
-- ⏳ **POS Integration** - POS connectivity and depletions
-- ⏳ **Transfers & Depletions** - Inventory movements
-- ⏳ **Analytics** - Reporting and analytics
-- ⏳ **Accounting** - Accounting integration
-- ⏳ **Budgets** - Budget management
-- ⏳ **Payments** - Payment processing
-- ⏳ **Director** - Multi-location management
-
-### Core Principles
-
-**1. Unified Platform**
-- Single Product Master for all product types
-- Department-based segmentation (not separate platforms)
-- Unified inventory and reporting
-
-**2. Department-Based Architecture**
-- Products assigned to multiple departments (many-to-many)
-- Users have department-specific access
-- Permissions are department-aware
-- All reports support department filtering
-
-**3. 2D Inventory Model**
-- Inventory = Product + Department
-- Storage is metadata only (not separate inventory)
-- Simplifies calculations, maintains visibility
-
-**4. Hub-and-Spoke Unit Conversion**
-- All quantities stored in primary count unit
-- Conversions calculated on-the-fly
-- Consistent unit handling across system
-
----
-
-## Development Guide
-
-### 🎯 Recommended Development Path
-
-**Start with: Departments → Permissions → Products**
-
-This follows the dependency chain and aligns with Phase 1 development.
-
-### Phase 1: Foundation (Weeks 1-2)
-
-**Step 1: Departments Domain** ✅ COMPLETE
-- Zero dependencies (foundation)
-- Required by all other domains
-- Simple scope, quick wins
-
-**Step 2: Permissions Domain** ✅ COMPLETE
-- Depends on Departments
-- Required for user access and security
-- Role-based and department-based permissions
-
-**Step 3: Products Domain** ⏳ NEXT
-- Depends on Departments
-- Required by Inventory, Procurement, Recipes
-- Most complex domain (unit conversion, etc.)
-
-### Phase 2: Core Functionality (Weeks 3-6)
-
-**Step 4: Inventory Domain**
-- Depends on: Products, Departments
-- Core functionality for inventory tracking
-- Theoretical inventory calculations
-
-**Step 5: Procurement Domain**
-- Depends on: Products, Departments
-- Vendor management, ordering, invoicing
-- Ottimate integration
-
-**Step 6: Recipes Domain**
-- Depends on: Products, Departments, Inventory
-- Recipe management and costing
-- Required for POS depletion calculations
-
-### Phase 3: Integration (Weeks 7-8)
-
-**Step 7: POS Integration**
-- Depends on: Products, Recipes, Inventory
-- POS connectivity and sales import
-- Automatic depletion calculations
-
-**Step 8: Transfers & Depletions**
-- Depends on: Products, Departments, Inventory
-- Inventory movements between departments
-- Manual depletion tracking
-
-### Development Workflow
-
-**For Each Domain:**
-
-1. **Read Documentation**
-   - Domain README
-   - Function documents
-   - Cross-domain dependencies
-
-2. **Create DocTypes**
-   - Define fields and validation
-   - Implement Python controllers
-   - Create child tables if needed
-
-3. **Implement Services**
-   - Core business logic
-   - API endpoints
-   - Permission checks
-
-4. **Write Tests**
-   - Unit tests for validation
-   - Integration tests for workflows
-   - API endpoint tests
-
-5. **Create Client Scripts**
-   - Form enhancements
-   - User experience improvements
-   - Data validation
-
-6. **Document Implementation**
-   - Update implementation summaries
-   - Document API endpoints
-   - Create usage examples
-
-### Development Tools
-
-**Testing:**
-```bash
-# Run all tests
-bench --site mysite.local run-tests --app blkshp_os
-
-# Run domain-specific tests
-bench --site mysite.local run-tests --app blkshp_os --module blkshp_os.departments
-
-# Run single test file
-bench --site mysite.local run-tests --app blkshp_os --module blkshp_os.departments.doctype.department.test_department
-```
-
-**Development Commands:**
-```bash
-# Clear cache
-bench --site mysite.local clear-cache
-
-# Build assets
-bench build --app blkshp_os
 
 # Run migrations
 bench --site mysite.local migrate
 
-# Restart server
-bench restart
+# Start server
+bench start
 ```
 
-**Code Quality:**
-```bash
-# Format code with ruff
-ruff format blkshp_os/
-
-# Lint code
-ruff check blkshp_os/
-
-# Type checking (if using mypy)
-mypy blkshp_os/
-```
+**Access:** `http://localhost:8000`
 
 ---
 
-## Documentation Structure
+## 📚 Documentation
 
-### 📁 Complete Documentation Map
+### Getting Started
 
-**Top-Level Docs (9 Essential):**
-- **README.md** (this file) - Main entry point
-- **DEVELOPMENT-GUIDE.md** - Complete development roadmap
-- **TESTING-GUIDE.md** - Testing practices and examples
-- **API-REFERENCE.md** - API documentation
-- **GIT-WORKFLOW.md** - Git practices and branching
-- **FIXTURES-INFO.md** - Fixtures reference
-- **PERMISSION-FIELDS-REFERENCE.md** - Permission field reference
-- **AGENT-INSTRUCTIONS.md** - AI agent development guide
-- **CROSS-DOMAIN-REFERENCE.md** - Integration patterns
+**START HERE:** 👇
+- **[00-CURRENT/REORGANIZATION-COMPLETE.md](00-CURRENT/REORGANIZATION-COMPLETE.md)** - What's been done, what's next
+- **[00-CURRENT/LINEAR-COMPLETE-ROADMAP.md](00-CURRENT/LINEAR-COMPLETE-ROADMAP.md)** - Complete roadmap (MVP → Final Product)
+- **[00-CURRENT/LINEAR-SETUP-GUIDE.md](00-CURRENT/LINEAR-SETUP-GUIDE.md)** - How to set up Linear for project tracking
 
-**Architecture Documentation:**
-- **00-ARCHITECTURE/** - Architecture and framework guides
-  - `README.md` - Architecture overview
-  - `01-App-Structure.md` - Desk-only structure guide
-  - `02-Frappe-Framework.md` - Frappe framework guide
-  - `03-Deployment.md` - Deployment and scaling
-  - `04-Separate-Frontend.md` - Future SPA architecture (reference)
-  - `06-Core-Platform.md` - Subscription plans, feature toggles, and branding
+### Core Documentation
+- **[GUIDES/Development-Guide.md](GUIDES/Development-Guide.md)** - Development workflow
+- **[GUIDES/Testing-Guide.md](GUIDES/Testing-Guide.md)** - Testing practices
+- **[GUIDES/Git-Workflow.md](GUIDES/Git-Workflow.md)** - Git practices
+- **[CONSOLIDATED_DECISION_LOG.md](CONSOLIDATED_DECISION_LOG.md)** - Decision history
 
-**Domain Documentation:**
-- **01-PRODUCTS/** - Product management (11 functions)
-- **02-DEPARTMENTS/** - Department management (4 functions) ✅
-- **03-INVENTORY/** - Inventory tracking (10 functions)
-- **04-PROCUREMENT/** - Procurement (13 functions)
-- **05-RECIPES/** - Recipe management (12 functions)
-- **06-POS-INTEGRATION/** - POS integration (7 functions)
-- **07-ACCOUNTING/** - Accounting (2 functions)
-- **08-TRANSFERS-DEPLETIONS/** - Inventory movements (6 functions)
-- **09-ANALYTICS-REPORTING/** - Reporting (9 functions)
-- **10-DIRECTOR/** - Multi-location (TBD)
-- **11-PERMISSIONS/** - Permissions (6 functions) ✅
-- **12-BUDGETS/** - Budget management (3 functions)
-- **13-PAYMENTS/** - Payment processing (TBD)
-- **99-INTEGRATIONS/** - External integrations (4 functions)
+### Current Work (Active MVP Development)
+- **[00-CURRENT/](00-CURRENT/)** - Active MVP planning and tracking
+- **[02-COMPANY-MANAGEMENT/](02-COMPANY-MANAGEMENT/)** - Company Management domain (to be created)
+- **[03-FINANCE/](03-FINANCE/)** - Finance & Intercompany Accounting
 
-### Reading Order
+### Core Platform (Completed)
+- **[02-DEPARTMENTS/](02-DEPARTMENTS/)** - Department management (✅ Complete)
+- **[11-PERMISSIONS/](11-PERMISSIONS/)** - Permissions system (✅ Complete)
+- **[00-ARCHITECTURE/](00-ARCHITECTURE/)** - Architecture documentation
 
-**For New Developers:**
-1. **docs/README.md** (this file) - Start here
-2. **00-ARCHITECTURE/01-App-Structure.md** - Understand structure
-3. **DEVELOPMENT-GUIDE.md** - Development workflow
-4. **Domain README.md** - Specific domain overview
-5. **Function Documents** - Detailed implementations
+### API Documentation
+- **[API/Authentication.md](API/Authentication.md)** - JWT authentication
+- **[API/Finance.md](API/Finance.md)** - Finance & intercompany APIs
+- **[API/Inventory.md](API/Inventory.md)** - Inventory APIs
+- **[API/Reference.md](API/Reference.md)** - Complete API reference
 
-**For AI Agents:**
-1. **AGENT-INSTRUCTIONS.md** - Development guidelines
-2. **docs/README.md** (this file) - Project overview
-3. **CROSS-DOMAIN-REFERENCE.md** - Integration patterns
-4. **Domain-specific docs** - Implementation details
-
-**For Architecture Decisions:**
-1. **00-ARCHITECTURE/README.md** - Architecture overview
-2. **00-ARCHITECTURE/01-App-Structure.md** - Current structure
-3. **00-ARCHITECTURE/04-Separate-Frontend.md** - Future SPA (if needed)
+### Future Work (Post-MVP)
+- **[FUTURE/Operations-Modules/](FUTURE/)** - Inventory, recipes, procurement, etc. (Phase 2+)
 
 ---
 
-## Key Concepts
+## 🏗️ Architecture
 
-### Department-Based Segmentation
+### Tech Stack
 
-**What are Departments?**
-- Organizational units within a company (Kitchen, Bar, Catering, etc.)
-- Products can belong to multiple departments
-- Users have access to specific departments
-- Inventory tracked per Product + Department
+**Backend:**
+- Frappe Framework v15+
+- Python 3.10+
+- MariaDB 10.6+
+- JWT Authentication
 
-**Why Departments?**
-- Flexible organization without separate platforms
-- Department-specific permissions and access control
-- Department-based reporting and analytics
-- Support for complex organizational structures
+**Frontend:**
+- Next.js 14 with App Router
+- TypeScript
+- Tailwind CSS
+- React Query (TanStack Query)
 
-**Example:**
-```
-Company: Restaurant ABC
-├── Kitchen (Department)
-│   ├── Users: Chef, Line Cook
-│   ├── Products: Flour, Chicken, Olive Oil
-│   └── Inventory: Tracked separately
-├── Bar (Department)
-│   ├── Users: Bartender, Bar Manager
-│   ├── Products: Vodka, Tonic, Limes
-│   └── Inventory: Tracked separately
-└── Office (Department)
-    ├── Users: Manager, Accountant
-    ├── Products: Paper, Pens
-    └── Inventory: Tracked separately
-```
+**Infrastructure:**
+- Frappe Bench
+- Nginx
+- Redis 6.2+
 
-### 2D Inventory Model
+### Current Status
 
-**Inventory = Product + Department**
+**Completed (✅):**
+- Departments domain
+- Permissions system (70+ granular permissions)
+- JWT authentication
+- Intercompany accounting
+- Company Groups
+- Subscription management
 
-- Inventory tracked by **Product + Department** combination only
-- Storage locations are **metadata** for organization
-- Storage helps with counting tasks but doesn't create separate inventory
+**In Progress (🔄):**
+- Company Management MVP (4 weeks)
+- Task automation
+- Review period tracking
 
-**Example:**
-```
-Product: Coca Cola Cans
-├── Bar Department
-│   ├── Inventory: 240 cans (in primary unit)
-│   ├── Storage: Walk-in Cooler (metadata)
-│   └── Storage: Back Bar (metadata)
-└── Catering Department
-    ├── Inventory: 120 cans (in primary unit)
-    └── Storage: Catering Storage (metadata)
-```
-
-**NOT:**
-```
-❌ WRONG: Separate inventory per storage location
-Product: Coca Cola Cans
-├── Walk-in Cooler: 100 cans
-├── Back Bar: 140 cans
-└── Catering Storage: 120 cans
-```
-
-### Hub-and-Spoke Unit Conversion
-
-**All conversions flow through primary count unit (hub).**
-
-**Example:**
-```
-Product: Beer (Draft)
-├── Primary Unit: gallon
-├── Purchase Unit: keg = 15.5 gallons
-├── Serving Unit: pint = 0.125 gallons
-└── Volume: ounce = 0.0078125 gallons
-
-Conversion Flow:
-keg → gallon (÷ 15.5) → pint (× 8)
-pint → gallon (÷ 0.125) → keg (× 15.5)
-```
-
-**Storage Rule:**
-- All quantities stored in primary count unit
-- Conversions calculated on-the-fly for display/entry
-- Use Product's `convert_to_primary_unit()` and `convert_from_primary_unit()` methods
-
-### Theoretical Inventory
-
-**Formula:**
-```
-Theoretical Inventory = 
-    Starting Inventory (from last audit)
-    + Received (from invoices)
-    + Transferred In
-    - Transferred Out
-    - Depleted (sold, spilled, etc.)
-```
-
-**Key Points:**
-- Calculated per **Product + Department**
-- Storage location **NOT included**
-- All quantities in **primary count unit**
-- Recalculated on demand (not stored)
+**Planned (📋):**
+- Operations modules (inventory, recipes, etc.) - Phase 2
+- Multi-location management - Phase 3
+- Advanced analytics - Phase 3
 
 ---
 
-## What's Been Built
+## 📅 Timeline
 
-### Completed Domains (Phase 1)
+### Phase 1: Company Management MVP (ACTIVE)
+**Timeline:** Nov 16 - Dec 16, 2025 (4 weeks)
 
-#### ✅ Departments Domain
+**Weekly Breakdown:**
+- **Week 1 (Nov 16-22):** Planning & Design
+- **Week 2 (Nov 23-29):** Backend Foundation (DocTypes & APIs)
+- **Week 3 (Nov 30-Dec 6):** Task Automation & Frontend
+- **Week 4 (Dec 7-13):** Testing, Polish, Demo Prep
+- **Demo Day:** Dec 14-16, 2025
 
-**DocTypes Created:**
-- **Department** - Master DocType for departments
-- **Department Permission** - Child table for user permissions
-- **Product Department** - Child table for product assignments
+### Phase 2: Operations Modules (PLANNED)
+**Timeline:** Jan-Jun 2026 (conditional on Phase 1 approval)
+- Inventory management
+- Procurement
+- Recipe costing
+- POS integration
 
-**API Endpoints (7):**
-- `get_accessible_departments` - Get departments user can access
-- `get_department_details` - Get department with products/users
-- `get_department_products` - Get products assigned to department
-- `get_department_users` - Get users with access to department
-- `get_department_statistics` - Get department statistics
-- `check_department_access` - Check if user has access
-- `get_department_hierarchy` - Get department tree
+### Phase 3: Platform Enhancement (PLANNED)
+**Timeline:** Jul-Dec 2026
+- Multi-location (Director)
+- Advanced analytics
+- Budgeting
 
-**Client Scripts:**
-- `department.js` - Department form enhancements
-- `user.js` - User form with department permissions
-
-**Test Coverage:**
-- `test_department.py` - Department validation tests
-- `test_department_permission.py` - Permission validation tests
-- `test_product_department.py` - Product assignment tests
-- `test_departments_api.py` - API endpoint tests
-
-#### ✅ Permissions Domain
-
-**DocTypes Created:**
-- **Role Permission** - Child table for custom role permissions
-
-**Custom Fields Created:**
-- `User.department_permissions` - Department Permission table
-- `User.is_team_account` - Team account flag
-- `Role.custom_permissions` - Role Permission table
-- `Role.is_custom_role` - Custom role flag
-- `Role.role_description` - Role description
-
-**Permissions Defined (70+):**
-- Orders (11 permissions)
-- Invoices (13 permissions)
-- Audits (8 permissions)
-- Items (7 permissions)
-- Vendors (6 permissions)
-- Recipes (4 permissions)
-- Transfers (4 permissions)
-- Depletions (4 permissions)
-- Reports (4 permissions)
-- System (5 permissions)
-- Director (8 permissions)
-
-**Standard Roles (8):**
-- Inventory Taker (3 permissions)
-- Inventory Administrator (8 permissions)
-- Recipe Builder (5 permissions)
-- Buyer (7 permissions)
-- Receiver (10 permissions)
-- Bartender (6 permissions)
-- Store Manager (21 permissions)
-- Director (17 permissions)
-
-**API Endpoints (13):**
-- `get_available_permissions` - Get all available permissions
-- `get_permissions_by_category` - Get permissions by category
-- `get_permission_categories` - Get all categories
-- `get_user_permissions` - Get user's effective permissions
-- `check_permission` - Check if user has permission
-- `get_role_permissions` - Get role's permissions
-- `create_custom_role` - Create new custom role
-- `update_role_permissions` - Update role permissions
-- `revoke_permission` - Revoke permission from role
-- `clone_role` - Clone role with permissions
-- `get_role_summary` - Get role summary
-- `search_permissions` - Search permissions
-- `bulk_assign_permissions` - Bulk assign permissions
-
-**Services:**
-- `constants.py` - Permission registry
-- `service.py` - Department permission service
-- `user.py` - User permission mixin
-- `query.py` - Permission queries
-- `roles.py` - Role management service
-
-**Client Scripts:**
-- `role.js` - Role form enhancements
-- `user.js` - User form with permissions (shared with Departments)
-
-**Test Coverage:**
-- `test_role_permission.py` - Role permission tests
-- `test_permissions_service.py` - Service tests
-- `test_roles.py` - Role management tests
-
-### Fixtures Created
-
-**Custom Fields (5):**
-- User → Department Permissions
-- User → Is Team Account
-- Role → Custom Permissions
-- Role → Is Custom Role
-- Role → Role Description
-
-**Standard Roles (8):**
-- All role definitions with initial permissions
-- Exported to `fixtures/standard_roles.json`
+### Phase 4: Scale & Optimize (ONGOING)
+**Timeline:** 2027+
+- Performance optimization
+- Mobile apps
+- AI features
+- Advanced integrations
 
 ---
 
-## Next Steps
+## 🎯 MVP Scope
 
-### Immediate Priorities
+### Must Have (Demo Critical)
 
-1. **Begin Products Domain** ⏳ NEXT
-   - Most complex domain (unit conversion, etc.)
-   - Required by Inventory, Procurement, Recipes
-   - See: `01-PRODUCTS/README.md`
+✅ **Company Management:**
+- Company directory (list, search, filter)
+- Company details (legal info, addresses, contacts)
+- Company status tracking
 
-2. **Review Architecture Documentation**
-   - Read: `00-ARCHITECTURE/01-App-Structure.md`
-   - Understand: Desk-only architecture
-   - Review: Module organization patterns
+✅ **Relationships:**
+- Banks (account info, encrypted fields)
+- Tax Entities (federal, state, local)
+- Insurance (policies, coverage, renewals)
+- Loans (lenders, amounts, terms)
+- Key Employees (contacts, roles)
 
-3. **Study Cross-Domain Integration**
-   - Read: `CROSS-DOMAIN-REFERENCE.md`
-   - Understand: How domains interact
-   - Review: Shared services and utilities
+✅ **Task Automation:**
+- Task templates (recurrence patterns)
+- Automatic task creation (daily scheduler)
+- Task assignment by role
+- Task dependencies
 
-### Learning Resources
+✅ **Review Periods (Month-End Close):**
+- Review period tracking per company
+- Status workflow (Open → In Progress → Controller Review → Executive Review → Closed)
+- Task completion tracking
+- Progress indicators
 
-**Essential Reading:**
-- **DEVELOPMENT-GUIDE.md** - Complete development roadmap
-- **TESTING-GUIDE.md** - Testing practices
-- **API-REFERENCE.md** - API documentation
-- **CROSS-DOMAIN-REFERENCE.md** - Integration patterns
+✅ **Dashboard:**
+- Active companies count
+- Open tasks by company
+- Review periods status
+- Projects in progress
+- Upcoming deadlines
 
-**Domain Implementation:**
-- **02-DEPARTMENTS/IMPLEMENTATION-SUMMARY.md** - Departments implementation
-- **11-PERMISSIONS/IMPLEMENTATION-SUMMARY.md** - Permissions implementation
-- **01-PRODUCTS/README.md** - Products roadmap
+### Out of Scope (Phase 2)
 
-**Architecture Reference:**
-- **00-ARCHITECTURE/** - All architecture documentation
-- **GIT-WORKFLOW.md** - Git practices
-- **FIXTURES-INFO.md** - Fixtures guide
+❌ Inventory management
+❌ Recipe costing
+❌ POS integration
+❌ Procurement/ordering
+❌ Advanced analytics
+❌ Multi-location
+❌ Budgeting
+❌ Payment processing
 
 ---
 
-## Support & Resources
+## 🔗 Key Resources
 
-### Getting Help
+### Internal
+- **Linear Project:** Company Management MVP
+- **Repository:** `apps/blkshp_os`
+- **Frontend Repository:** `thepass-frontend` (Next.js)
 
-**Common Issues:**
-- Check: `TESTING-GUIDE.md` - Troubleshooting section
-- Review: Error logs with `bench --site mysite logs`
-- Search: Implementation summaries for examples
-- Check: Test files for usage patterns
+### External
+- **Frappe Documentation:** https://docs.frappe.io/
+- **ERPNext Documentation:** https://docs.erpnext.com/
 
-**Development Questions:**
-- Review: `DEVELOPMENT-GUIDE.md`
-- Check: `AGENT-INSTRUCTIONS.md` (for AI agents)
-- Read: Domain README files
-- Review: Function documents
+---
+
+## 🚦 Current Status
+
+**Phase:** Phase 1 - Company Management MVP
+**Week:** Week 1 - Planning & Design
+**Current Task:** Set up Linear and begin Design-001 (Data Model)
+
+**Next Steps:**
+1. Review complete roadmap ([00-CURRENT/LINEAR-COMPLETE-ROADMAP.md](00-CURRENT/LINEAR-COMPLETE-ROADMAP.md))
+2. Set up Linear ([00-CURRENT/LINEAR-SETUP-GUIDE.md](00-CURRENT/LINEAR-SETUP-GUIDE.md))
+3. Start Design-001: Company Management Data Model
+4. Complete Week 1 planning (4 design issues)
+
+---
+
+## 📊 Success Metrics
+
+### Week 1 (Planning)
+- [ ] Linear organized and structured
+- [ ] All 4 design issues completed
+- [ ] Complete data model documented
+- [ ] API endpoints designed
+- [ ] Frontend architecture designed
+- [ ] Demo script written
+
+### Phase 1 (MVP - 4 weeks)
+- [ ] All features implemented
+- [ ] Company Management working end-to-end
+- [ ] Task automation functional
+- [ ] Dashboard showing real data
+- [ ] Demo delivered successfully
+- [ ] **Leadership approval received**
+
+---
+
+## 🆘 Need Help?
+
+**Documentation Issues:**
+- Check [00-CURRENT/REORGANIZATION-COMPLETE.md](00-CURRENT/REORGANIZATION-COMPLETE.md) for status
+- Check [CONSOLIDATED_DECISION_LOG.md](CONSOLIDATED_DECISION_LOG.md) for decision history
+
+**Development Issues:**
+- Check [GUIDES/Development-Guide.md](GUIDES/Development-Guide.md)
+- Check domain-specific README files (e.g., [02-DEPARTMENTS/README.md](02-DEPARTMENTS/README.md))
 
 **Architecture Questions:**
-- Read: `00-ARCHITECTURE/` documentation
-- Check: `CROSS-DOMAIN-REFERENCE.md`
-- Review: `PROJECT-CONTEXT.md` (in architecture docs)
-
-### Contributing
-
-**Before Starting:**
-1. Read this README completely
-2. Review `DEVELOPMENT-GUIDE.md`
-3. Read domain-specific README
-4. Check `GIT-WORKFLOW.md`
-5. Review existing implementations
-
-**Development Process:**
-1. Create feature branch
-2. Implement functionality
-3. Write tests
-4. Update documentation
-5. Submit pull request
+- Check [00-ARCHITECTURE/](00-ARCHITECTURE/) documentation
 
 ---
 
-## Summary
+## 📝 Notes
 
-**BLKSHP OS is:**
-- ✅ Unified inventory management platform
-- ✅ Frappe Desk-only application
-- ✅ Department-based architecture
-- ✅ 2D inventory model (Product + Department)
-- ✅ Hub-and-spoke unit conversion
-- ✅ Modular domain structure
+### Recent Changes (2025-11-16)
 
-**Current Status:**
-- ✅ Phase 1 Complete: Departments & Permissions
-- ⏳ Phase 2 Starting: Products Domain
-- 📚 Well-documented architecture and patterns
-- 🧪 Comprehensive test coverage
-- 🚀 Ready for core functionality development
+**Documentation Reorganized:**
+- Moved outdated MVP plans to `ARCHIVE/old-mvp-plans/`
+- Moved Phase 2 rewrite plans to `ARCHIVE/phase-2-plans/`
+- Moved operations modules to `FUTURE/Operations-Modules/`
+- Created `00-CURRENT/` for active work
+- Created comprehensive roadmap and Linear setup guide
 
-**Get Started:**
-1. Follow [First-Time Setup](#first-time-setup)
-2. Run [Quick Start](#quick-start)
-3. Read [Development Guide](#development-guide)
-4. Begin implementing!
+**Focus Shifted:**
+- FROM: Products/Inventory MVP
+- TO: Company Management MVP
+- Reason: Aligned with actual user needs (management company leadership & accounting teams)
+
+### Product Vision
+
+**The Pass** is being built in phases:
+
+1. **Company Management** (Current) - For management company leadership and accounting teams
+2. **Operations Modules** (Phase 2) - For property-level operations (inventory, recipes, etc.)
+3. **Platform Enhancement** (Phase 3) - Multi-location, advanced features
+4. **Scale & Optimize** (Phase 4) - Production readiness, mobile, AI
+
+Each phase builds on the previous, creating a comprehensive hospitality management platform.
 
 ---
 
-**Happy Coding! 🚀**
+**Let's build! 🚀**
 
-*For detailed implementation guides, see domain-specific documentation in their respective folders.*
-
+*For the complete roadmap and detailed planning, see [00-CURRENT/](00-CURRENT/)*
