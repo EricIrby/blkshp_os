@@ -218,7 +218,47 @@ This document provides the **complete roadmap** from MVP to final product releas
 **Dates:** 2025-11-20 to 2025-11-29 (Week 2)
 **Goal:** Core DocTypes and APIs functional
 
-### Feature-001: Enhanced Company DocType
+> **Note:** This milestone has been updated to reflect the normalized three-tier data architecture and task management system per Design-001 updates (2025-11-23). New DocTypes added: Property, Property Company Relationship, Task Default Template. Each relationship DocType now includes Task Setting child tables.
+
+### Feature-NEW: Property DocType (BLK-196)
+- **Type:** Feature
+- **Priority:** 🔴 Urgent
+- **Labels:** backend, database, company-mgmt, demo-critical
+- **Estimate:** 1 day
+- **Target Date:** 2025-11-24
+- **Dependencies:** Design-001
+- **Description:** Create Property DocType for operational units (hotels, restaurants, venues). Properties are where work happens, distinct from Companies (legal entities).
+- **Key Fields:** property_name, property_code, property_type, property_status, management dates
+- **Child Tables:** Property Address, Property Phone, Property Email, Property Contact, Property Department, Property Task Setting
+- **Acceptance Criteria:**
+  - Property can be created with all fields
+  - Department heads link to Key Employee Relationship
+  - Task settings configurable per property
+
+**Blocks:** Property Company Relationship, Key Employee updates
+
+---
+
+### Feature-NEW: Property Company Relationship DocType (BLK-197)
+- **Type:** Feature
+- **Priority:** 🔴 Urgent
+- **Labels:** backend, database, relationships, demo-critical
+- **Estimate:** 0.5 day
+- **Target Date:** 2025-11-24
+- **Dependencies:** Design-001, Property DocType
+- **Description:** Junction table linking Properties (operational units) to Companies (legal entities)
+- **Key Fields:** property (Link), company (Link), entity_role (free text), relationship dates
+- **Acceptance Criteria:**
+  - Can link multiple companies to one property
+  - Entity role describes company function (e.g., "Operating LP", "Liquor License Holder")
+  - Visible from both Property and Company views
+
+**Blocked By:** Property DocType
+**Blocks:** Key Employee updates
+
+---
+
+### Feature-001: Enhanced Company DocType (BLK-122)
 - **Type:** Feature
 - **Priority:** 🔴 Urgent
 - **Labels:** backend, database, company-mgmt, demo-critical
@@ -462,46 +502,71 @@ This document provides the **complete roadmap** from MVP to final product releas
 
 ---
 
-### Feature-007: Task Type DocType
+### Feature-007: Task Type DocType - Knowledge Base (BLK-128)
 - **Type:** Feature
 - **Priority:** 🔴 Urgent
 - **Labels:** backend, database, tasks, demo-critical
 - **Estimate:** 1 day
 - **Start Date:** 2025-11-24
-- **Target Date:** 2025-11-24
+- **Target Date:** 2025-11-26
 - **Dependencies:** Design-001
-- **Description:** Create master DocType for task templates with recurrence
-- **Fields:**
-  - Task name
-  - Description (Long Text)
-  - Recurrence pattern (Daily, Weekly, Bi-weekly, Monthly, Quarterly, Annual, On-Demand)
-  - Day of week (for weekly/bi-weekly) - Select
-  - Day of month (for monthly) - Int
-  - Month (for quarterly/annual) - Select
-  - Quarter (for quarterly) - Select
-  - Dependencies (Table - links to other Task Types)
-  - Assigned role (Link to Role)
-  - Estimated time (hours)
-  - Instructions (Long Text/Markdown)
-  - Category (Accounting, Finance, Operations, Compliance, HR, Other)
-  - Priority (Urgent, High, Medium, Low)
-  - Status (Active, Inactive)
-  - Created by
-  - Modified by
+- **Description:** Create Task Type DocType as a **knowledge base** for task definitions. This is NOT for scheduling - it contains instructions, checklists, and requirements. Actual scheduling is handled by Task Default Templates and Task Settings on relationship DocTypes.
+- **Key Fields:**
+  - task_code (unique), task_name, category, description
+  - instructions, checklist, resources (knowledge base content)
+  - requires_documentation, documentation_type, documentation_instructions
+  - default_priority, default_estimated_time, default_assigned_role
+  - is_active
+- **Child Table:** Task Type Checklist Item (item, is_required, order)
+- **Architecture Change:** Scheduling fields REMOVED - now handled by Task Settings on each DocType
 - **Deliverables:**
-  - [ ] DocType created
-  - [ ] Recurrence patterns working
-  - [ ] Dependencies as child table
-  - [ ] Can create task templates
+  - [ ] DocType created (knowledge base only)
+  - [ ] Checklist items child table
+  - [ ] Instructions render as Markdown
+  - [ ] No scheduling/recurrence fields
   - [ ] Unit tests
 - **Acceptance Criteria:**
-  - DocType functional
-  - All recurrence patterns supported
-  - Dependencies can be set
-  - Validation working
+  - Task Type serves as knowledge base
+  - No scheduling/recurrence fields
+  - Linked from Task Default Templates and Task Settings
 
 **Blocked By:** Design-001
-**Blocks:** Feature-008, Feature-017
+**Blocks:** Task Default Template, Feature-008, Feature-017
+
+---
+
+### Feature-NEW: Task Default Template DocType (BLK-198)
+- **Type:** Feature
+- **Priority:** 🟠 High
+- **Labels:** backend, database, tasks, demo-critical
+- **Estimate:** 1 day
+- **Target Date:** 2025-11-27
+- **Dependencies:** Design-001, Feature-007 (Task Type)
+- **Description:** Create Task Default Template DocType - defines auto-apply rules for task settings when specific record types are created.
+- **Key Fields:**
+  - template_name
+  - applies_to_doctype (Bank Account, Tax Obligation, Insurance Policy, Loan Relationship, Company, Property)
+  - subtype_field, subtype_value (for filtering by account_type, obligation_type, etc.)
+  - task_type (Link)
+  - default_recurrence, default_day_of_week, default_day_of_month
+  - default_due_offset_days, trigger_field
+  - default_assigned_role, requires_documentation
+  - is_active
+- **Example Templates:**
+  - "Checking Account - Bank Reconciliation" → When Bank Account (Checking) created, add monthly Bank Reconciliation task
+  - "Sales Tax - Tax Filing" → When Tax Obligation (Sales Tax) created, add monthly Tax Filing task
+- **Deliverables:**
+  - [ ] DocType created
+  - [ ] Server-side hook to apply templates on record creation
+  - [ ] Validation rules
+  - [ ] Unit tests
+- **Acceptance Criteria:**
+  - Templates auto-apply when matching records are created
+  - Subtype filtering works (e.g., only Checking accounts)
+  - Settings can be overridden after creation
+
+**Blocked By:** Feature-007 (Task Type)
+**Blocks:** Feature-017 (Task Automation)
 
 ---
 

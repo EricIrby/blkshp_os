@@ -10,23 +10,26 @@
 1. [Overview](#overview)
 2. [DocType Schemas](#doctype-schemas)
    - [Company DocType](#1-company-doctype-enhanced)
-   - [Banking Institution](#2-banking-institution-doctype)
-   - [Company Bank Relationship](#3-company-bank-relationship-doctype)
-   - [Bank Account](#4-bank-account-doctype)
-   - [Tax Authority](#5-tax-authority-doctype)
-   - [Company Tax Authority Relationship](#6-company-tax-authority-relationship-doctype)
-   - [Tax Obligation](#7-tax-obligation-doctype)
-   - [Insurance Broker](#8-insurance-broker-doctype)
-   - [Insurance Carrier](#9-insurance-carrier-doctype)
-   - [Premium Finance Provider](#10-premium-finance-provider-doctype)
-   - [Insurance Policy](#11-insurance-policy-doctype)
-   - [Loan Relationship](#12-loan-relationship-doctype)
-   - [Key Employee Relationship](#13-key-employee-relationship-doctype)
-   - [Task Type](#14-task-type-doctype)
-   - [Review Period](#15-review-period-doctype)
-   - [Project](#16-project-doctype)
-   - [Platform Feature](#17-platform-feature-doctype)
-   - [Subscription Plan](#18-subscription-plan-doctype)
+   - [Property DocType](#2-property-doctype)
+   - [Property Company Relationship](#3-property-company-relationship-doctype)
+   - [Banking Institution](#4-banking-institution-doctype)
+   - [Company Bank Relationship](#5-company-bank-relationship-doctype)
+   - [Bank Account](#6-bank-account-doctype)
+   - [Tax Authority](#7-tax-authority-doctype)
+   - [Company Tax Authority Relationship](#8-company-tax-authority-relationship-doctype)
+   - [Tax Obligation](#9-tax-obligation-doctype)
+   - [Insurance Broker](#10-insurance-broker-doctype)
+   - [Insurance Carrier](#11-insurance-carrier-doctype)
+   - [Premium Finance Provider](#12-premium-finance-provider-doctype)
+   - [Insurance Policy](#13-insurance-policy-doctype)
+   - [Loan Relationship](#14-loan-relationship-doctype)
+   - [Key Employee Relationship](#15-key-employee-relationship-doctype)
+   - [Task Type](#16-task-type-doctype-knowledge-base)
+   - [Task Default Template](#17-task-default-template-doctype)
+   - [Review Period](#18-review-period-doctype)
+   - [Project](#19-project-doctype)
+   - [Platform Feature](#20-platform-feature-doctype)
+   - [Subscription Plan](#21-subscription-plan-doctype)
 3. [Feature Registry](#feature-registry)
 4. [Entity Relationships](#entity-relationships)
 5. [Validation Rules](#validation-rules)
@@ -40,15 +43,22 @@
 This document defines the complete data model for the Company Management MVP. All schemas follow Frappe Framework v15+ conventions and best practices.
 
 **Data Model Scope:**
-- **18 Main DocTypes** (Company, Banking Institution, Company Bank Relationship, Bank Account, Tax Authority, Company Tax Authority Relationship, Tax Obligation, Insurance Broker, Insurance Carrier, Premium Finance Provider, Insurance Policy, Loan Relationship, Key Employee Relationship, Task Type, Review Period, Project, Platform Feature, Subscription Plan)
-- **24 Child Tables** (for addresses, contacts, documents, phone numbers, emails, websites, company features, covered entities, covered locations, filing documents, loan amortization schedules, plan features, dependencies, milestones, and tasks)
-- **Total: 42 DocTypes** designed with normalized database structure following 3rd normal form and feature-based subscription architecture
+- **21 Main DocTypes** (Company, Property, Property Company Relationship, Banking Institution, Company Bank Relationship, Bank Account, Tax Authority, Company Tax Authority Relationship, Tax Obligation, Insurance Broker, Insurance Carrier, Premium Finance Provider, Insurance Policy, Loan Relationship, Key Employee Relationship, Task Type, Task Default Template, Review Period, Project, Platform Feature, Subscription Plan)
+- **40 Child Tables** (for addresses, contacts, documents, phone numbers, emails, websites, company features, company task settings, property departments, property task settings, covered entities, covered locations, filing documents, tax obligation task settings, insurance policy task settings, loan amortization schedules, loan task settings, bank account task settings, plan features, feature dependencies, project milestones, project tasks, review period tasks, and task type checklists)
+- **Total: 61 DocTypes** designed with normalized database structure following 3rd normal form and feature-based subscription architecture
 
 **Normalized Architecture:**
 The data model follows a consistent three-tier pattern for shared entities:
 1. **Master Entities** (Banking Institution, Tax Authority, Insurance Broker, Insurance Carrier, Premium Finance Provider) - Shared across companies
-2. **Junction Entities** (Company Bank Relationship, Company Tax Authority Relationship) - Link companies to master entities
+2. **Junction Entities** (Company Bank Relationship, Company Tax Authority Relationship, Property Company Relationship) - Link companies to master entities or properties
 3. **Specific Records** (Bank Account, Tax Obligation, Insurance Policy) - Company-specific instances
+
+**Property vs Company Distinction:**
+- **Property** = Operational unit (where work happens, how staff/operations are organized). Examples: "The Stagecoach Inn and Restaurant", "The Ruby Hotel"
+- **Company** = Legal entity (holds relationships with banks, tax authorities, insurance, vendors). Examples: "Stagecoach 1943, LP", "RRTX Lake Creek Hotel, LP"
+- A single Property typically has multiple legal entities (Operating LP, General Partnership, Liquor License Holder, etc.)
+- Tasks and Review Periods belong to Companies (legal entities), but are visible when navigating by Property
+- Employees are legally employed by Companies but work at Properties
 
 **Feature-Based Subscription Architecture:**
 The platform implements a flexible feature-based subscription system that allows granular control over functionality:
@@ -193,6 +203,19 @@ Plans are pre-configured bundles of features (e.g., "Starter", "Professional", "
 | `trial_end_date` | Date | Trial End Date | No | - | If source=Trial, when trial ends |
 | `notes` | Small Text | Notes | No | - | Notes about this feature enablement |
 
+**Company Task Setting** (Child Table: `Company Task Setting`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `task_type` | Link | Task Type | Yes | - | Link to Task Type (e.g., AP Review, Check Run, Financial Close) |
+| `is_enabled` | Check | Is Enabled | No | 1 | Whether this task is active for this company |
+| `recurrence` | Select | Recurrence | Yes | - | Daily, Weekly, Bi-weekly, Monthly, Quarterly, Annual |
+| `day_of_week` | Select | Day of Week | No | - | Monday-Sunday (for weekly recurrence) |
+| `day_of_month` | Int | Day of Month | No | - | 1-31 (for monthly). Use 31 for last day. |
+| `due_offset_days` | Int | Due Offset (days) | No | 0 | Days after trigger date task is due |
+| `assigned_role` | Link | Assigned Role | No | - | Link to Role |
+| `requires_documentation` | Check | Requires Documentation | No | 0 | Must upload document when completing |
+| `notes` | Small Text | Notes | No | - | Task-specific configuration notes |
+
 #### Validation Rules
 1. `ein` must be 9 digits (format: XX-XXXXXXX)
 2. `company_code` must be 2-5 uppercase alphanumeric characters
@@ -236,7 +259,179 @@ Plans are pre-configured bundles of features (e.g., "Starter", "Professional", "
 
 ---
 
-### 2. Banking Institution DocType
+### 2. Property DocType
+
+**Module:** Director
+**DocType Name:** Property
+**Naming:** `field:property_code`
+**Features:** Feature-Property
+
+#### Fields
+
+| Field Name | Field Type | Label | Required | Unique | Default | Description |
+|------------|-----------|-------|----------|--------|---------|-------------|
+| `property_name` | Data | Property Name | Yes | No | - | Public-facing property name |
+| `property_code` | Data | Property Code | Yes | Yes | - | Internal code (e.g., "STAGE", "RUBY") |
+| `property_type` | Select | Property Type | Yes | No | - | Hotel, Restaurant, Bar, Venue/Event Space, Other |
+| `property_type_other` | Data | Property Type (Other) | Depends | No | - | Required if property_type = "Other" |
+| `property_status` | Select | Property Status | Yes | No | "Active" | Pre-Opening, Active, Inactive, Closed |
+| `management_start_date` | Date | Management Start Date | No | No | - | When management of this property began |
+| `management_end_date` | Date | Management End Date | No | No | - | When management ended (if applicable) |
+| **Section: Additional** |
+| `description` | Small Text | Description | No | No | - | General notes/description |
+
+#### Child Tables
+
+**Property Address** (Child Table: `Property Address`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `address_type` | Select | Address Type | Yes | - | Physical, Mailing, Shipping, Other |
+| `address_label` | Data | Address Label | No | - | Custom label (e.g., "Main Building", "Annex") |
+| `street` | Data | Street | Yes | - | Street address |
+| `suite_unit` | Data | Suite/Unit | No | - | Suite, unit, or building number |
+| `city` | Data | City | Yes | - | City |
+| `state` | Data | State | Yes | - | State or province |
+| `zip_code` | Data | ZIP Code | Yes | - | Postal/ZIP code |
+| `country` | Link | Country | Yes | "United States" | Link to Country |
+| `is_primary` | Check | Is Primary | No | 0 | Mark as primary address |
+
+**Property Phone** (Child Table: `Property Phone`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `phone_type` | Select | Phone Type | Yes | - | Main, Reservations, Front Desk, Kitchen, Fax, Other |
+| `phone_label` | Data | Phone Label | No | - | Custom label |
+| `phone_number` | Data | Phone Number | Yes | - | Phone number |
+| `extension` | Data | Extension | No | - | Phone extension |
+| `is_primary` | Check | Is Primary | No | 0 | Mark as primary phone |
+
+**Property Email** (Child Table: `Property Email`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `email_type` | Select | Email Type | Yes | - | General, Reservations, Events, Catering, Management, Other |
+| `email_label` | Data | Email Label | No | - | Custom label |
+| `email_address` | Data | Email Address | Yes | - | Email address |
+| `is_primary` | Check | Is Primary | No | 0 | Mark as primary email |
+
+**Property Contact** (Child Table: `Property Contact`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `contact_name` | Data | Contact Name | Yes | - | Full name of contact |
+| `title` | Data | Title | No | - | Job title or role |
+| `department` | Data | Department | No | - | Department |
+| `email` | Data | Email | No | - | Contact email address |
+| `phone` | Data | Phone | No | - | Contact phone number |
+| `extension` | Data | Extension | No | - | Phone extension |
+| `is_primary` | Check | Is Primary | No | 0 | Mark as primary contact |
+| `notes` | Small Text | Notes | No | - | Additional notes |
+
+**Property Department** (Child Table: `Property Department`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `department_name` | Data | Department Name | Yes | - | Department name (e.g., "Front Desk", "Kitchen", "Housekeeping") |
+| `department_head` | Link | Department Head | No | - | Link to Key Employee Relationship |
+| `notes` | Small Text | Notes | No | - | Additional notes |
+
+**Property Task Setting** (Child Table: `Property Task Setting`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `task_type` | Link | Task Type | Yes | - | Link to Task Type (e.g., Daily Revenue Report, Inventory Count) |
+| `is_enabled` | Check | Is Enabled | No | 1 | Whether this task is active for this property |
+| `recurrence` | Select | Recurrence | Yes | - | Daily, Weekly, Bi-weekly, Monthly, Quarterly, Annual |
+| `day_of_week` | Select | Day of Week | No | - | Monday-Sunday (for weekly recurrence) |
+| `day_of_month` | Int | Day of Month | No | - | 1-31 (for monthly). Use 31 for last day. |
+| `time_of_day` | Time | Time of Day | No | - | Time task should be completed (for daily tasks) |
+| `assigned_role` | Link | Assigned Role | No | - | Link to Role |
+| `assigned_department` | Data | Assigned Department | No | - | Department responsible (references Property Department) |
+| `requires_documentation` | Check | Requires Documentation | No | 0 | Must upload document when completing |
+| `notes` | Small Text | Notes | No | - | Task-specific configuration notes |
+
+#### Validation Rules
+1. `property_code` must be unique, 2-10 uppercase alphanumeric characters
+2. If `property_type` = "Other", `property_type_other` is required
+3. `management_end_date` must be >= `management_start_date` if provided
+4. `property_status` should be "Closed" if `management_end_date` is set and in the past
+5. **Property Address child table:**
+   - At least one address with `is_primary` = 1 recommended
+   - Only one address can have `is_primary` = 1
+6. **Property Phone child table:**
+   - Only one phone can have `is_primary` = 1
+7. **Property Email child table:**
+   - `email_address` must be valid email format
+   - Only one email can have `is_primary` = 1
+8. **Property Contact child table:**
+   - Contact `email` must be valid email format if provided
+   - Only one contact can have `is_primary` = 1
+
+#### Permissions
+- **System Manager:** Full access
+- **Accounting Manager:** Read, Write, Create
+- **Accountant:** Read only
+
+#### Settings
+```json
+{
+  "autoname": "field:property_code",
+  "quick_entry": 1,
+  "track_changes": 1,
+  "track_seen": 1,
+  "search_fields": "property_name,property_code",
+  "title_field": "property_name",
+  "sort_field": "property_name",
+  "sort_order": "ASC"
+}
+```
+
+---
+
+### 3. Property Company Relationship DocType
+
+**Module:** Director
+**DocType Name:** Property Company Relationship
+**Naming:** Auto-generated
+**Features:** Feature-Property
+**Note:** Links a Property to its associated legal entities (Companies) with role descriptions
+
+#### Fields
+
+| Field Name | Field Type | Label | Required | Unique | Default | Description |
+|------------|-----------|-------|----------|--------|---------|-------------|
+| `property` | Link | Property | Yes | No | - | Link to Property |
+| `company` | Link | Company | Yes | No | - | Link to Company |
+| `entity_role` | Data | Entity Role | Yes | No | - | Role description (e.g., "Operating LP", "General Partnership", "Liquor License Holder") |
+| `relationship_start_date` | Date | Start Date | No | No | - | When this relationship began |
+| `relationship_end_date` | Date | End Date | No | No | - | When this relationship ended (if applicable) |
+| **Section: Additional** |
+| `notes` | Small Text | Notes | No | No | - | Additional notes about this relationship |
+
+#### Child Tables
+None
+
+#### Validation Rules
+1. Combination of `property` + `company` should be unique
+2. `relationship_end_date` must be >= `relationship_start_date` if provided
+3. `entity_role` is required (free text describing the company's role for this property)
+
+#### Permissions
+- **System Manager:** Full access
+- **Accounting Manager:** Full access
+- **Accountant:** Read only
+
+#### Settings
+```json
+{
+  "autoname": "format:PCR-{property}-{####}",
+  "track_changes": 1,
+  "track_seen": 1,
+  "search_fields": "property,company,entity_role",
+  "title_field": "company",
+  "sort_field": "property",
+  "sort_order": "ASC"
+}
+```
+
+---
+
+### 4. Banking Institution DocType
 
 **Module:** Director
 **DocType Name:** Banking Institution
@@ -316,7 +511,7 @@ Plans are pre-configured bundles of features (e.g., "Starter", "Professional", "
 
 ---
 
-### 3. Company Bank Relationship DocType
+### 5. Company Bank Relationship DocType
 
 **Module:** Director
 **DocType Name:** Company Bank Relationship
@@ -366,7 +561,7 @@ None (Accounts are stored in separate Bank Account DocType)
 
 ---
 
-### 4. Bank Account DocType
+### 6. Bank Account DocType
 
 **Module:** Director
 **DocType Name:** Bank Account
@@ -406,6 +601,20 @@ None (Accounts are stored in separate Bank Account DocType)
 | `external_url` | Data | External URL | No | - | Link to external document (if not uploaded) |
 | `notes` | Small Text | Notes | No | - | Additional notes |
 
+**Bank Account Task Setting** (Child Table: `Bank Account Task Setting`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `task_type` | Link | Task Type | Yes | - | Link to Task Type (e.g., Bank Reconciliation) |
+| `is_enabled` | Check | Is Enabled | No | 1 | Whether this task is active for this account |
+| `recurrence` | Select | Recurrence | Yes | - | Weekly, Bi-weekly, Monthly, Quarterly, Annual |
+| `day_of_week` | Select | Day of Week | No | - | Monday-Sunday (for weekly recurrence) |
+| `day_of_month` | Int | Day of Month | No | - | 1-31 (for monthly). Use 31 for last day. |
+| `trigger_field_value` | Int | Statement Close Day | No | - | Day of month statement closes (overrides day_of_month for reconciliation) |
+| `due_offset_days` | Int | Due Offset (days) | No | 15 | Days after trigger date task is due |
+| `assigned_role` | Link | Assigned Role | No | - | Link to Role |
+| `requires_documentation` | Check | Requires Documentation | No | 1 | Must upload reconciliation when completing |
+| `notes` | Small Text | Notes | No | - | Task-specific configuration notes |
+
 #### Validation Rules
 1. `account_number` must be encrypted
 2. `routing_number` must be 9 digits if provided
@@ -434,7 +643,7 @@ None (Accounts are stored in separate Bank Account DocType)
 
 ---
 
-### 5. Tax Authority DocType
+### 7. Tax Authority DocType
 
 **Module:** Director
 **DocType Name:** Tax Authority
@@ -513,7 +722,7 @@ None (Accounts are stored in separate Bank Account DocType)
 
 ---
 
-### 6. Company Tax Authority Relationship DocType
+### 8. Company Tax Authority Relationship DocType
 
 **Module:** Director
 **DocType Name:** Company Tax Authority Relationship
@@ -562,7 +771,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 
 ---
 
-### 7. Tax Obligation DocType
+### 9. Tax Obligation DocType
 
 **Module:** Director
 **DocType Name:** Tax Obligation
@@ -605,10 +814,24 @@ None (Obligations are stored in separate Tax Obligation DocType)
 | `external_url` | Data | External URL | No | - | Link to external document |
 | `notes` | Small Text | Notes | No | - | Additional notes |
 
+**Tax Obligation Task Setting** (Child Table: `Tax Obligation Task Setting`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `task_type` | Link | Task Type | Yes | - | Link to Task Type (e.g., Tax Filing, Tax Payment) |
+| `is_enabled` | Check | Is Enabled | No | 1 | Whether this task is active for this obligation |
+| `recurrence` | Select | Recurrence | No | - | Weekly, Bi-weekly, Monthly, Quarterly, Annual, As Needed (inherits from filing_frequency if blank) |
+| `due_offset_days` | Int | Due Offset (days) | No | 0 | Days before filing due date task should be completed |
+| `reminder_days_before` | Int | Reminder Days Before | No | 7 | Days before due date to send reminder |
+| `assigned_role` | Link | Assigned Role | No | - | Link to Role |
+| `requires_documentation` | Check | Requires Documentation | No | 1 | Must upload filing confirmation when completing |
+| `documentation_type` | Data | Documentation Type | No | - | Type of document required (Filing Confirmation, Payment Confirmation, etc.) |
+| `notes` | Small Text | Notes | No | - | Task-specific configuration notes |
+
 #### Validation Rules
 1. `responsible_party_email` must be valid email format if provided
 2. `next_due_date` should be >= today's date if obligation is Active
 3. In Tax Filing Document child table: either `file_attachment` or `external_url` should be provided
+4. In Tax Obligation Task Setting: `due_offset_days` must be >= 0
 
 #### Permissions
 - **System Manager:** Full access
@@ -630,7 +853,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 
 ---
 
-### 8. Insurance Broker DocType
+### 10. Insurance Broker DocType
 
 **Module:** Director
 **DocType Name:** Insurance Broker
@@ -699,7 +922,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 
 ---
 
-### 9. Insurance Carrier DocType
+### 11. Insurance Carrier DocType
 
 **Module:** Director
 **DocType Name:** Insurance Carrier
@@ -769,7 +992,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 
 ---
 
-### 10. Premium Finance Provider DocType
+### 12. Premium Finance Provider DocType
 
 **Module:** Director
 **DocType Name:** Premium Finance Provider
@@ -822,7 +1045,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 
 ---
 
-### 11. Insurance Policy DocType
+### 13. Insurance Policy DocType
 
 **Module:** Director
 **DocType Name:** Insurance Policy
@@ -890,6 +1113,19 @@ None (Obligations are stored in separate Tax Obligation DocType)
 | `external_url` | Data | External URL | No | - | Link to external document |
 | `notes` | Small Text | Notes | No | - | Additional notes |
 
+**Insurance Policy Task Setting** (Child Table: `Insurance Policy Task Setting`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `task_type` | Link | Task Type | Yes | - | Link to Task Type (e.g., Policy Renewal Review, COI Request) |
+| `is_enabled` | Check | Is Enabled | No | 1 | Whether this task is active for this policy |
+| `trigger_type` | Select | Trigger Type | Yes | - | Before Expiration, Before Renewal, Payment Due, Annual Review |
+| `days_before_trigger` | Int | Days Before Trigger | No | 60 | Days before trigger date task should be created |
+| `recurrence` | Select | Recurrence | No | - | One-time, Monthly, Quarterly, Annual (for ongoing reviews) |
+| `assigned_role` | Link | Assigned Role | No | - | Link to Role |
+| `requires_documentation` | Check | Requires Documentation | No | 0 | Must upload document when completing |
+| `documentation_type` | Data | Documentation Type | No | - | Type required (Renewal Confirmation, Updated COI, etc.) |
+| `notes` | Small Text | Notes | No | - | Task-specific configuration notes |
+
 #### Validation Rules
 1. `policy_number` must be unique
 2. `expiration_date` must be >= `effective_date`
@@ -898,6 +1134,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 5. `coverage_amount`, `deductible`, `annual_premium` must be >= 0
 6. If `is_financed` = 1, `premium_finance_provider` is required
 7. At least one covered entity or covered location should be specified
+8. In Insurance Policy Task Setting: `days_before_trigger` must be >= 0
 
 #### Permissions
 - **System Manager:** Full access
@@ -919,7 +1156,7 @@ None (Obligations are stored in separate Tax Obligation DocType)
 
 ---
 
-### 12. Loan Relationship DocType
+### 14. Loan Relationship DocType
 
 **Module:** Director
 **DocType Name:** Loan Relationship
@@ -969,6 +1206,19 @@ None (Obligations are stored in separate Tax Obligation DocType)
 | `actual_payment_date` | Date | Actual Payment Date | No | - | Date payment was actually made |
 | `actual_payment_amount` | Currency | Actual Payment Amount | No | 0.00 | Actual amount paid |
 | `variance` | Currency | Variance | No | 0.00 | Difference between scheduled and actual payment (read-only, auto-calculated) |
+
+**Loan Task Setting** (Child Table: `Loan Task Setting`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `task_type` | Link | Task Type | Yes | - | Link to Task Type (e.g., Loan Payment, Balance Review) |
+| `is_enabled` | Check | Is Enabled | No | 1 | Whether this task is active for this loan |
+| `trigger_type` | Select | Trigger Type | Yes | - | Before Payment Due, Before Maturity, Quarterly Review, Annual Review |
+| `days_before_trigger` | Int | Days Before Trigger | No | 7 | Days before trigger date task should be created |
+| `recurrence` | Select | Recurrence | No | - | Per Payment, Monthly, Quarterly, Annual, One-time |
+| `assigned_role` | Link | Assigned Role | No | - | Link to Role |
+| `requires_documentation` | Check | Requires Documentation | No | 0 | Must upload document when completing |
+| `documentation_type` | Data | Documentation Type | No | - | Type required (Payment Confirmation, Covenant Compliance, etc.) |
+| `notes` | Small Text | Notes | No | - | Task-specific configuration notes |
 
 #### Validation Rules
 1. `company_bank_relationship` must be valid and active
@@ -1098,7 +1348,7 @@ This DocType supports granular feature-based enablement. Features are enabled pe
 
 ---
 
-### 13. Key Employee Relationship DocType
+### 15. Key Employee Relationship DocType
 
 **Module:** Director
 **DocType Name:** Key Employee Relationship
@@ -1109,10 +1359,11 @@ This DocType supports granular feature-based enablement. Features are enabled pe
 
 | Field Name | Field Type | Label | Required | Unique | Default | Description |
 |------------|-----------|-------|----------|--------|---------|-------------|
-| `company` | Link | Company | Yes | No | - | Link to Company |
+| `company` | Link | Company | Yes | No | - | Link to Company (legal employer for W-2/payroll) |
+| `property` | Link | Property | No | No | - | Link to Property (where employee works) |
 | `employee_name` | Data | Employee Name | Yes | No | - | Full name of employee |
 | `role_title` | Data | Role/Title | Yes | No | - | Job title or role |
-| `department` | Data | Department | No | No | - | Department name |
+| `department` | Data | Department | No | No | - | Department name (matches Property Department if applicable) |
 | **Section: Contact Information** |
 | `email` | Data | Email | Yes | No | - | Employee email address |
 | `phone_work` | Data | Work Phone | No | No | - | Work phone number |
@@ -1157,65 +1408,63 @@ None
 
 ---
 
-### 14. Task Type DocType
+### 16. Task Type DocType (Knowledge Base)
 
 **Module:** Director
 **DocType Name:** Task Type
-**Naming:** `field:task_name`
+**Naming:** `field:task_code`
 **Features:** Feature-007
+**Note:** Knowledge base / template library for task definitions. Contains instructions, requirements, and default settings. Actual task scheduling is configured via Task Default Template and relationship-specific Task Settings.
 
 #### Fields
 
 | Field Name | Field Type | Label | Required | Unique | Default | Description |
 |------------|-----------|-------|----------|--------|---------|-------------|
-| `task_name` | Data | Task Name | Yes | Yes | - | Unique task identifier |
-| `description` | Long Text | Description | No | No | - | Detailed task description |
-| `category` | Select | Category | Yes | No | - | Accounting, Finance, Operations, Compliance, HR, Other |
-| `priority` | Select | Priority | Yes | No | "Medium" | Urgent, High, Medium, Low |
-| `status` | Select | Status | Yes | No | "Active" | Active, Inactive |
-| **Section: Recurrence** |
-| `recurrence_pattern` | Select | Recurrence Pattern | Yes | No | - | Daily, Weekly, Bi-weekly, Monthly, Quarterly, Annual, On-Demand |
-| `day_of_week` | Select | Day of Week | No | No | - | Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday (for Weekly/Bi-weekly) |
-| `day_of_month` | Int | Day of Month | No | No | - | 1-31 (for Monthly) |
-| `month` | Select | Month | No | No | - | January-December (for Annual) |
-| `quarter` | Select | Quarter | No | No | - | Q1, Q2, Q3, Q4 (for Quarterly) |
-| **Section: Assignment** |
-| `assigned_role` | Link | Assigned Role | No | No | - | Link to Role |
-| `estimated_time` | Float | Estimated Time (hours) | No | No | 0.0 | Estimated completion time |
+| `task_code` | Data | Task Code | Yes | Yes | - | Unique identifier (e.g., "bank_reconciliation", "tax_filing") |
+| `task_name` | Data | Task Name | Yes | No | - | Display name (e.g., "Bank Reconciliation") |
+| `category` | Select | Category | Yes | No | - | Accounting, Finance, Compliance, Operations, HR, Other |
+| `description` | Long Text | Description | No | No | - | What this task is and why it's important |
+| **Section: Instructions** |
 | `instructions` | Long Text | Instructions | No | No | - | Step-by-step instructions (Markdown) |
-| **Section: Metadata** |
-| `created_by` | Link | Created By | No | No | - | Link to User (auto-filled) |
-| `modified_by` | Link | Modified By | No | No | - | Link to User (auto-filled) |
+| `checklist` | Long Text | Checklist | No | No | - | Checklist items (Markdown) |
+| `resources` | Long Text | Resources | No | No | - | Links to helpful resources, documentation |
+| **Section: Completion Requirements** |
+| `requires_documentation` | Check | Requires Documentation | No | No | 0 | Must upload document when completing |
+| `documentation_type` | Data | Documentation Type | No | No | - | What type (Statement, Filing Confirmation, Payment Confirmation, etc.) |
+| `documentation_instructions` | Small Text | Documentation Instructions | No | No | - | What document to upload |
+| **Section: Defaults** |
+| `default_priority` | Select | Default Priority | No | No | "Medium" | Urgent, High, Medium, Low |
+| `default_estimated_time` | Float | Default Estimated Time (hours) | No | No | 0.0 | Typical time to complete |
+| `default_assigned_role` | Link | Default Assigned Role | No | No | - | Link to Role |
+| **Section: Status** |
+| `is_active` | Check | Is Active | No | No | 1 | Whether this task type is in use |
 
 #### Child Tables
 
-**Task Dependencies** (Child Table: `Task Type Dependency`)
-| Field Name | Field Type | Label | Required | Description |
-|------------|-----------|-------|----------|-------------|
-| `prerequisite_task` | Link | Prerequisite Task | Yes | Link to Task Type that must complete first |
-| `dependency_type` | Select | Dependency Type | Yes | Finish-to-Start, Start-to-Start, Finish-to-Finish |
+**Task Type Checklist Item** (Child Table: `Task Type Checklist Item`)
+| Field Name | Field Type | Label | Required | Default | Description |
+|------------|-----------|-------|----------|---------|-------------|
+| `item` | Data | Checklist Item | Yes | - | Item to check off |
+| `is_required` | Check | Is Required | No | 1 | Must complete this item |
+| `order` | Int | Order | No | 0 | Display order |
 
 #### Validation Rules
-1. `day_of_week` required if `recurrence_pattern` is Weekly or Bi-weekly
-2. `day_of_month` required if `recurrence_pattern` is Monthly (1-31)
-3. `month` required if `recurrence_pattern` is Annual
-4. `quarter` required if `recurrence_pattern` is Quarterly
-5. `estimated_time` must be > 0 if provided
-6. Prevent circular dependencies in Task Dependencies child table
-7. `task_name` must be unique
+1. `task_code` must be unique, lowercase with underscores
+2. `task_name` must be provided
+3. `default_estimated_time` must be >= 0 if provided
 
 #### Permissions
 - **System Manager:** Full access
 - **Accounting Manager:** Full access
-- **Accountant:** Read, Create
+- **Accountant:** Read only
 
 #### Settings
 ```json
 {
-  "autoname": "field:task_name",
+  "autoname": "field:task_code",
   "track_changes": 1,
   "track_seen": 1,
-  "search_fields": "task_name,category",
+  "search_fields": "task_code,task_name,category",
   "title_field": "task_name",
   "sort_field": "task_name",
   "sort_order": "ASC"
@@ -1224,7 +1473,68 @@ None
 
 ---
 
-### 15. Review Period DocType
+### 17. Task Default Template DocType
+
+**Module:** Director
+**DocType Name:** Task Default Template
+**Naming:** Auto-generated
+**Features:** Feature-007
+**Note:** Defines default task settings that auto-apply when specific record types are created. For example, when a new Checking account is created, auto-create a Bank Reconciliation task with default settings.
+
+#### Fields
+
+| Field Name | Field Type | Label | Required | Unique | Default | Description |
+|------------|-----------|-------|----------|--------|---------|-------------|
+| `template_name` | Data | Template Name | Yes | No | - | Descriptive name (e.g., "Checking Account - Bank Reconciliation") |
+| **Section: Trigger Conditions** |
+| `applies_to_doctype` | Select | Applies To DocType | Yes | No | - | Bank Account, Tax Obligation, Insurance Policy, Loan Relationship, Company, Property |
+| `subtype_field` | Data | Subtype Field | No | No | - | Field to check for subtype (e.g., "account_type", "obligation_type") |
+| `subtype_value` | Data | Subtype Value | No | No | - | Value to match (e.g., "Checking", "Sales Tax"). Leave blank for all. |
+| **Section: Task Configuration** |
+| `task_type` | Link | Task Type | Yes | No | - | Link to Task Type (knowledge base) |
+| `is_enabled_by_default` | Check | Enabled by Default | No | No | 1 | Auto-enable when record created |
+| **Section: Schedule Defaults** |
+| `default_recurrence` | Select | Default Recurrence | Yes | No | - | Weekly, Bi-weekly, Monthly, Quarterly, Annual |
+| `default_day_of_week` | Select | Default Day of Week | No | No | - | Monday-Sunday (for weekly) |
+| `default_day_of_month` | Int | Default Day of Month | No | No | - | 1-31 (for monthly). Use 31 for last day. |
+| `default_due_offset_days` | Int | Default Due Offset (days) | No | No | 0 | Days after trigger date task is due |
+| `trigger_field` | Data | Trigger Field | No | No | - | Field that determines task trigger date (e.g., "statement_close_day", "expiration_date") |
+| **Section: Assignment** |
+| `default_assigned_role` | Link | Default Assigned Role | No | No | - | Link to Role |
+| **Section: Requirements** |
+| `requires_documentation` | Check | Requires Documentation | No | No | 0 | Override Task Type setting |
+| **Section: Status** |
+| `is_active` | Check | Is Active | No | No | 1 | Whether this template is in use |
+
+#### Child Tables
+None
+
+#### Validation Rules
+1. If `subtype_field` is provided, `subtype_value` should also be provided (or vice versa)
+2. `default_day_of_month` must be 1-31 if provided
+3. `default_due_offset_days` must be >= 0
+
+#### Permissions
+- **System Manager:** Full access
+- **Accounting Manager:** Full access
+- **Accountant:** Read only
+
+#### Settings
+```json
+{
+  "autoname": "format:TDT-{####}",
+  "track_changes": 1,
+  "track_seen": 1,
+  "search_fields": "template_name,applies_to_doctype,task_type",
+  "title_field": "template_name",
+  "sort_field": "applies_to_doctype",
+  "sort_order": "ASC"
+}
+```
+
+---
+
+### 18. Review Period DocType
 
 **Module:** Director
 **DocType Name:** Review Period
@@ -1302,7 +1612,7 @@ None
 
 ---
 
-### 16. Project DocType
+### 19. Project DocType
 
 **Module:** Director
 **DocType Name:** Project
@@ -1378,7 +1688,7 @@ None
 
 ---
 
-### 17. Platform Feature DocType
+### 20. Platform Feature DocType
 
 **Module:** Director
 **DocType Name:** Platform Feature
@@ -1444,7 +1754,7 @@ None
 
 ---
 
-### 18. Subscription Plan DocType
+### 21. Subscription Plan DocType
 
 **Module:** Director
 **DocType Name:** Subscription Plan
@@ -1658,73 +1968,220 @@ The following modules will follow the same feature-based pattern:
 
 ## Entity Relationships
 
-### Entity Relationship Diagram
+### Property vs Company Architecture
 
 ```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              PROPERTY LAYER                                      │
+│                         (Operational Organization)                               │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
 ┌─────────────────┐
-│    Company      │ (Master)
-│  (Director)     │
+│    Property     │ (Operational Unit)
+│  "Stagecoach    │
+│   Inn"          │
 └────────┬────────┘
          │
-         │ 1:N
-         ├────────────────┐
-         │                │
-         ▼                ▼
-┌─────────────────┐  ┌─────────────────┐
-│ Bank            │  │ Tax Entity      │
-│ Relationship    │  │ Relationship    │
-└─────────────────┘  └─────────────────┘
+         │ Property Company Relationship (Junction)
+         │ entity_role: free text (e.g., "Operating LP", "Liquor License Holder")
          │
-         │ 1:N
-         ├────────────────┬────────────────┬────────────────┐
-         │                │                │                │
-         ▼                ▼                ▼                ▼
+         ├──────────────────┬──────────────────┬──────────────────┐
+         │                  │                  │                  │
+         ▼                  ▼                  ▼                  ▼
 ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│ Insurance       │  │ Loan            │  │ Key Employee    │  │ Review Period   │
-│ Relationship    │  │ Relationship    │  │ Relationship    │  │                 │
-└─────────────────┘  └─────────────────┘  └─────────────────┘  └────────┬────────┘
-                                                                         │
-                                                                         │ 1:N
-                                                                         ▼
-                                                                ┌─────────────────┐
-                                                                │ Review Period   │
-                                                                │ Task (Child)    │
-                                                                └────────┬────────┘
-                                                                         │
-                                                                         │ N:1
-                                                                         ▼
-┌─────────────────┐                                            ┌─────────────────┐
-│ Project         │                                            │ Task Type       │
-└────────┬────────┘                                            │ (Master)        │
-         │                                                     └────────┬────────┘
-         │ 1:N                                                          │
-         ├────────────────┬────────────────┐                           │ 1:N
-         │                │                │                            │
-         ▼                ▼                ▼                            ▼
-┌─────────────────┐  ┌─────────────────┐  │                   ┌─────────────────┐
-│ Project         │  │ Project Task    │  │                   │ Task Type       │
-│ Milestone       │  │ (Child)         │  │                   │ Dependency      │
-│ (Child)         │  └─────────────────┘  │                   │ (Child)         │
-└─────────────────┘                       │                   └─────────────────┘
-                                          │
-                                          ▼
-                                    Link to Company
+│ Company         │  │ Company         │  │ Company         │  │ ...more legal   │
+│ "Stagecoach     │  │ "Stagecoach     │  │ "Stagecoach     │  │    entities     │
+│  1943, LP"      │  │  1943 Bev, LP"  │  │  1943, GP"      │  │                 │
+│ (Operating LP)  │  │ (Liquor Holder) │  │ (Gen Partner)   │  │                 │
+└────────┬────────┘  └────────┬────────┘  └─────────────────┘  └─────────────────┘
+         │                    │
+         │                    │
+         ▼                    ▼
+    [All Financial      [Tax Obligations
+     Relationships]      for TABC/Liquor]
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              COMPANY LAYER                                       │
+│                      (Legal Entity Relationships)                                │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐
+│    Company      │ (Legal Entity)
+│                 │
+└────────┬────────┘
+         │
+         │ 1:N (All relationships belong to legal entities)
+         │
+    ┌────┴────┬────────────┬────────────┬────────────┬────────────┬────────────┐
+    │         │            │            │            │            │            │
+    ▼         ▼            ▼            ▼            ▼            ▼            ▼
+┌───────┐ ┌───────┐   ┌───────┐   ┌───────┐   ┌───────┐   ┌───────┐   ┌───────┐
+│Company│ │Company│   │Insurance│  │ Loan  │   │Key Emp│   │Review │   │Project│
+│ Bank  │ │ Tax   │   │ Policy │   │Relshp │   │Relshp │   │Period │   │       │
+│Relshp │ │Auth   │   │        │   │       │   │       │   │       │   │       │
+│       │ │Relshp │   │        │   │       │   │       │   │       │   │       │
+└───┬───┘ └───┬───┘   └────────┘   └───────┘   └───┬───┘   └───────┘   └───────┘
+    │         │                                    │
+    ▼         ▼                                    │
+┌───────┐ ┌───────┐                               │
+│ Bank  │ │ Tax   │                               │
+│Account│ │Oblig  │                               │
+└───────┘ └───────┘                               │
+                                                   │
+                                                   ▼
+                                           ┌─────────────────┐
+                                           │ Key Employee    │
+                                           │ also links to   │
+                                           │ Property +      │
+                                           │ Department      │
+                                           └─────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              MASTER DATA LAYER                                   │
+│                          (Shared Across Companies)                               │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ Banking         │  │ Tax Authority   │  │ Insurance       │  │ Insurance       │
+│ Institution     │  │                 │  │ Broker          │  │ Carrier         │
+└─────────────────┘  └─────────────────┘  └─────────────────┘  └─────────────────┘
 ```
+
+### Key Relationship Patterns
+
+**Property → Company (via Junction):**
+- One Property has many Companies (legal entities)
+- Each relationship has an `entity_role` describing the company's function
+- Examples: "Operating LP", "General Partnership", "Liquor License Holder", "Real Estate Holding"
+
+**Company → Relationships:**
+- All financial/legal relationships (banking, tax, insurance, loans) belong to Companies
+- Tasks and Review Periods belong to Companies
+- Key Employees are legally employed by Companies but work at Properties
+
+**Key Employee Dual Linkage:**
+- `company` = Legal employer (for W-2, payroll)
+- `property` = Where they work (for operational organization)
+- `department` = Their department (matches Property Department)
+
+### Task Management Architecture
+
+The task management system uses a three-layer approach:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           TASK KNOWLEDGE BASE                                    │
+│                        (Definitions & Instructions)                              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│           Task Type                     │  "What is a Bank Reconciliation?"
+│  - task_code: "bank_reconciliation"     │  "How do you file Sales Tax?"
+│  - instructions, checklists             │
+│  - documentation requirements           │  Shared knowledge base for all companies
+│  - default settings                     │
+└─────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           AUTO-APPLY RULES                                       │
+│                      (Task Default Templates)                                    │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────┐
+│     Task Default Template               │  "When a Checking account is created,
+│  - applies_to_doctype: "Bank Account"   │   auto-add Bank Reconciliation task
+│  - subtype_field: "account_type"        │   with monthly recurrence"
+│  - subtype_value: "Checking"            │
+│  - task_type: "bank_reconciliation"     │  Defines automation rules
+│  - default_recurrence: "Monthly"        │
+└─────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           CONFIGURED TASKS                                       │
+│                    (Task Settings on Records)                                    │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ Bank Account        │     │ Tax Obligation      │     │ Insurance Policy    │
+│ "Operating Account" │     │ "Monthly Sales Tax" │     │ "GL Policy"         │
+├─────────────────────┤     ├─────────────────────┤     ├─────────────────────┤
+│ Task Settings:      │     │ Task Settings:      │     │ Task Settings:      │
+│ - Bank Reconcil.    │     │ - Tax Filing        │     │ - Renewal Review    │
+│   Monthly, Day 15   │     │   Monthly, Day 20   │     │   60 days before    │
+│ - Statement Review  │     │ - Tax Payment       │     │ - COI Request       │
+│   Monthly, Day 5    │     │   Monthly, Day 25   │     │   Annual review     │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+
+                 │                      │                        │
+                 └──────────────────────┼────────────────────────┘
+                                        │
+                                        ▼
+                           ┌─────────────────────────┐
+                           │     Review Period       │
+                           │    "November 2025"      │
+                           │                         │
+                           │ Review Period Tasks:    │
+                           │ - Task instances from   │
+                           │   all configured tasks  │
+                           │   due this period       │
+                           └─────────────────────────┘
+```
+
+**Task Configuration Levels:**
+1. **Task Type** = Knowledge base (instructions, checklists, requirements)
+2. **Task Default Template** = Auto-apply rules when records are created
+3. **Task Settings (child tables)** = Actual configuration per record
+4. **Review Period Tasks** = Task instances for a specific period
+
+**Task Settings on DocTypes:**
+- **Bank Account Task Setting** - Bank reconciliation, statement review
+- **Tax Obligation Task Setting** - Tax filing, tax payment
+- **Insurance Policy Task Setting** - Policy renewal, COI requests
+- **Loan Task Setting** - Payment tracking, covenant compliance
+- **Company Task Setting** - AP review, check run, financial close
+- **Property Task Setting** - Daily revenue reports, operational tasks
 
 ### Relationship Summary
 
 | Parent DocType | Child DocType | Relationship Type | Link Field |
 |---------------|---------------|-------------------|------------|
-| Company | Bank Relationship | One-to-Many | `company` |
-| Company | Tax Entity Relationship | One-to-Many | `company` |
-| Company | Insurance Relationship | One-to-Many | `company` |
-| Company | Loan Relationship | One-to-Many | `company` |
+| Property | Property Company Relationship | One-to-Many | `property` |
+| Property | Property Address | One-to-Many (Child Table) | Parent doc |
+| Property | Property Phone | One-to-Many (Child Table) | Parent doc |
+| Property | Property Email | One-to-Many (Child Table) | Parent doc |
+| Property | Property Contact | One-to-Many (Child Table) | Parent doc |
+| Property | Property Department | One-to-Many (Child Table) | Parent doc |
+| Property | Property Task Setting | One-to-Many (Child Table) | Parent doc |
+| Company | Property Company Relationship | One-to-Many | `company` |
+| Company | Company Task Setting | One-to-Many (Child Table) | Parent doc |
+| Company | Company Bank Relationship | One-to-Many | `company` |
+| Company | Company Tax Authority Relationship | One-to-Many | `company` |
 | Company | Key Employee Relationship | One-to-Many | `company` |
 | Company | Review Period | One-to-Many | `company` |
 | Company | Project | One-to-Many | `company` |
 | Company | Company | One-to-Many (Self) | `parent_company` |
+| Property | Key Employee Relationship | One-to-Many | `property` |
+| Company Bank Relationship | Bank Account | One-to-Many | `company_bank_relationship` |
+| Company Bank Relationship | Loan Relationship | One-to-Many | `company_bank_relationship` |
+| Bank Account | Bank Account Document | One-to-Many (Child Table) | Parent doc |
+| Bank Account | Bank Account Task Setting | One-to-Many (Child Table) | Parent doc |
+| Company Tax Authority Relationship | Tax Obligation | One-to-Many | `company_tax_authority_relationship` |
+| Tax Obligation | Tax Filing Document | One-to-Many (Child Table) | Parent doc |
+| Tax Obligation | Tax Obligation Task Setting | One-to-Many (Child Table) | Parent doc |
+| Insurance Broker | Insurance Policy | One-to-Many | `insurance_broker` |
+| Insurance Carrier | Insurance Policy | One-to-Many | `insurance_carrier` |
+| Insurance Policy | Policy Covered Entity | One-to-Many (Child Table) | Parent doc |
+| Insurance Policy | Policy Covered Location | One-to-Many (Child Table) | Parent doc |
+| Insurance Policy | Policy Document | One-to-Many (Child Table) | Parent doc |
+| Insurance Policy | Insurance Policy Task Setting | One-to-Many (Child Table) | Parent doc |
+| Loan Relationship | Loan Amortization Schedule | One-to-Many (Child Table) | Parent doc |
+| Loan Relationship | Loan Task Setting | One-to-Many (Child Table) | Parent doc |
 | Review Period | Review Period Task | One-to-Many (Child Table) | Parent doc |
-| Task Type | Task Type Dependency | One-to-Many (Child Table) | Parent doc |
+| Task Type | Task Type Checklist Item | One-to-Many (Child Table) | Parent doc |
 | Task Type | Review Period Task | One-to-Many | `task_type` |
 | Project | Project Milestone | One-to-Many (Child Table) | Parent doc |
 | Project | Project Task | One-to-Many (Child Table) | Parent doc |
